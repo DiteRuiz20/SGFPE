@@ -7,6 +7,7 @@ import java.util.Optional;
 
 @Repository // Marks this as a repository in Spring
 public interface UserRepository extends MongoRepository<User, String> {
+
     // Find user by email (for authentication or registration)
     Optional<User> findByEmail(String email);
 

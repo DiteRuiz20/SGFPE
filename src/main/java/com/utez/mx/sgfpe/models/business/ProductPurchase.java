@@ -42,4 +42,68 @@ public class ProductPurchase {
     public BigDecimal getTotalCost() {
         return unitCost.multiply(BigDecimal.valueOf(acquiredQuantity));
     }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    public Instant getPurchaseDate() {
+        return purchaseDate;
+    }
+
+    public void setPurchaseDate(Instant purchaseDate) {
+        this.purchaseDate = purchaseDate;
+    }
+
+    public String getProductDescription() {
+        return productDescription;
+    }
+
+    public void setProductDescription(String productDescription) {
+        this.productDescription = productDescription;
+    }
+
+    public double getAcquiredQuantity() {
+        return acquiredQuantity;
+    }
+
+    public void setAcquiredQuantity(double acquiredQuantity) {
+        this.acquiredQuantity = acquiredQuantity;
+    }
+
+    public BigDecimal getUnitCost() {
+        return unitCost;
+    }
+
+    public void setUnitCost(BigDecimal unitCost) {
+        this.unitCost = unitCost;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getPurchaseMethod() {
+        return purchaseMethod;
+    }
+
+    public void setPurchaseMethod(String purchaseMethod) {
+        this.purchaseMethod = purchaseMethod;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }

@@ -42,4 +42,68 @@ public class RawMaterial {
     public BigDecimal getTotal() {
         return unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    public Instant getEntryDate() {
+        return entryDate;
+    }
+
+    public void setEntryDate(Instant entryDate) {
+        this.entryDate = entryDate;
+    }
+
+    public String getMaterialDescription() {
+        return materialDescription;
+    }
+
+    public void setMaterialDescription(String materialDescription) {
+        this.materialDescription = materialDescription;
+    }
+
+    public String getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(String supplier) {
+        this.supplier = supplier;
+    }
+
+    public double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(double quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getMeasurementUnit() {
+        return measurementUnit;
+    }
+
+    public void setMeasurementUnit(String measurementUnit) {
+        this.measurementUnit = measurementUnit;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }

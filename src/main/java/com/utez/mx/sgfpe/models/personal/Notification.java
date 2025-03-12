@@ -29,4 +29,44 @@ public class Notification {
         this.notifyDate = notifyDate;
         this.isRead = isRead;
     }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Instant getNotifyDate() {
+        return notifyDate;
+    }
+
+    public void setNotifyDate(Instant notifyDate) {
+        this.notifyDate = notifyDate;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
+    }
 }

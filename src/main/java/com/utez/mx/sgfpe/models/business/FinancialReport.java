@@ -33,4 +33,52 @@ public class FinancialReport {
         this.totalExpense = totalExpense;
         this.netProfit = netProfit;
     }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public Instant getReportDate() {
+        return reportDate;
+    }
+
+    public void setReportDate(Instant reportDate) {
+        this.reportDate = reportDate;
+    }
+
+    public BigDecimal getTotalIncome() {
+        return totalIncome;
+    }
+
+    public void setTotalIncome(BigDecimal totalIncome) {
+        this.totalIncome = totalIncome;
+    }
+
+    public BigDecimal getTotalExpense() {
+        return totalExpense;
+    }
+
+    public void setTotalExpense(BigDecimal totalExpense) {
+        this.totalExpense = totalExpense;
+    }
+
+    public BigDecimal getNetProfit() {
+        return netProfit;
+    }
+
+    public void setNetProfit(BigDecimal netProfit) {
+        this.netProfit = netProfit;
+    }
 }
