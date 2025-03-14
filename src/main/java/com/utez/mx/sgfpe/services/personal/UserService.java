@@ -2,6 +2,7 @@ package com.utez.mx.sgfpe.services.personal;
 
 import com.utez.mx.sgfpe.models.personal.User;
 import com.utez.mx.sgfpe.repositories.personal.UserRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -19,7 +20,7 @@ public class UserService {
     }
 
     // Get user by ID
-    public Optional<User> getUserById(String id) {
+    public Optional<User> getUserById(ObjectId id) {
         return userRepository.findById(id);
     }
 
@@ -34,7 +35,7 @@ public class UserService {
     }
 
     // Delete user by ID
-    public void deleteUserById(String id) {
+    public void deleteUserById(ObjectId id) {
         userRepository.deleteById(id);
     }
 

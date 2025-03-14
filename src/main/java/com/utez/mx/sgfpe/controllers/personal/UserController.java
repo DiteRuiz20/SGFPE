@@ -2,6 +2,7 @@ package com.utez.mx.sgfpe.controllers.personal;
 
 import com.utez.mx.sgfpe.models.personal.User;
 import com.utez.mx.sgfpe.services.personal.UserService;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:5173")// Base URL for user-related endpoints
 public class UserController {
 
-    @Autowired
+    @Autowired// Convertir String a ObjectId
     private UserService userService;
 
     // Get all users
@@ -26,7 +27,8 @@ public class UserController {
     // Get user by ID
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable String id) {
-        Optional<User> user = userService.getUserById(id);
+        ObjectId objectId = new ObjectId(id);
+        Optional<User> user = userService.getUserById(objectId);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -46,7 +48,8 @@ public class UserController {
     // Update an existing user
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User updatedUser) {
-        Optional<User> existingUser = userService.getUserById(id);
+        ObjectId objectId = new ObjectId(id);
+        Optional<User> existingUser = userService.getUserById(objectId);
         if (existingUser.isPresent()) {
             updatedUser.setId(existingUser.get().getId());
             return ResponseEntity.ok(userService.saveOrUpdateUser(updatedUser));
@@ -58,7 +61,8 @@ public class UserController {
     // Delete a user by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-        userService.deleteUserById(id);
+        ObjectId objectId = new ObjectId(id);
+        userService.deleteUserById(objectId);
         return ResponseEntity.noContent().build();
     }
 
