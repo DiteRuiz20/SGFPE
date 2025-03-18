@@ -20,7 +20,7 @@ public class UserService {
     }
 
     // Get user by ID
-    public Optional<User> getUserById(ObjectId id) {
+    public Optional<User> getUserById(String id) {
         return userRepository.findById(id);
     }
 
@@ -35,7 +35,7 @@ public class UserService {
     }
 
     // Delete user by ID
-    public void deleteUserById(ObjectId id) {
+    public void deleteUserById(String id) {
         userRepository.deleteById(id);
     }
 

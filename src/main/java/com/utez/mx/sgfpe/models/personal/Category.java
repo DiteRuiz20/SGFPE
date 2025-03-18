@@ -10,7 +10,7 @@ import org.bson.types.ObjectId;
 public class Category {
 
     @Id
-    private ObjectId id; // Unique identifier for each category
+    private String id; // Unique identifier for each category
 
     private String name; // Name of the category (e.g., Food, Transportation)
     private String description; // Description of the category
@@ -25,11 +25,11 @@ public class Category {
         this.description = description;
     }
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 

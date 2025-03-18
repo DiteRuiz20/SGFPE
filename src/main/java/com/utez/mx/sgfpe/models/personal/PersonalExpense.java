@@ -12,7 +12,7 @@ import java.time.Instant;
 public class PersonalExpense {
 
     @Id
-    private ObjectId id; // Unique identifier for each expense
+    private String id; // Unique identifier for each expense
 
     private String userId; // ID of the user who made this expense
     private String categoryId; // ID of the category for this expense
@@ -33,11 +33,11 @@ public class PersonalExpense {
         this.description = description;
     }
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 

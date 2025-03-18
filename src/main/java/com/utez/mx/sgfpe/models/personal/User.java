@@ -10,7 +10,7 @@ import org.bson.types.ObjectId;
 public class User {
 
     @Id
-    private ObjectId id; // Unique identifier for each user
+    private String id; // Unique identifier for each user
 
     private String name; // Name of the user
     private String email; // Email of the user (should be unique)
@@ -31,11 +31,11 @@ public class User {
         this.accountType = accountType;
     }
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 

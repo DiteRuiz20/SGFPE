@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/personal/expenses") // Base URL for personal expense-related endpoints
+@CrossOrigin(origins = "http://localhost:5173")
 public class PersonalExpenseController {
 
     @Autowired
@@ -52,5 +53,23 @@ public class PersonalExpenseController {
     public ResponseEntity<Void> deleteExpense(@PathVariable String id) {
         personalExpenseService.deleteExpenseById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/user/{userId}") // Nuevo endpoint para obtener gastos por userId
+    public ResponseEntity<List<PersonalExpense>> getExpensesByUserId(@PathVariable String userId) {
+        List<PersonalExpense> expenses = personalExpenseService.getExpensesByUser(userId);
+        if (expenses.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Devuelve 204 si no hay gastos
+        }
+        return ResponseEntity.ok(expenses); // Devuelve 200 con la lista de gastos
+    }
+    
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<PersonalExpense>> getExpensesByCategory(@PathVariable String categoryId) {
+        List<PersonalExpense> expenses = personalExpenseService.getExpensesByCategory(categoryId);
+        if (expenses.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Return 204 No Content if no expenses are found
+        }
+        return ResponseEntity.ok(expenses); // Return 200 OK with the list of expenses
     }
 }
