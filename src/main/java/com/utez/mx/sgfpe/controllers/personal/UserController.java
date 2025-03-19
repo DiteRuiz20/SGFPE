@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/personal/users")
-@CrossOrigin(origins = "http://localhost:5173")// Base URL for user-related endpoints
+//@CrossOrigin(origins = "http://localhost:5173")// Base URL for user-related endpoints
 public class UserController {
 
     @Autowired// Convertir String a ObjectId
