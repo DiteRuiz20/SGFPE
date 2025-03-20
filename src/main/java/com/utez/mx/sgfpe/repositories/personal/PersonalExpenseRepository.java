@@ -17,4 +17,6 @@ public interface PersonalExpenseRepository extends MongoRepository<PersonalExpen
     // Find expenses within a date range
     List<PersonalExpense> findByDateBetween(Instant startDate, Instant endDate);
 
+
+
 }

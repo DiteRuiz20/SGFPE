@@ -7,11 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/personal/expenses") // Base URL for personal expense-related endpoints
-//@CrossOrigin(origins = "http://localhost:5173")
 public class PersonalExpenseController {
 
     @Autowired
@@ -19,8 +19,12 @@ public class PersonalExpenseController {
 
     // Get all expenses
     @GetMapping
-    public List<PersonalExpense> getAllExpenses() {
-        return personalExpenseService.getAllExpenses();
+    public ResponseEntity<List<Map<String, Object>>> getAllExpenses() {
+        List<Map<String, Object>> expenses = personalExpenseService.getAllExpenses();
+        if (expenses.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Devuelve 204 si no hay gastos
+        }
+        return ResponseEntity.ok(expenses); // Devuelve 200 con la lista de gastos
     }
 
     // Get expense by ID
@@ -55,15 +59,17 @@ public class PersonalExpenseController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/user/{userId}") // Nuevo endpoint para obtener gastos por userId
-    public ResponseEntity<List<PersonalExpense>> getExpensesByUserId(@PathVariable String userId) {
-        List<PersonalExpense> expenses = personalExpenseService.getExpensesByUser(userId);
+    // Get expenses by userId (with category name)
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Map<String, Object>>> getExpensesByUserId(@PathVariable String userId) {
+        List<Map<String, Object>> expenses = personalExpenseService.getExpensesByUser(userId);
         if (expenses.isEmpty()) {
             return ResponseEntity.noContent().build(); // Devuelve 204 si no hay gastos
         }
         return ResponseEntity.ok(expenses); // Devuelve 200 con la lista de gastos
     }
-    
+
+    // Get expenses by categoryId (with category name)
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<PersonalExpense>> getExpensesByCategory(@PathVariable String categoryId) {
         List<PersonalExpense> expenses = personalExpenseService.getExpensesByCategory(categoryId);
