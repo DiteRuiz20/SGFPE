@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { getPersonalExpensesByUserId } from '../../../services/PersonalExpensesService';
+import React, { useState, useEffect } from 'react';
+import { getPersonalExpensesByUserId, createPersonalExpense } from '../../../services/PersonalExpensesService';
+import { getAllCategories } from '../../../services/CategoriesService';
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { Pie } from 'react-chartjs-2';
@@ -11,6 +12,12 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 export default function PersonalExpensesTracker() {
     const [personalExpenses, setPersonalExpenses] = useState([]);
     const [filteredExpenses, setFilteredExpenses] = useState([]);
+    const [categories, setCategories] = useState([]);  // Estado para las categorías
+    const [newExpense, setNewExpense] = useState({
+        description: '',
+        amount: '',
+        categoryName: '',
+    });  // Estado para el nuevo gasto
     const navigate = useNavigate();
 
     // Cargar los gastos
@@ -48,6 +55,63 @@ export default function PersonalExpensesTracker() {
 
         fetchPersonalExpenses();
     }, [navigate]);
+
+    // Obtener categorías para el selector
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const data = await getAllCategories();  // Llamada a la API para obtener las categorías
+                setCategories(data);  // Establecemos las categorías en el estado
+            } catch (error) {
+                console.error('Error al obtener las categorías:', error);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    // Manejar cambio en los campos del formulario
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewExpense({
+            ...newExpense,
+            [name]: value,
+        });
+    };
+
+    // Enviar el formulario para crear un nuevo gasto
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const userId = localStorage.getItem('userId');
+
+        if (!userId) {
+            navigate('/login-personal');
+            return;
+        }
+
+        const expenseData = {
+            ...newExpense,
+            userId,
+        };
+
+        try {
+            const createdExpense = await createPersonalExpense(expenseData);
+            console.log('Gasto creado:', createdExpense);
+
+            // Agregar el gasto recién creado al estado
+            setPersonalExpenses((prevExpenses) => [...prevExpenses, createdExpense]);
+            setFilteredExpenses((prevExpenses) => [...prevExpenses, createdExpense]);
+
+            // Limpiar el formulario
+            setNewExpense({
+                description: '',
+                amount: '',
+                categoryId: '',
+            });
+        } catch (error) {
+            console.error('Error al crear el gasto:', error);
+        }
+    };
 
     // Preparar los datos para el gráfico de pastel
     const categoryData = () => {
@@ -124,7 +188,49 @@ export default function PersonalExpensesTracker() {
     return (
         <div>
             <h1>Gastos Personales</h1>
-            
+
+            {/* Formulario para registrar un gasto */}
+            <h2>Registrar un nuevo gasto</h2>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <label>Descripción:</label>
+                    <input
+                        type="text"
+                        name="description"
+                        value={newExpense.description}
+                        onChange={handleInputChange}
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Monto:</label>
+                    <input
+                        type="number"
+                        name="amount"
+                        value={newExpense.amount}
+                        onChange={handleInputChange}
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Categoría:</label>
+                    <select
+                        name="categoryId"  // 👈 Aquí también debe ser categoryId
+                        value={newExpense.categoryId}
+                        onChange={handleInputChange}
+                        required
+                    >
+                        <option value="">Seleccione una categoría</option>
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <button type="submit">Registrar Gasto</button>
+            </form>
+
             {personalExpenses.length === 0 ? (
                 <p>No hay gastos para mostrar.</p>
             ) : (
