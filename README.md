@@ -9,8 +9,8 @@ Currently, two official plugins are available:
 
 To use WebFront, need to install 
 
-npm install yup @hookform/resolvers react-hook-form react-router-dom axios react-data-table-component react-chartjs-2 chart.js
-npm install
+npm install yup @hookform/resolvers react-hook-form react-router-dom axios react-data-table-component react-chartjs-2 chart.js \
+&& npm install
 
 ## Expanding the ESLint configuration
 
