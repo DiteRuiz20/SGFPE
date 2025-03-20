@@ -1,6 +1,7 @@
 package com.utez.mx.sgfpe.models.personal;
 
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.bson.types.ObjectId;
@@ -16,6 +17,8 @@ public class PersonalExpense {
 
     private String userId; // ID of the user who made this expense
     private String categoryId; // ID of the category for this expense
+
+    @CreatedDate
     private Instant date; // Date of the expense
     private BigDecimal amount; // Amount spent
     private String description; // Description of the expense
@@ -25,10 +28,9 @@ public class PersonalExpense {
     }
 
     // Constructor with all attributes for easy instantiation
-    public PersonalExpense(String userId, String categoryId, Instant date, BigDecimal amount, String description) {
+    public PersonalExpense(String userId, String categoryId, BigDecimal amount, String description) {
         this.userId = userId;
         this.categoryId = categoryId;
-        this.date = date;
         this.amount = amount;
         this.description = description;
     }
