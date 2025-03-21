@@ -1,10 +1,24 @@
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
-import { Divider } from 'react-native-elements'
+// screens/PersonalLogin.js
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { useAuth } from '../../../src/auth/AuthContext';
+import { Divider } from 'react-native-elements';
 
 export default function PersonalLogin({ navigation, onLoginPersonal }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    const success = await login(email, password);
+
+    if (success) {
+      Alert.alert('Inicio de sesión exitoso');
+      onLoginPersonal();
+    } else {
+      Alert.alert('Correo o contraseña incorrectos');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -12,23 +26,40 @@ export default function PersonalLogin({ navigation, onLoginPersonal }) {
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
       <Text style={styles.subtitle}>Gestión Financiera Personal</Text>
 
-      <TextInput style={styles.input} value={username} onChangeText={setUsername} placeholder="Username" placeholderTextColor="#A9A9A9" />
-      <TextInput style={styles.input} value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="#A9A9A9" secureTextEntry />
+      <TextInput
+        style={styles.input}
+        value={email}
+        onChangeText={setEmail}
+        placeholder="Correo Electrónico"
+        placeholderTextColor="#A9A9A9"
+        keyboardType="email-address"
+      />
+      <TextInput
+        style={styles.input}
+        value={password}
+        onChangeText={setPassword}
+        placeholder="Contraseña"
+        placeholderTextColor="#A9A9A9"
+        secureTextEntry
+      />
 
-      <TouchableOpacity style={styles.primary_button} onPress={onLoginPersonal}>
+      <TouchableOpacity style={styles.primary_button} onPress={handleLogin}>
         <Text style={styles.button_text}>LOGIN</Text>
       </TouchableOpacity>
 
       <Divider style={styles.divider} />
 
-      <Text style={styles.orText}>or</Text>
+      <Text style={styles.orText}>o</Text>
       <Text style={styles.getStarted}>Sign up to get started</Text>
 
-      <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('Personal Sign Up')}>
+      <TouchableOpacity
+        style={styles.secondary_button}
+        onPress={() => navigation.navigate('PersonalSignUp')}
+      >
         <Text style={styles.button_text}>SIGN UP</Text>
       </TouchableOpacity>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({

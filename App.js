@@ -9,6 +9,7 @@ import PersonalLogin from './views/personal/accountManagment/PersonalLogin';
 import PersonalSignUp from './views/personal/accountManagment/PersonalSignUp';
 import PersonalLoggedStack from './views/personal/logged/PersonalLoggedStack';
 import BusinessLoggedStack from './views/business/logged/BusinessLoggedStack';
+import { AuthProvider } from './src/auth/AuthContext'; // Importa tu contexto
 
 const Stack = createStackNavigator();
 
@@ -17,21 +18,30 @@ export default function App() {
   const [isAuthenticatedBusiness, setIsAuthenticatedBusiness] = useState(false);
 
   return (
-    <NavigationContainer>
-      {isAuthenticatedPersonal ? (
-        <PersonalLoggedStack onLogOut={() => setIsAuthenticatedPersonal(false)} />
-      ) : ( isAuthenticatedBusiness ? (
-        <BusinessLoggedStack onLogOut={() => setIsAuthenticatedBusiness(false)} />
-      ) : (
-        <Stack.Navigator screenOptions={{ headerShown: true }}>
-          <Stack.Screen name="Account" component={ChooseAccount} />
-          <Stack.Screen name="Business Type" component={BusinessType} />
-          <Stack.Screen name="Business" component={(props) => <BusinessLogin {...props} onLoginBusiness={() => setIsAuthenticatedBusiness(true)}/>} />
-          <Stack.Screen name="Business Sign Up" component={BusinessSignUp} />
-          <Stack.Screen name="Personal" component={(props) => <PersonalLogin {...props} onLoginPersonal={() => setIsAuthenticatedPersonal(true)}/>}/>
-          <Stack.Screen name="Personal Sign Up" component={PersonalSignUp} />
-        </Stack.Navigator>
-      ))}
-    </NavigationContainer>
+    // Envuelve tu aplicación con el AuthProvider
+    <AuthProvider>
+      <NavigationContainer>
+        {isAuthenticatedPersonal ? (
+          <PersonalLoggedStack onLogOut={() => setIsAuthenticatedPersonal(false)} />
+        ) : isAuthenticatedBusiness ? (
+          <BusinessLoggedStack onLogOut={() => setIsAuthenticatedBusiness(false)} />
+        ) : (
+          <Stack.Navigator screenOptions={{ headerShown: true }}>
+            <Stack.Screen name="Account" component={ChooseAccount} />
+            <Stack.Screen name="Business Type" component={BusinessType} />
+            <Stack.Screen
+              name="Business"
+              component={(props) => <BusinessLogin {...props} onLoginBusiness={() => setIsAuthenticatedBusiness(true)} />}
+            />
+            <Stack.Screen name="Business Sign Up" component={BusinessSignUp} />
+            <Stack.Screen
+              name="Personal"
+              component={(props) => <PersonalLogin {...props} onLoginPersonal={() => setIsAuthenticatedPersonal(true)} />}
+            />
+            <Stack.Screen name="PersonalSignUp" component={PersonalSignUp} />
+          </Stack.Navigator>
+        )}
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
