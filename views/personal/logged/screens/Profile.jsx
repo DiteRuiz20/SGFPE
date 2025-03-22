@@ -1,13 +1,31 @@
 import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert } from 'react-native'
 import React from 'react'
 import { Divider, Icon } from 'react-native-elements'
+import { useAuth } from '../../../../src/auth/AuthContext';
 
-export default function Profile({onLogOut}) {
+export default function Profile({ onLogOut }) {
+  const { logout } = useAuth();
+
   const handleLogOut = () => {
     Alert.alert(
       "Log Out",
       "Are you sure you want to log out?",
-      [{ text: "Yes", onPress: () => { onLogOut(); }}, { text: "No", onPress: () => console.log("Cancelled") }]
+      [
+        { 
+          text: "Yes", 
+          onPress: async () => {
+            try {
+              await logout();
+              onLogOut();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to log out. Please try again.');
+            }
+          }
+        }, 
+        { 
+          text: "No"
+        }
+      ]
     );
   };
 
@@ -15,7 +33,7 @@ export default function Profile({onLogOut}) {
     Alert.alert(
       "Change Password",
       "Are you sure you want to change your password?",
-      [{ text: "Yes", onPress: () => console.log("Changing password")}, { text: "No", onPress: () => console.log("Cancelled") }]
+      [{ text: "Yes", onPress: () => console.log("Changing password") }, { text: "No", onPress: () => console.log("Cancelled") }]
     );
   };
 
@@ -23,21 +41,21 @@ export default function Profile({onLogOut}) {
     Alert.alert(
       "Update Info",
       "Are you sure you want to update your info?",
-      [{ text: "Yes", onPress: () => console.log("Updating info")}, { text: "No", onPress: () => console.log("Cancelled") }]
+      [{ text: "Yes", onPress: () => console.log("Updating info") }, { text: "No", onPress: () => console.log("Cancelled") }]
     );
   };
- 
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>PROFILE</Text>
-      <Icon style={{marginBottom:20}} name="account-circle" type="material" size={130} color="#888" />
+      <Icon style={{ marginBottom: 20 }} name="account-circle" type="material" size={130} color="#888" />
 
       <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#A9A9A9" />
       <TextInput style={styles.input} placeholder="Username" placeholderTextColor="#A9A9A9" />
       <TextInput style={styles.input} placeholder="Phone Number" placeholderTextColor="#A9A9A9" keyboardType='phone-pad' />
-      <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#A9A9A9" keyboardType='email-address'/>
+      <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#A9A9A9" keyboardType='email-address' />
 
-      <View style={{marginTop: 25, alignItems: 'center', width: '100%', gap: 10}}>
+      <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10 }}>
         <TouchableOpacity style={styles.secondary_button} onPress={handleUpdateInfo}>
           <Text style={styles.button_text}>UPDATE INFO</Text>
         </TouchableOpacity>

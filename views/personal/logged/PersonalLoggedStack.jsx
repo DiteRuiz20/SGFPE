@@ -1,8 +1,10 @@
 import { StyleSheet, Text, TouchableOpacity, } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Icon } from 'react-native-elements';
+import { useAuth } from '../../../src/auth/AuthContext';
+import { getUserById } from '../../../src/api/axios';
 import BudgetPlanning from './screens/BudgetPlanning';
 import SavingTracker from './screens/SavingTracker';
 import DebtTracker from './screens/DebtTracker';
@@ -25,6 +27,26 @@ const getScreenTitle = (routeName) => {
 };
 
 const BottomTabNavigator = ({ navigation }) => {
+  const { userId } = useAuth();
+  const [userName, setUserName] = useState('USER');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        if (userId) {
+          const userData = await getUserById(userId);
+          if (userData && userData.name) {
+            setUserName(userData.name.toUpperCase());
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [userId]);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -47,7 +69,7 @@ const BottomTabNavigator = ({ navigation }) => {
 
         headerRight: () => (
           <TouchableOpacity style={styles.headerRight} onPress={() => navigation.navigate("Profile")}>
-            <Text style={{ marginRight: 10, fontWeight: "bold" }}>MOSHIUR</Text>
+            <Text style={{ marginRight: 10, fontWeight: "bold" }}>{userName}</Text>
             <Icon style={{marginRight:10}} name="account-circle" type="material" size={40} color="#888" />
           </TouchableOpacity>
         ),

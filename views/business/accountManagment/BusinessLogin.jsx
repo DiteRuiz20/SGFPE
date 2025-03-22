@@ -1,10 +1,19 @@
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { Divider } from 'react-native-elements'
 
 export default function BusinessLogin({ navigation, onLoginBusiness }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      await onLoginBusiness(username, password);
+      Alert.alert('Success', 'Login successful');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Invalid email or password');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -15,7 +24,7 @@ export default function BusinessLogin({ navigation, onLoginBusiness }) {
       <TextInput style={styles.input} placeholder="Email Address" value={username} onChangeText={setUsername} keyboardType='email-address' placeholderTextColor="#A9A9A9" />
       <TextInput style={styles.input} placeholder="Password"  value={password} onChangeText={setPassword} placeholderTextColor="#A9A9A9" secureTextEntry />
 
-      <TouchableOpacity style={styles.primary_button} onPress={onLoginBusiness}>
+      <TouchableOpacity style={styles.primary_button} onPress={handleLogin}>
         <Text style={styles.button_text}>LOGIN</Text>
       </TouchableOpacity>
 

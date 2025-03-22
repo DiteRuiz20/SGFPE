@@ -10,13 +10,12 @@ export default function PersonalLogin({ navigation, onLoginPersonal }) {
   const { login } = useAuth();
 
   const handleLogin = async () => {
-    const success = await login(email, password);
-
-    if (success) {
-      Alert.alert('Inicio de sesión exitoso');
+    try {
+      await login(email, password, 'personal');
+      Alert.alert('Success', 'Login successful');
       onLoginPersonal();
-    } else {
-      Alert.alert('Correo o contraseña incorrectos');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Invalid email or password');
     }
   };
 

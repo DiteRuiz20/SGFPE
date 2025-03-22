@@ -1,62 +1,110 @@
 import React, { createContext, useState, useContext } from 'react';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../api/axios';
+import { useNavigation } from '@react-navigation/native';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [token, setToken] = useState(null);
-    const [userId, setUserId] = useState(null);
+    const [authState, setAuthState] = useState({
+        isAuthenticated: false,
+        token: null,
+        userId: null,
+        accountType: null
+    });
 
-    const login = async (email, password) => {
+    const validateAccount = async (email, accountType) => {
         try {
-            // Usamos query parameters en la URL como en Postman
-            const response = await api.post(`/auth/login`, null,
-                {
-                    params: {
-                        email,
-                        password
-                    }
-                }
-            );
-    
-            const { token, userId } = response.data;
-    
-            // Verificar si el token está presente
-            if (!token) {
-                throw new Error('Token no recibido');
-            }
-    
-            // Guardar token y userId en AsyncStorage
-            await AsyncStorage.setItem('token', token);
-            await AsyncStorage.setItem('userId', userId);
-    
-            // Actualizar el estado en el contexto
-            setToken(token);
-            setUserId(userId);
-            setIsAuthenticated(true);
-    
-            return true;
+            const response = await api.post('/auth/validate-account', {
+                email,
+                accountType
+            });
+
+            return response.data.isValid;
         } catch (error) {
-            console.error('Error en el login:', error.message);
-            console.log(response.data);
+            console.error('Error validating account:', error);
             return false;
         }
     };
 
-    const logout = async () => {
-        await AsyncStorage.removeItem('token');
-        await AsyncStorage.removeItem('userId');
+    const login = async (email, password, accountType) => {
+        try {
+            // Primero validamos el tipo de cuenta
+            const isValidAccount = await validateAccount(email, accountType);
+            
+            if (!isValidAccount) {
+                const errorMessage = accountType === 'personal' 
+                    ? 'This email is registered as a business account. Please use the business login.'
+                    : 'This email is registered as a personal account. Please use the personal login.';
+                throw new Error(errorMessage);
+            }
 
-        setToken(null);
-        setUserId(null);
-        setIsAuthenticated(false);
+            // Si el tipo de cuenta es válido, procedemos con el login
+            const response = await api.post('/auth/login', null, {
+                params: {
+                    email,
+                    password
+                }
+            });
+    
+            const { token, userId, accountType: responseAccountType } = response.data;
+    
+            if (!token) {
+                throw new Error('Token not received');
+            }
+    
+            // Guardar datos en AsyncStorage
+            await Promise.all([
+                AsyncStorage.setItem('token', token),
+                AsyncStorage.setItem('userId', userId),
+                AsyncStorage.setItem('accountType', responseAccountType)
+            ]);
+    
+            // Actualizar el estado
+            setAuthState({
+                isAuthenticated: true,
+                token,
+                userId,
+                accountType: responseAccountType
+            });
+    
+            return true;
+        } catch (error) {
+            console.error('Login error:', error);
+            throw error;
+        }
+    };
+
+    const logout = async () => {
+        try {
+            await Promise.all([
+                AsyncStorage.removeItem('token'),
+                AsyncStorage.removeItem('userId'),
+                AsyncStorage.removeItem('accountType')
+            ]);
+
+            setAuthState({
+                isAuthenticated: false,
+                token: null,
+                userId: null,
+                accountType: null
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+            throw error;
+        }
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, token, userId, login, logout }}>
+        <AuthContext.Provider 
+            value={{ 
+                ...authState,
+                login,
+                logout,
+                isPersonalUser: authState.accountType === 'personal',
+                isBusinessUser: authState.accountType === 'business'
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
