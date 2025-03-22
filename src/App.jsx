@@ -7,6 +7,7 @@ import PersonalExpensesTracker from './components/Personal/loggedViewsPersonal/P
 import BusinessLogin from './components/Empresarial/managment/BusinessLogin';
 import CreateBusinessAccount from './components/Empresarial/managment/CreateBusinessAccount';
 import ChooseBusiness from './components/Empresarial/managment/ChooseBusiness';
+import PersonalBudgetPlanner from './components/Personal/loggedViewsPersonal/PersonalBudgetPlanner';
 import logo from './assets/logo.png';
 
 function Home() {
@@ -63,6 +64,7 @@ function App() {
                     <Route path="/create-business-account" element={<CreateBusinessAccount />} />
                     <Route path="/choose-business" element={<ChooseBusiness />} />
                     <Route path="/create-personal-account" element={<CreatePersonalAccount />} />
+                    <Route path="/personal-budget-planner" element={<PersonalBudgetPlanner />} />
                     <Route path="/personal-expenses" element={<PersonalExpensesTracker />} />
                 </Routes>
             </Router>

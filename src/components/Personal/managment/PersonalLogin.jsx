@@ -44,7 +44,7 @@ export default function PersonalLogin() {
             console.log('Redirigiendo a personal-expenses...');
             
             alert('Inicio de sesión exitoso');
-            navigate('/personal-expenses');
+            navigate('/personal-budget-planner');
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
             alert('Correo o contraseña incorrectos');
