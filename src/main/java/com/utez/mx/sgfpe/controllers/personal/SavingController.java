@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -45,6 +46,16 @@ public class SavingController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // Get expenses by userId (with category name)
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Saving>> getSavingsByUserId(@PathVariable String userId) {
+        List<Saving> savings = savingService.getSavingsByUser(userId);
+        if (savings.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Devuelve 204 si no hay ahorros
+        }
+        return ResponseEntity.ok(savings); // Devuelve 200 con la lista de ahorros
     }
 
     // Delete a saving by ID

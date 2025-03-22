@@ -12,9 +12,9 @@ import java.time.Instant;
 public class Debt {
 
     @Id
-    private ObjectId id; // Unique identifier for each debt
+    private String id; // Unique identifier for each debt
 
-    private ObjectId userId; // ID of the user who owes this debt
+    private String userId; // ID of the user who owes this debt
     private String creditor; // Entity or person to whom the debt is owed
     private BigDecimal amount; // Amount of the debt
     private Instant dueDate; // Date by which the debt should be repaid
@@ -25,7 +25,7 @@ public class Debt {
     }
 
     // Constructor with all attributes for easy instantiation
-    public Debt(ObjectId userId, String creditor, BigDecimal amount, Instant dueDate, String status) {
+    public Debt(String userId, String creditor, BigDecimal amount, Instant dueDate, String status) {
         this.userId = userId;
         this.creditor = creditor;
         this.amount = amount;
@@ -33,19 +33,19 @@ public class Debt {
         this.status = status;
     }
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public ObjectId getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(ObjectId userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

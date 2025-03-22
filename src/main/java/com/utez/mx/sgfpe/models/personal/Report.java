@@ -11,7 +11,7 @@ import java.time.Instant;
 public class Report {
 
     @Id
-    private ObjectId id; // Unique identifier for each report
+    private String id; // Unique identifier for each report
 
     private String userId; // ID of the user generating the report
     private Instant reportDate; // Date when the report is generated
@@ -30,11 +30,11 @@ public class Report {
         this.description = description;
     }
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 

@@ -38,7 +38,8 @@ public class AuthController {
         // Responde con token y userId (Mongo usa String para ID)
         return ResponseEntity.ok(Map.of(
                 "token", token,
-                "userId", user.getId() // Mongo ID es String
+                "userId", user.getId(), // Mongo ID es String
+                "accountType", user.getAccountType()
         ));
     }
 }
