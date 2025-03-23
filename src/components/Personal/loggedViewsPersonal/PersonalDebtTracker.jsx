@@ -3,26 +3,26 @@ import { getPersonalExpensesByUserId, createPersonalExpense } from '../../../ser
 import { getAllCategories } from '../../../services/CategoriesService';
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
+import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useLocation } from 'react-router-dom';
 import logo from '../../../assets/logo.png';
 import { Divider } from '@mui/material';
-import { GiPayMoney } from 'react-icons/gi';
+import { color } from 'chart.js/helpers';
+import { GiTakeMyMoney } from 'react-icons/gi';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box } from '@mui/material';
-import { MdOutlineFastfood, MdOutlineSchool } from 'react-icons/md';
-import { IoShirtOutline, IoCarSportOutline } from 'react-icons/io5';
-import { RiHome2Line } from 'react-icons/ri';
-import { FaTheaterMasks, FaRegHospital } from 'react-icons/fa';
+import { LiaMoneyCheckAltSolid } from 'react-icons/lia';
 
-export default function PersonalExpensesTracker() {
+export default function PersonalDebtTracker() {
     const [personalExpenses, setPersonalExpenses] = useState([]);
     const [filteredExpenses, setFilteredExpenses] = useState([]);
     const [categories, setCategories] = useState([]);  // Estado para las categorías
-    const [newExpense, setNewExpense] = useState({
-        description: '',
+    const [newDebt, setNewDebt] = useState({
+        creditor: '',
         amount: '',
-        categoryName: '',
-    });  // Estado para el nuevo gasto
+        dueDate: '',
+    });  // Estado para la nueva deuda
     const [open, setIsOpen] = React.useState(false); //Estado para abrir el modal de crear gasto
     const openForm = () => setIsOpen(true); //Settear el estado del modal de crear gasto para abrir
     const closeForm = () => setIsOpen(false); //Settear el estado del modal de crear gasto para cerrar
@@ -165,25 +165,41 @@ export default function PersonalExpensesTracker() {
               <CategoryIcon category={row.categoryName} />
             </div>
           ),
+
           grow: 0.05,
           wrap: true,
           minWidth: '10px',
         },
-        {
-          selector: row => (<strong>{row.description}</strong>),
-          grow: 0.3,
+        { //CREDITOR
+          selector: row => 'CREDITOR',
+          grow: 0.1,
           wrap: true,
-          minWidth: '120px',
+          minWidth: '20px',
         },
-        {
-          selector: row => '-$' + row.amount,
-          grow: 0.2,
-          right: true,
+        { //AMOUNT
+          selector: row => '-$' + 'AMOUNT',
+
+          grow: 0.15,
           wrap: true,
           minWidth: '80px',
         },
-        {
-          selector: row => new Date(row.date).toLocaleString(),
+        { //DATE
+          selector: row => (<strong>DATE</strong>),
+
+          grow: 0.2,
+          wrap: true,
+          minWidth: '80px',
+        },
+        { //DUE DATE
+          selector: row => (<strong>DUE DATE</strong>),
+
+          grow: 0.15,
+          wrap: true,
+          minWidth: '80px',
+        },
+        { //STATUS
+          selector: row => 'STATUS',
+          
           grow: 0.22,
           right: true,
           wrap: true,
@@ -192,29 +208,10 @@ export default function PersonalExpensesTracker() {
         },
       ];      
       
-      const CategoryIcon = ({ category }) => {
-        const iconMap = {
-          Food: <MdOutlineFastfood />,
-          Clothes: <IoShirtOutline />,
-          Transport: <IoCarSportOutline />,
-          Home: <RiHome2Line />,
-          Entertainment: <FaTheaterMasks />,
-          Health: <FaRegHospital />,
-          Education: <MdOutlineSchool />,
-        };
+      const CategoryIcon = () => {
       
-        const categoryColors = {
-          Food: '#ff6347',
-          Clothes: '#4682b4',
-          Transport: '#32cd32',
-          Home: '#ff8c00',
-          Entertainment: '#8a2be2',
-          Health: '#3cb371',
-          Education: '#f4a300',
-        };
-      
-        const icon = iconMap[category] || '❓';
-        const color = categoryColors[category] || '#808080';
+        const icon = <LiaMoneyCheckAltSolid />;
+        const color = '#B1B1B1';
       
         return (
           <div
@@ -317,7 +314,7 @@ export default function PersonalExpensesTracker() {
           zIndex: 1,
         },
         card: {
-          backgroundColor: '#30437A',
+          backgroundColor: '#B1B1B1',
           color: 'white',
           width: '200px',
           height: '140px',
@@ -326,7 +323,7 @@ export default function PersonalExpensesTracker() {
           display: 'flex',
           flexDirection: 'column',
           fontSize: '20px',
-          boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)'
+          boxShadow:'0px 8px 5px rgba(176, 176, 176, 0.2)'
         },
         cardText: {
           fontSize: '20px',
@@ -342,17 +339,17 @@ export default function PersonalExpensesTracker() {
           fontSize: '16px',
           alignSelf: 'center',
           marginTop: '10px',
-          color: '#B0B0B0',
+          color: 'white',
         },
         button: {
           alignSelf: 'flex-end',
           margin: '15px',
           fontSize: '35px',
-          color: '#30437A',
+          color: '#B1B1B1',
         },
         addButton: {
           cursor: 'pointer',
-          border: '1px solid #30437A',
+          border: '1px solid #B1B1B1',
           width: '200px',
           height: '140px',
           margin: '20px 30px',
@@ -399,7 +396,7 @@ export default function PersonalExpensesTracker() {
         title: {
           fontSize: 28,
           fontWeight: 'bold',
-          color: '#30437A',
+          color: '#B1B1B1',
         },
       };
 
@@ -443,7 +440,7 @@ export default function PersonalExpensesTracker() {
       };
       
       const handleNavigation = (text) => {
-        navigate(paths[text] || '/personal-expenses');
+        navigate(paths[text] || '/personal-debt-tracker');
       };
 
     return (        
@@ -477,15 +474,15 @@ export default function PersonalExpensesTracker() {
           <div style={styles.cardContainer}>
             <div style={styles.card}>
                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-                    <text>SPENT</text>
-                    <GiPayMoney style={{ fontSize: '40px'}} />
+                    <text>DEBT</text>
+                    <GiTakeMyMoney style={{ fontSize: '40px'}} />
                 </div>
                 <text style={styles.cardText}>-$50,000</text>
-                <text style={styles.cardSubtitle}>This month's expenses</text>
+                <text style={styles.cardSubtitle}>This month's debt</text>
             </div>
             <div style={styles.addButton} onClick={openForm}>
               <MdOutlineAddToPhotos style={styles.button} />
-              <text style={styles.buttonText}>ADD EXPENSE</text>
+              <text style={styles.buttonText}>ADD DEBT</text>
             </div>
           </div>
             
@@ -504,14 +501,14 @@ export default function PersonalExpensesTracker() {
         <Box sx={styles.modalStyle}>
             <form onSubmit={handleSubmit}>
             <div style={{marginBottom: '20px'}}>
-                <text style={styles.title}>Add Expense</text>
+                <text style={styles.title}>Add Debt</text>
             </div>
             <div>
                 <input style={styles.input}
-                placeholder='Description'
+                placeholder='Creditor'
                 type="text"
-                name="description"
-                value={newExpense.description}
+                name="creditor"
+                value={newDebt.creditor}
                 onChange={handleInputChange}
                 required
                 />
@@ -521,25 +518,20 @@ export default function PersonalExpensesTracker() {
                 placeholder='Amount'
                 type="number"
                 name="amount"
-                value={newExpense.amount}
+                value={newDebt.amount}
                 onChange={handleInputChange}
                 required
                 />
             </div>
             <div>
-                <select style={styles.selector}
-                name="categoryId"
-                value={newExpense.categoryId}
+                <input style={styles.input}
+                placeholder='Due Date'
+                type="date"
+                name="dueDate"
+                value={newDebt.dueDate}
                 onChange={handleInputChange}
                 required
-                >
-                <option value="">Choose a category</option>
-                {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                    {category.name}
-                    </option>
-                ))}
-                </select>
+                />
             </div>
             <Divider style={styles.divider} />
             <div style={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>

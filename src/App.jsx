@@ -8,6 +8,10 @@ import BusinessLogin from './components/Empresarial/managment/BusinessLogin';
 import CreateBusinessAccount from './components/Empresarial/managment/CreateBusinessAccount';
 import ChooseBusiness from './components/Empresarial/managment/ChooseBusiness';
 import PersonalBudgetPlanner from './components/Personal/loggedViewsPersonal/PersonalBudgetPlanner';
+import PersonalDebtTracker from './components/Personal/loggedViewsPersonal/PersonalDebtTracker';
+import PersonalSavingTracker from './components/Personal/loggedViewsPersonal/PersonalSavingTracker';
+import PersonalGraphics from './components/Personal/loggedViewsPersonal/PersonalGraphics';
+import PersonalProfile from './components/Personal/loggedViewsPersonal/PersonalProfile';
 import logo from './assets/logo.png';
 
 function Home() {
@@ -66,6 +70,10 @@ function App() {
                     <Route path="/create-personal-account" element={<CreatePersonalAccount />} />
                     <Route path="/personal-budget-planner" element={<PersonalBudgetPlanner />} />
                     <Route path="/personal-expenses" element={<PersonalExpensesTracker />} />
+                    <Route path="/personal-debt-tracker" element={<PersonalDebtTracker />} />
+                    <Route path="/personal-saving-tracker" element={<PersonalSavingTracker />} />
+                    <Route path="/personal-graphics" element={<PersonalGraphics />} />
+                    <Route path="/personal-profile" element={<PersonalProfile />} />
                 </Routes>
             </Router>
         </AuthProvider>

@@ -7,12 +7,7 @@ import { GiReceiveMoney } from 'react-icons/gi';
 import { GiPayMoney } from 'react-icons/gi';
 import { GiMoneyStack } from 'react-icons/gi';
 
-const data = [
-  { name: 'EXPENSES', value: 15000, color: '#30437A' },
-  { name: 'INCOME', value: 50000, color: '#3DC9A7' },
-];
-
-export default function PersonalBudgetPlanner() {
+export default function PersonalProfile() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -127,7 +122,7 @@ export default function PersonalBudgetPlanner() {
   };
   
   const handleNavigation = (text) => {
-    navigate(paths[text] || '/personal-budget-planner');
+    navigate(paths[text] || '/personal-profile');
   };
   
   return (
@@ -176,19 +171,6 @@ export default function PersonalBudgetPlanner() {
 
         <div style={styles.pieContainer}>
           <h3 style={styles.title}>TOTAL BALANCE</h3>
-          <PieChart width={300} height={300}>
-            <Pie data={data} cx={150} cy={150} innerRadius={80} outerRadius={120} dataKey="value">
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Legend align='left' 
-                verticalAlign='middle' 
-                layout='vertical'
-                iconType='plainline'
-                iconSize={15}
-                wrapperStyle={{ top: 100, left: 500, right: 0, display: 'flex', justifyContent: 'flex-start' }} />
-          </PieChart>
         </div>
       </div>
     </div>
