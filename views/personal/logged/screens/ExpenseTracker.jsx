@@ -1,234 +1,183 @@
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { getPersonalExpensesByUserId, getAllCategories, createPersonalExpense } from '../../../../src/api/axios';
-import { DataTable, Portal, Modal, TextInput, Button, HelperText, List, Divider, TouchableRipple } from 'react-native-paper';
+import { DataTable, Portal, Modal, TextInput, Button, HelperText, List, TouchableRipple } from 'react-native-paper';
 
 export default function ExpenseTracker() {
     const { userId } = useAuth();
+    const monthScrollRef = useRef(null);
+
     const [personalExpenses, setPersonalExpenses] = useState([]);
     const [filteredExpenses, setFilteredExpenses] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [visible, setVisible] = useState(false);
-    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [totalAmount, setTotalAmount] = useState(0);
-    const [newExpense, setNewExpense] = useState({
-        description: '',
-        amount: '',
-        categoryId: '',
-    });
+    const [months, setMonths] = useState([]);
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [newExpense, setNewExpense] = useState({ description: '', amount: '' });
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    const getMonthName = (date) => {
-        const monthNames = [
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-        ];
-        return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-    };
+    const isSameMonth = (date1, date2) =>
+        date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
 
-    const filterExpensesByMonth = (expenses, date) => {
-        return expenses.filter(expense => {
-            const expenseDate = new Date(expense.date);
-            return expenseDate.getMonth() === date.getMonth() && 
-                   expenseDate.getFullYear() === date.getFullYear();
-        });
-    };
-
-    const calculateTotalAmount = (expenses) => {
-        return expenses.reduce((total, expense) => total + parseFloat(expense.amount), 0);
-    };
-
-    const changeMonth = (direction) => {
-        const newDate = new Date(selectedDate);
-        newDate.setMonth(newDate.getMonth() + direction);
-        setSelectedDate(newDate);
-    };
-
-    useEffect(() => {
-        if (personalExpenses.length > 0) {
-            const filtered = filterExpensesByMonth(personalExpenses, selectedDate);
-            setFilteredExpenses(filtered);
-            setTotalAmount(calculateTotalAmount(filtered));
-            console.log('Gastos filtrados para', getMonthName(selectedDate), ':', filtered);
-        }
-    }, [selectedDate, personalExpenses]);
-
-    const fetchPersonalExpenses = async () => {
-        if (!userId) {
-            console.warn('No userId found');
-            return;
-        }
-
+    const fetchData = async () => {
+        if (!userId) return;
         try {
-            const response = await getPersonalExpensesByUserId(userId);
-            console.log('Gastos personales obtenidos:', response);
-
-            if (!response || !Array.isArray(response)) {
-                console.warn('No hay gastos registrados para este usuario.');
-                setPersonalExpenses([]);
-                return;
-            }
-
-            const fetchedExpenses = response.map(expense => ({
-                ...expense,
-                categoryName: expense.categoryName || 'Sin categoría',
-            }));
-
-            setPersonalExpenses(fetchedExpenses);
-
-            // Establecer la fecha inicial al mes más reciente con gastos
-            if (fetchedExpenses.length > 0) {
-                const dates = fetchedExpenses.map(expense => new Date(expense.date));
-                const mostRecentDate = new Date(Math.max(...dates));
-                setSelectedDate(mostRecentDate);
-            }
-
-        } catch (error) {
-            console.error('Error al obtener los gastos personales:', error);
+            const [expensesData, categoriesData] = await Promise.all([
+                getPersonalExpensesByUserId(userId),
+                getAllCategories()
+            ]);
+            const expenses = Array.isArray(expensesData) ? expensesData.map(exp => ({
+                ...exp,
+                categoryName: exp.categoryName || 'Sin categoría'
+            })) : [];
+            setPersonalExpenses(expenses);
+            setCategories(categoriesData || []);
+        } catch (err) {
+            console.error('Error en fetchData:', err);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        console.log('UserId actual:', userId);
-        fetchPersonalExpenses();
-
-        const fetchCategories = async () => {
-            try {
-                const data = await getAllCategories();
-                setCategories(data);
-            } catch (error) {
-                console.error('Error al obtener las categorías:', error);
-            }
-        };
-
-        fetchCategories();
+        fetchData();
+        generateMonths(new Date()); // Al iniciar carga el rango de meses centrado en el mes actual
     }, [userId]);
 
-    const handleCreateExpense = async () => {
-        if (!newExpense.description || !newExpense.amount || !selectedCategory) {
-            setError('Por favor, complete todos los campos');
-            return;
-        }
+    useEffect(() => {
+        const filtered = personalExpenses.filter(exp => isSameMonth(new Date(exp.date), selectedDate));
+        setFilteredExpenses(filtered);
+        const total = filtered.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+        setTotalAmount(total);
+    }, [personalExpenses, selectedDate]);
 
-        if (!userId) {
-            setError('No se encontró el ID del usuario');
-            return;
+    const generateMonths = (centerDate) => {
+        const generatedMonths = Array.from({ length: 11 }, (_, i) => {
+            const date = new Date(centerDate);
+            date.setMonth(centerDate.getMonth() - 5 + i);
+            return {
+                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+                date
+            };
+        });
+        setMonths(generatedMonths);
+
+        // Centrar visualmente el mes actual en el ScrollView
+        setTimeout(() => {
+            monthScrollRef.current?.scrollTo({ x: 115 * 5, animated: true });
+        }, 50);
+    };
+
+    const handleSelectMonth = (date) => {
+        setSelectedDate(date);
+        generateMonths(date); // Al seleccionar un mes, regeneras el rango
+    };
+
+    const handleExpenseChange = (field, value) => {
+        setNewExpense(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleCreateExpense = async () => {
+        const { description, amount } = newExpense;
+        if (!description || !amount || !selectedCategory) {
+            return setError('Please fill all fields');
         }
 
         try {
-            console.log('Creando gasto para el usuario:', userId);
-
-            const expenseData = {
-                description: newExpense.description,
-                amount: parseFloat(newExpense.amount),
+            await createPersonalExpense({
+                description,
+                amount: parseFloat(amount),
                 categoryId: selectedCategory.id,
-                userId: userId,
-            };
-
-            console.log('Datos completos a enviar:', JSON.stringify(expenseData, null, 2));
-            await createPersonalExpense(expenseData);
-            setVisible(false);
-            setNewExpense({
-                description: '',
-                amount: '',
-                categoryId: ''
+                userId
             });
-            setSelectedCategory(null);
-            fetchPersonalExpenses();
-        } catch (error) {
-            console.error('Error al crear el gasto:', error);
-            setError('Error al crear el gasto. Por favor, intente nuevamente.');
+            closeModal();
+            fetchData();
+        } catch (err) {
+            console.error(err);
+            setError('Error creating expense.');
         }
     };
 
-    if (loading) {
-        return (
-            <View style={styles.container}>
-                <Text>Cargando gastos...</Text>
-            </View>
-        );
-    }
+    const openModal = () => {
+        setModalVisible(true);
+        setError('');
+    };
+
+    const closeModal = () => {
+        setModalVisible(false);
+        setNewExpense({ description: '', amount: '' });
+        setSelectedCategory(null);
+        setError('');
+    };
+
+    if (loading) return <View style={styles.container}><Text>Cargando...</Text></View>;
 
     return (
         <View style={styles.container}>
-            <View style={styles.monthSelector}>
-                <TouchableOpacity onPress={() => changeMonth(-1)}>
-                    <Text style={styles.monthArrow}>{'<'}</Text>
-                </TouchableOpacity>
-                
-                <Text style={styles.monthText}>
-                    {getMonthName(selectedDate)}
-                </Text>
 
-                <TouchableOpacity onPress={() => changeMonth(1)}>
-                    <Text style={styles.monthArrow}>{'>'}</Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.summaryCard}>
-                <Text style={styles.summaryLabel}>Gastado</Text>
-                <Text style={styles.summaryAmount}>-${totalAmount.toFixed(2)}</Text>
-                <Text style={styles.summarySubtext}>Gasto del mes</Text>
-            </View>
-
-            <Button 
-                mode="contained" 
-                onPress={() => setVisible(true)}
-                style={styles.addButton}
+            <View>
+{/* Meses */}
+<ScrollView
+                ref={monthScrollRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.monthTabs}
             >
-                Agregar Gasto
-            </Button>
+                {months.map((month, index) => (
+                    <TouchableOpacity key={index} onPress={() => handleSelectMonth(new Date(month.date))}>
+                        <Text style={[
+                            styles.monthItem,
+                            isSameMonth(selectedDate, new Date(month.date)) && styles.activeMonth
+                        ]}>
+                            {month.label}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
 
+            {/* Resumen */}
+            <View style={styles.summaryCard}>
+                <Text style={styles.summaryLabel}>Spent</Text>
+                <Text style={styles.summaryAmount}>-${totalAmount.toFixed(2)}</Text>
+                <Text style={styles.summarySubtext}>Monthly Expense</Text>
+            </View>
+            </View>
+            
+
+            {/* Botón agregar */}
+            <Button mode="contained" onPress={openModal} style={styles.addButton}>Add Expense</Button>
+
+            {/* Modal */}
             <Portal>
-                <Modal
-                    visible={visible}
-                    onDismiss={() => setVisible(false)}
-                    contentContainerStyle={styles.modal}
-                >
-                    <Text style={styles.modalTitle}>Nuevo Gasto</Text>
-                    
-                    <TextInput
-                        label="Descripción"
-                        value={newExpense.description}
-                        onChangeText={(text) => setNewExpense({...newExpense, description: text})}
-                        style={styles.input}
-                    />
+                <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
+                    <Text style={styles.modalTitle}>New Expense</Text>
 
-                    <TextInput
-                        label="Monto"
-                        value={newExpense.amount}
-                        onChangeText={(text) => setNewExpense({...newExpense, amount: text})}
-                        keyboardType="numeric"
-                        style={styles.input}
-                    />
+                    <TextInput label="Description" value={newExpense.description} onChangeText={(text) => handleExpenseChange('description', text)} style={styles.input} />
+                    <TextInput label="Amount" value={newExpense.amount} onChangeText={(text) => handleExpenseChange('amount', text)} keyboardType="numeric" style={styles.input} />
 
                     <TouchableRipple onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}>
                         <View style={styles.categorySelector}>
-                            <Text style={styles.categoryLabel}>
-                                {selectedCategory ? selectedCategory.name : 'Seleccionar Categoría'}
-                            </Text>
+                            <Text>{selectedCategory ? selectedCategory.name : 'Select Category'}</Text>
                         </View>
                     </TouchableRipple>
 
                     {showCategoryDropdown && (
                         <View style={styles.categoryDropdown}>
-                            {categories.map((category) => (
-                                <React.Fragment key={category.id}>
-                                    <List.Item
-                                        title={category.name}
-                                        onPress={() => {
-                                            setSelectedCategory(category);
-                                            setShowCategoryDropdown(false);
-                                        }}
-                                    />
-                                    <Divider />
-                                </React.Fragment>
+                            {categories.map(category => (
+                                <List.Item
+                                    key={category.id}
+                                    title={category.name}
+                                    onPress={() => {
+                                        setSelectedCategory(category);
+                                        setShowCategoryDropdown(false);
+                                    }}
+                                />
                             ))}
                         </View>
                     )}
@@ -236,130 +185,127 @@ export default function ExpenseTracker() {
                     {error ? <HelperText type="error">{error}</HelperText> : null}
 
                     <View style={styles.modalButtons}>
-                        <Button onPress={() => setVisible(false)}>Cancelar</Button>
-                        <Button mode="contained" onPress={handleCreateExpense}>
-                            Guardar
-                        </Button>
+                        <Button onPress={closeModal}>Cancel</Button>
+                        <Button mode="contained" onPress={handleCreateExpense}>Save</Button>
                     </View>
                 </Modal>
             </Portal>
 
-            <ScrollView horizontal>
+            {/* Tabla de gastos */}
+            <View style={styles.tableContainer}>
                 <DataTable>
-                    <DataTable.Header>
-                        <DataTable.Title>Descripción</DataTable.Title>
-                        <DataTable.Title numeric>Monto</DataTable.Title>
-                        <DataTable.Title>Categoría</DataTable.Title>
-                        <DataTable.Title>Fecha</DataTable.Title>
+                    <DataTable.Header style={styles.tableHeader}>
+                        <DataTable.Title textStyle={styles.tableHeaderText}>Description</DataTable.Title>
+                        <DataTable.Title numeric textStyle={styles.tableHeaderText}>Amount</DataTable.Title>
+                        <DataTable.Title textStyle={styles.tableHeaderText}>Category</DataTable.Title>
+                        <DataTable.Title textStyle={styles.tableHeaderText}>Date</DataTable.Title>
                     </DataTable.Header>
 
-                    {filteredExpenses.map((expense, index) => (
-                        <DataTable.Row key={expense.id || index}>
-                            <DataTable.Cell>{expense.description}</DataTable.Cell>
-                            <DataTable.Cell numeric>-${expense.amount}</DataTable.Cell>
-                            <DataTable.Cell>{expense.categoryName}</DataTable.Cell>
-                            <DataTable.Cell>
-                                {new Date(expense.date).toLocaleDateString()}
-                            </DataTable.Cell>
-                        </DataTable.Row>
-                    ))}
+                    <ScrollView>
+                        {filteredExpenses.map((exp, idx) => (
+                            <DataTable.Row key={exp.id || idx} style={styles.tableRow}>
+                                <DataTable.Cell textStyle={styles.tableCell}>{exp.description}</DataTable.Cell>
+                                <DataTable.Cell numeric textStyle={styles.tableCell}>-${exp.amount}</DataTable.Cell>
+                                <DataTable.Cell textStyle={styles.tableCell}>{exp.categoryName}</DataTable.Cell>
+                                <DataTable.Cell textStyle={styles.tableCell}>{new Date(exp.date).toLocaleDateString()}</DataTable.Cell>
+                            </DataTable.Row>
+                        ))}
+                    </ScrollView>
                 </DataTable>
-            </ScrollView>
+            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 16,
-        backgroundColor: '#fff',
-    },
-    header: {
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#41416e',
-    },
-    monthSelector: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-        paddingHorizontal: 20,
-    },
-    monthArrow: {
-        fontSize: 24,
-        color: '#41416e',
-    },
-    monthText: {
-        fontSize: 18,
-        fontWeight: '500',
-        color: '#41416e',
-    },
+    container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
+
+    monthTabs: { flexDirection: 'row', marginBottom: 20 },
+    monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
+    activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
+
     summaryCard: {
         backgroundColor: '#41416e',
-        borderRadius: 12,
-        padding: 20,
-        marginBottom: 20,
+        borderRadius: 16,
+        padding: 24,
+        marginBottom: 5,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 4
     },
-    summaryLabel: {
-        color: '#fff',
-        fontSize: 16,
-        marginBottom: 8,
-    },
-    summaryAmount: {
-        color: '#fff',
-        fontSize: 32,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    summarySubtext: {
-        color: '#fff',
-        fontSize: 14,
-        opacity: 0.8,
-    },
+    summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
+    summaryAmount: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginBottom: 4 },
+    summarySubtext: { color: '#ddd', fontSize: 14 },
+
     addButton: {
-        marginBottom: 16,
+        marginVertical: 20,
+        backgroundColor: '#00C897',
+        borderRadius: 12,
+        paddingVertical: 10
     },
+
     modal: {
-        backgroundColor: 'white',
-        padding: 20,
-        margin: 20,
-        borderRadius: 8,
+        backgroundColor: '#fff',
+        padding: 24,
+        marginHorizontal: 16,
+        borderRadius: 16,
+        elevation: 5
     },
     modalTitle: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 16,
+        color: '#41416e',
+        marginBottom: 20,
+        textAlign: 'center'
     },
     input: {
-        marginBottom: 12,
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        marginTop: 16,
-        gap: 8,
+        marginBottom: 16,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        elevation: 1
     },
     categorySelector: {
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 4,
-        padding: 12,
-        marginBottom: 12,
-    },
-    categoryLabel: {
-        fontSize: 16,
-        color: '#000',
+        borderRadius: 8,
+        padding: 16,
+        marginBottom: 16,
+        backgroundColor: '#fff'
     },
     categoryDropdown: {
         maxHeight: 200,
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 4,
-        marginBottom: 12,
+        borderRadius: 8,
+        backgroundColor: '#fff',
+        marginBottom: 16
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20
+    },
+
+    tableContainer: {
+        borderRadius: 12,
+        backgroundColor: '#fff',
+        overflow: 'hidden',
+        marginBottom: 30
+    },
+    tableHeader: {
+        backgroundColor: '#f1f3f5'
+    },
+    tableHeaderText: {
+        fontWeight: 'bold',
+        color: '#41416e'
+    },
+    tableRow: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#f1f3f5'
+    },
+    tableCell: {
+        color: '#495057',
+        fontSize: 14
     },
 });

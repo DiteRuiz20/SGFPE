@@ -115,4 +115,44 @@ export const createPersonalExpense = async (expenseData) => {
     }
 };
 
+export const getDebtsByUserId = async (userId) => {
+    try {
+        const response = await api.get(`/api/personal/debts/user/${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching debts:', error);
+        throw error;
+    }
+};
+
+export const createDebt = async (debtData) => {
+    try {
+        const response = await api.post('/api/personal/debts', debtData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating debt:', error);
+        throw error;
+    }
+};
+
+export const updateDebt = async (debtId, debtData) => {
+    try {
+        const response = await api.put(`/api/personal/debts/${debtId}`, debtData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating debt:', error);
+        throw error;
+    }
+};
+
+export const deleteDebt = async (debtId) => {
+    try {
+        const response = await api.delete(`/api/personal/debts/${debtId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting debt:', error);
+        throw error;
+    }
+};
+
 export default api;
