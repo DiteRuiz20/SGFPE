@@ -3,6 +3,7 @@ package com.utez.mx.sgfpe.models.personal;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.annotation.CreatedDate;
 import org.bson.types.ObjectId;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -16,6 +17,8 @@ public class Saving {
 
     private String userId; // ID of the user who saved this amount
     private BigDecimal amount; // Amount saved
+
+    @CreatedDate
     private Instant date; // Date when the saving was made
     private String description; // Description or purpose of the saving
 

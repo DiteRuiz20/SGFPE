@@ -3,6 +3,7 @@ package com.utez.mx.sgfpe.models.personal;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.annotation.CreatedDate;
 import org.bson.types.ObjectId;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -17,15 +18,16 @@ public class Debt {
     private String userId; // ID of the user who owes this debt
     private String creditor; // Entity or person to whom the debt is owed
     private BigDecimal amount; // Amount of the debt
+    @CreatedDate
     private Instant dueDate; // Date by which the debt should be repaid
-    private String status; // Status of the debt: "pending", "paid"
+    private DebtStatus status; // Status of the debt: PENDING, PAID, OVERDUE, CANCELLED
 
     // Default constructor required by MongoDB
     public Debt() {
     }
 
     // Constructor with all attributes for easy instantiation
-    public Debt(String userId, String creditor, BigDecimal amount, Instant dueDate, String status) {
+    public Debt(String userId, String creditor, BigDecimal amount, Instant dueDate, DebtStatus status) {
         this.userId = userId;
         this.creditor = creditor;
         this.amount = amount;
@@ -73,11 +75,11 @@ public class Debt {
         this.dueDate = dueDate;
     }
 
-    public String getStatus() {
+    public DebtStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(DebtStatus status) {
         this.status = status;
     }
 }

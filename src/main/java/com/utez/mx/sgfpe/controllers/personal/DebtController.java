@@ -47,6 +47,13 @@ public class DebtController {
         }
     }
 
+    //Get debts by userId
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Debt>> getDebtsByUserId(@PathVariable String userId) {
+        List<Debt> debts = debtService.getDebtsByUser(userId);
+        return ResponseEntity.ok(debts);
+    }
+
     // Delete a debt by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDebt(@PathVariable String id) {
