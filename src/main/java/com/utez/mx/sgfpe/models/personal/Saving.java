@@ -13,7 +13,7 @@ import java.time.Instant;
 public class Saving {
 
     @Id
-    private ObjectId id; // Unique identifier for each saving
+    private String id; // Unique identifier for each saving
 
     private String userId; // ID of the user who saved this amount
     private BigDecimal amount; // Amount saved
@@ -34,11 +34,11 @@ public class Saving {
         this.description = description;
     }
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 
