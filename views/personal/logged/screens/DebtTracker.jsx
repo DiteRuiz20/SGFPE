@@ -44,32 +44,39 @@ export default function DebtTracker() {
     }
   };
 
-  useEffect(() => { fetchData(); }, [userId]);
+  const generateMonths = (centerDate) => {
+    const generatedMonths = Array.from({ length: 11 }, (_, i) => {
+      const date = new Date(centerDate);
+      date.setMonth(centerDate.getMonth() - 5 + i);
+      return {
+        label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+        date
+      };
+    });
+    setMonths(generatedMonths);
 
+    // Centrar el mes seleccionado en la posición 5
+    setTimeout(() => {
+      monthScrollRef.current?.scrollTo({ x: 115 * 5, animated: true });
+    }, 50);
+  };
+
+  useEffect(() => {
+    fetchData();
+    generateMonths(new Date());
+  }, [userId]);
+
+  const handleSelectMonth = (date) => {
+    setSelectedDate(date);
+    generateMonths(date);  // ✅ Recalcula y centra el mes seleccionado
+  };
+  
   useEffect(() => {
     const filtered = debts.filter(debt => isSameMonth(debt.date, selectedDate));
     setFilteredDebts(filtered);
     const total = filtered.reduce((sum, debt) => sum + debt.amount, 0);
     setTotalAmount(total);
   }, [debts, selectedDate]);
-
-  useEffect(() => {
-    const generatedMonths = Array.from({ length: 12 }, (_, i) => {
-      const date = new Date();
-      date.setMonth(date.getMonth() - 5 + i);
-      return { label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`, date };
-    });
-    setMonths(generatedMonths);
-
-    const today = new Date();
-    const currentMonthIndex = generatedMonths.findIndex(month => isSameMonth(month.date, today));
-    if (currentMonthIndex !== -1) {
-      setTimeout(() => {
-        monthScrollRef.current?.scrollTo({ x: currentMonthIndex * 115, animated: true });
-        setSelectedDate(generatedMonths[currentMonthIndex].date);
-      }, 50);
-    }
-  }, []);
 
   const handleDebtChange = (field, value) => {
     setNewDebt(prev => ({ ...prev, [field]: value }));
@@ -156,22 +163,25 @@ export default function DebtTracker() {
 
   return (
     <View style={styles.container}>
-      {/* Selector de Mes */}
-      <ScrollView ref={monthScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.monthTabs}>
-        {months.map((month, index) => (
-          <TouchableOpacity key={index} onPress={() => setSelectedDate(month.date)}>
-            <Text style={[styles.monthItem, isSameMonth(selectedDate, month.date) && styles.activeMonth]}>
-              {month.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
 
-      {/* Resumen */}
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryLabel}>Total Debts</Text>
-        <Text style={styles.summaryAmount}>${totalAmount.toFixed(2)}</Text>
-        <Text style={styles.summarySubtext}>This Month</Text>
+      <View>
+        {/* Selector de Mes */}
+        <ScrollView ref={monthScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.monthTabs}>
+          {months.map((month, index) => (
+            <TouchableOpacity key={index} onPress={() => handleSelectMonth(new Date(month.date))}>
+              <Text style={[styles.monthItem, isSameMonth(selectedDate, month.date) && styles.activeMonth]}>
+                {month.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Resumen */}
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Total Debts</Text>
+          <Text style={styles.summaryAmount}>${totalAmount.toFixed(2)}</Text>
+          <Text style={styles.summarySubtext}>This Month</Text>
+        </View>
       </View>
 
       {/* Tabla de deudas */}

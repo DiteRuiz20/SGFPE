@@ -122,33 +122,33 @@ export default function ExpenseTracker() {
         <View style={styles.container}>
 
             <View>
-{/* Meses */}
-<ScrollView
-                ref={monthScrollRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.monthTabs}
-            >
-                {months.map((month, index) => (
-                    <TouchableOpacity key={index} onPress={() => handleSelectMonth(new Date(month.date))}>
-                        <Text style={[
-                            styles.monthItem,
-                            isSameMonth(selectedDate, new Date(month.date)) && styles.activeMonth
-                        ]}>
-                            {month.label}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
+                {/* Meses */}
+                <ScrollView
+                    ref={monthScrollRef}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.monthTabs}
+                >
+                    {months.map((month, index) => (
+                        <TouchableOpacity key={index} onPress={() => handleSelectMonth(new Date(month.date))}>
+                            <Text style={[
+                                styles.monthItem,
+                                isSameMonth(selectedDate, new Date(month.date)) && styles.activeMonth
+                            ]}>
+                                {month.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
 
-            {/* Resumen */}
-            <View style={styles.summaryCard}>
-                <Text style={styles.summaryLabel}>Spent</Text>
-                <Text style={styles.summaryAmount}>-${totalAmount.toFixed(2)}</Text>
-                <Text style={styles.summarySubtext}>Monthly Expense</Text>
+                {/* Resumen */}
+                <View style={styles.summaryCard}>
+                    <Text style={styles.summaryLabel}>Spent</Text>
+                    <Text style={styles.summaryAmount}>-${totalAmount.toFixed(2)}</Text>
+                    <Text style={styles.summarySubtext}>Monthly Expense</Text>
+                </View>
             </View>
-            </View>
-            
+
 
             {/* Botón agregar */}
             <Button mode="contained" onPress={openModal} style={styles.addButton}>Add Expense</Button>

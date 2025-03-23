@@ -31,8 +31,7 @@ export default function Graphics() {
 
     // ✅ Refresca la gráfica cada que entras a la pantalla
     useFocusEffect(
-        useCallback(() => {
-            fetchData();
+        useCallback(() => {fetchData();
         }, [userId])
     );
 
@@ -43,28 +42,26 @@ export default function Graphics() {
 
     // ✅ Generar meses y mover el scroll al mes actual
     useEffect(() => {
-        const generatedMonths = Array.from({ length: 12 }, (_, i) => {
-            const date = new Date();
-            date.setMonth(date.getMonth() - 5 + i);
+        generateMonths(new Date()); // Al cargar por primera vez centra el mes actual
+    }, []);
+    
+    const generateMonths = (centerDate) => {
+        const generatedMonths = Array.from({ length: 11 }, (_, i) => {
+            const date = new Date(centerDate);
+            date.setMonth(centerDate.getMonth() - 5 + i);
             return {
                 label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
                 date
             };
         });
-
         setMonths(generatedMonths);
-
-        const currentMonthIndex = generatedMonths.findIndex(month => isSameMonth(new Date(month.date), selectedDate));
-
-        if (currentMonthIndex !== -1) {
-            setTimeout(() => {
-                monthScrollRef.current?.scrollTo({
-                    x: currentMonthIndex * 115, // Ajusta según tu diseño
-                    animated: true
-                });
-            }, 50);
-        }
-    }, [selectedDate]);
+    
+        // Centra el mes seleccionado en la posición 5
+        setTimeout(() => {
+            monthScrollRef.current?.scrollTo({ x: 115 * 5, animated: true });
+        }, 50);
+    };
+    
 
     const isSameMonth = (date1, date2) =>
         date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
@@ -104,7 +101,10 @@ export default function Graphics() {
                     {months.map((month, index) => (
                         <TouchableOpacity
                             key={index}
-                            onPress={() => setSelectedDate(new Date(month.date))}
+                            onPress={() => {
+                                setSelectedDate(new Date(month.date));
+                                generateMonths(new Date(month.date)); // ✅ Recalcula meses y centra
+                            }}
                             style={styles.monthItemContainer}
                         >
                             <Text style={[
