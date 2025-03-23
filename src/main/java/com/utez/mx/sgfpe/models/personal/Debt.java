@@ -19,6 +19,8 @@ public class Debt {
     private String creditor; // Entity or person to whom the debt is owed
     private BigDecimal amount; // Amount of the debt
     @CreatedDate
+    private Instant date; // Date when the debt was created
+    
     private Instant dueDate; // Date by which the debt should be repaid
     private DebtStatus status; // Status of the debt: PENDING, PAID, OVERDUE, CANCELLED
 
@@ -27,10 +29,11 @@ public class Debt {
     }
 
     // Constructor with all attributes for easy instantiation
-    public Debt(String userId, String creditor, BigDecimal amount, Instant dueDate, DebtStatus status) {
+    public Debt(String userId, String creditor, BigDecimal amount, Instant date, Instant dueDate, DebtStatus status) {
         this.userId = userId;
         this.creditor = creditor;
         this.amount = amount;
+        this.date = date;
         this.dueDate = dueDate;
         this.status = status;
     }
@@ -81,5 +84,13 @@ public class Debt {
 
     public void setStatus(DebtStatus status) {
         this.status = status;
+    }
+
+    public Instant getDate() {
+        return date;
+    }
+
+    public void setDate(Instant date) {
+        this.date = date;
     }
 }
