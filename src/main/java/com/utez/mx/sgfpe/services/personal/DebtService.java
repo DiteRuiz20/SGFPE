@@ -33,9 +33,22 @@ public class DebtService {
         return debtRepository.findByStatus(status);
     }
 
-    // Save or update a debt
     public Debt saveOrUpdateDebt(Debt debt) {
-        return debtRepository.save(debt);
+        if (debt.getId() == null) {
+            // Es un create
+            return debtRepository.save(debt);
+        } else {
+            // Es un update
+            Optional<Debt> existing = debtRepository.findById(debt.getId());
+            if (existing.isPresent()) {
+                Debt existingDebt = existing.get();
+                // Mantienes la fecha original
+                debt.setDate(existingDebt.getDate());
+                return debtRepository.save(debt);
+            } else {
+                throw new IllegalArgumentException("Debt with id " + debt.getId() + " not found");
+            }
+        }
     }
 
     // Delete debt by ID
