@@ -244,6 +244,7 @@ export default function PersonalExpensesTracker() {
           justifyContent: 'center',
           backgroundColor: 'white',
           width: '100vw',
+          height: '100vh',
         },
         bodyContainer: {
           display: 'flex',
@@ -252,6 +253,7 @@ export default function PersonalExpensesTracker() {
           justifyContent: 'space-between',
           backgroundColor: 'white',
           width: '80%',
+          marginTop: '50px',
           paddingTop: '30px',
         },
         divider: {
@@ -269,16 +271,14 @@ export default function PersonalExpensesTracker() {
         },
         header: {
           backgroundColor: 'white',
-          position: 'sticky',
-          marginTop: '30px',
-          top: 0,
+          position: 'fixed',
+          top: 30,
           display: 'flex',
           alignSelf: 'center',
           alignItems: 'center',
           justifyContent: 'center',
           flexDirection: 'column',
           width: '100vw',
-          marginBottom: '30px',
           zIndex: 10,
         },
         navLink: (path) => ({
