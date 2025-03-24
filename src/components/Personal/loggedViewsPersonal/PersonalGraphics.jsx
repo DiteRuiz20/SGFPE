@@ -82,10 +82,32 @@ export default function PersonalGraphics() {
       justifyContent: 'center',
       backgroundColor: 'white',
       width: '100vw',
+      height: '100vh',
+    },
+    bodyContainer: {
+      marginLeft: '-160px',
+      marginTop: '170px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'white',
+      width: '90%',
+    },
+    divider: {
+      width: '100%',
+      height: 2,
+      backgroundColor: '#EAEAEA',
+      marginTop: 20,
+    },
+    menu: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '80%',
+      marginBottom: '30px'
     },
     header: {
-      backgroundColor: 'white',
-      position: 'sticky',
+      position: 'fixed',
       marginTop: '30px',
       top: 0,
       display: 'flex',
@@ -94,8 +116,6 @@ export default function PersonalGraphics() {
       justifyContent: 'center',
       flexDirection: 'column',
       width: '100vw',
-      marginBottom: '30px',
-      zIndex: 10,
     },
     navLink: (path) => ({
       cursor: 'pointer',
@@ -119,40 +139,37 @@ export default function PersonalGraphics() {
       color: '#000',
       borderBottom: '2px solid #4AD8C2',
     },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: '#30437A',
+      marginBottom: 20,
+    },
+    cardContainer: {
+      flexDirection: 'column',
+      justifyContent: 'left',
+      alignItems: 'left',
+    },
     pieContainer: {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       width: '100%',
-      zIndex: 1,
-    },
-    divider: {
-      width: '100%',
-      height: 2,
-      backgroundColor: '#EAEAEA',
-      marginTop: 20,
-    },
-    menu: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: '80%',
-      marginBottom: '30px'
     },
     expensesTitle: {
+      marginLeft: '160px',
       fontSize: 28,
       fontWeight: 'bold',
       color: '#30437A',
     },
-    debtsTitle: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: '#B1B1B1',
-    },
-    savingsTitle: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: '#3DC9A7',
+    button: {
+      marginTop: '-30px',
+      marginBottom: '-40px',
+      marginRight: '30px',
+      alignSelf: 'flex-end',
+      width: '20%',
+      cursor: 'pointer',
+      zIndex:10
     },
   };
 
@@ -171,107 +188,86 @@ export default function PersonalGraphics() {
 
   return (
     <div style={styles.container}>
-        <div style={styles.header}>
-          <div style={styles.menu}>
-            <img src={logo} alt="Logo" style={{ width: '90px' }} />
-            {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-              <span
-                key={index}
-                style={styles.navLink(paths[text])}
-                onClick={() => handleNavigation(text)}
-              >
+      <div style={styles.header}>
+        <div style={styles.menu}>
+          <img src={logo} alt="Logo" style={{ width: '90px' }} />
+          {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
+            <span
+              key={index}
+              style={styles.navLink(paths[text])}
+              onClick={() => handleNavigation(text)}
+            >
               {text}
-              </span>
-            ))}
-          </div>
-      
-          <div style={styles.datePicker}>
-            {['December 2024', 'January 2025', 'February 2025', 'March 2025', 'April 2025'].map((month, index) => (
-              <span key={index} style={index === 1 ? { ...styles.dateItem, ...styles.activeDate } : styles.dateItem}>
-                {month}
-              </span>
-            ))}
-          </div>
-      
-          <Divider style={styles.divider} />
+            </span>
+          ))}
+
         </div>
 
-      <div style={styles.pieContainer}>
-        <text style={styles.debtsTitle}>DEBTS</text>
-        <PieChart width={400} height={400}>
-          <Pie
-            data={categoryData()}
-            dataKey="value"
-            nameKey="name"
-            cx={200}
-            cy={200}
-            innerRadius={80}
-            outerRadius={120}
-            fill="#8884d8"
-            label
-          >
-            {categoryData().map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Legend align='left' 
-            verticalAlign='middle' 
-            layout='vertical'
-            iconType='plainline'
-            iconSize={15}
-            wrapperStyle={{ top: 100, left: 500, right: 0, display: 'flex', justifyContent: 'flex-start' }} />
-        </PieChart>
+        <div style={styles.datePicker}>
+          {['December 2024', 'January 2025', 'February 2025', 'March 2025', 'April 2025'].map((month, index) => (
+            <span key={index} style={index === 1 ? { ...styles.dateItem, ...styles.activeDate } : styles.dateItem}>
+              {month}
+            </span>
+          ))}
+        </div>
 
-        <text style={styles.savingsTitle}>SAVINGS</text>
-        <PieChart width={400} height={400}>
-          <Pie
-            data={categoryData()}
-            dataKey="value"
-            nameKey="name"
-            cx={200}
-            cy={200}
-            innerRadius={80}
-            outerRadius={120}
-            fill="#8884d8"
-            label
-          >
-            {categoryData().map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Legend align='left' 
-            verticalAlign='middle' 
-            layout='vertical'
-            iconType='plainline'
-            iconSize={15}
-            wrapperStyle={{ top: 100, left: 500, right: 0, display: 'flex', justifyContent: 'flex-start' }} />
-        </PieChart>
-
-        <text style={styles.expensesTitle}>EXPENSES</text>
-        <PieChart width={400} height={400}>
-          <Pie
-            data={categoryData()}
-            dataKey="value"
-            nameKey="name"
-            cx={200}
-            cy={200}
-            innerRadius={80}
-            outerRadius={120}
-            fill="#8884d8"
-            label
-          >
-            {categoryData().map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Legend align='left' 
-            verticalAlign='middle' 
-            layout='vertical'
-            iconType='plainline'
-            iconSize={15}
-            wrapperStyle={{ top: 100, left: 500, right: 0, display: 'flex', justifyContent: 'flex-start' }} />    
-        </PieChart>
+        <Divider style={styles.divider} />
       </div>
+
+      <div style={styles.bodyContainer}>
+      <div style={styles.pieContainer}>
+          <text style={styles.expensesTitle}>DEBTS VS SAVINGS</text>
+          <PieChart width={400} height={400}>
+            <Pie
+              data={categoryData()}
+              dataKey="value"
+              nameKey="name"
+              cx={200}
+              cy={200}
+              innerRadius={80}
+              outerRadius={120}
+              label
+            >
+              {categoryData().map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Legend align='left' 
+              verticalAlign='middle' 
+              layout='vertical'
+              iconType='plainline'
+              iconSize={15}
+              wrapperStyle={{ top: 100, left: 430, right: 0, display: 'flex', justifyContent: 'flex-start' }} />    
+          </PieChart>
+        </div>
+
+        <div style={styles.pieContainer}>
+          <text style={styles.expensesTitle}>EXPENSES</text>
+          <PieChart width={400} height={400}>
+            <Pie
+              data={categoryData()}
+              dataKey="value"
+              nameKey="name"
+              cx={200}
+              cy={200}
+              innerRadius={80}
+              outerRadius={120}
+              label
+            >
+              {categoryData().map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Legend align='left' 
+              verticalAlign='middle' 
+              layout='vertical'
+              iconType='plainline'
+              iconSize={15}
+              wrapperStyle={{ top: 100, left: 430, right: 0, display: 'flex', justifyContent: 'flex-start' }} />    
+          </PieChart>
+        </div>
+      </div>
+      <button className='primary_button' style={styles.button}>GENERATE REPORT</button>
     </div>
   );
 }

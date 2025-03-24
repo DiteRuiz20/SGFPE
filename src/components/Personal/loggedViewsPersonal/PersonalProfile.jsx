@@ -1,115 +1,169 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../../../assets/logo.png';
-import { PieChart, Pie, Cell, Legend } from 'recharts';
 import { Divider } from '@mui/material';
-import { GiReceiveMoney } from 'react-icons/gi';
-import { GiPayMoney } from 'react-icons/gi';
-import { GiMoneyStack } from 'react-icons/gi';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+
+// Esquema de validación con Yup
+const schema = yup.object().shape({
+    name: yup.string().required('El nombre es obligatorio'),
+    email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
+    username: yup.string().required('El nombre de usuario es obligatorio'),
+    phoneNumber : yup.number().positive('Phone number must be positive').min(10, 'The phone number should be 10 digits').required('Phone number is required').transform((value, originalValue) => (originalValue === '' ? undefined : value)),
+    password: yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('La contraseña es obligatoria'),
+});
 
 export default function PersonalProfile() {
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    resolver: yupResolver(schema),
+  });
 
-  const styles = {
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'white',
-      width: '100vw',
-      height: '100vh',
+// Obtener usuarios al cargar el componente
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await getUsers(); // Llamada a la función importada
+                console.log('Usuarios obtenidos:', response);  // Verifica la respuesta de la API
+                // Mapeamos la respuesta para asegurarnos de que cada usuario tenga un `accountType`
+                const fetchedUsers = response.map(user => ({
+                    ...user,
+                    accountType: user.accountType || 'Desconocido',  // Asegúrate de que `accountType` esté presente
+                }));
+                setUsers(fetchedUsers);
+            } catch (error) {
+                console.error('Error al obtener los usuarios:', error);
+            }
+        };
+
+        fetchUsers();
+    }, []);
+
+    // Crear usuario
+    const onSubmit = async (data) => {
+        try {
+            // Asegúrate de que el `accountType` sea 'personal' al crear el nuevo usuario
+            const newUser = await createUser({ ...data, accountType: 'personal' });
+            console.log('Nuevo usuario creado:', newUser);  // Verifica los datos enviados y la respuesta
+            alert('Cuenta personal creada exitosamente');
+            reset();
+
+            // Actualizar la lista de usuarios después de crear
+            setUsers((prevUsers) => [...prevUsers, newUser]);
+            navigate('/login-personal');
+        } catch (error) {
+            console.error('Error al crear la cuenta:', error);
+            alert('Hubo un error al crear la cuenta');
+        }
+    };
+
+    const customSubmit = () => {
+        handleSubmit(onSubmit)();
+    };
+  
+    const styles = {
+      container: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        width: '100vw',
+        height: '100vh',
+      },
+      bodyContainer: {
+        marginTop: '150px',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: 'white',
+        width: '70%',
+      },
+      divider: {
+        width: '100%',
+        height: 2,
+        backgroundColor: '#EAEAEA',
+        marginTop: 20,
+      },
+      menu: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '80%',
+        marginBottom: '30px'
+      },
+      header: {
+        position: 'fixed',
+        marginTop: '30px',
+        top: 0,
+        display: 'flex',
+        alignSelf: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        width: '100vw',
+      },
+      navLink: (path) => ({
+        cursor: 'pointer',
+        padding: '10px 20px',
+        fontSize: '16px',
+        color: location.pathname === path ? '#000' : '#888',
+        borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
+        transition: 'border-color 0.3s',
+      }),
+      datePicker: {
+        alignSelf: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+      },
+      dateItem: {
+        margin: '0 25px',
+        color: '#B0B0B0',
+        cursor: 'pointer',
+      },
+      activeDate: {
+        color: '#000',
+        borderBottom: '2px solid #4AD8C2',
+      },
+      title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#30437A',
+        marginBottom: 20,
+      },
+      cardContainer: {
+        marginTop: '50px',
+        flexDirection: 'column',
+        justifyContent: 'left',
+      },
+      pieContainer: {
+        marginTop: '50px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+    image: {
+      width: 130,
+      height: 130,
+      marginBottom: 30,
     },
-    bodyContainer: {
-      marginTop: '150px',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: 'white',
-      width: '70%',
-    },
-    divider: {
-      width: '100%',
-      height: 2,
+    input: {
+      width: 444,
+      height: 20,
       backgroundColor: '#EAEAEA',
-      marginTop: 20,
+      padding: 15,
+      borderWidth: 0,
+      borderRadius: 8,
+      color: 'black',
+      marginBottom: 15,
+      boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
     },
-    menu: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: '80%',
-      marginBottom: '30px'
-    },
-    header: {
-      position: 'fixed',
-      marginTop: '30px',
-      top: 0,
-      display: 'flex',
-      alignSelf: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      width: '100vw',
-    },
-    navLink: (path) => ({
-      cursor: 'pointer',
-      padding: '10px 20px',
-      fontSize: '16px',
-      color: location.pathname === path ? '#000' : '#888',
-      borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-      transition: 'border-color 0.3s',
-    }),
-    datePicker: {
-      alignSelf: 'center',
-      display: 'flex',
-      justifyContent: 'center',
-    },
-    dateItem: {
-      margin: '0 25px',
-      color: '#B0B0B0',
-      cursor: 'pointer',
-    },
-    activeDate: {
-      color: '#000',
-      borderBottom: '2px solid #4AD8C2',
-    },
-    title: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: '#30437A',
-      marginBottom: 20,
-    },
-    cardContainer: {
-      flexDirection: 'column',
-      justifyContent: 'left',
-    },
-    pieContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      width: '100%',
-    },
-    card: (color) => ({
-      backgroundColor: color,
-      color: 'white',
-      width: '200px',
-      height: '110px',
-      margin: '20px 30px',
-      borderRadius: '8px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '20px',
-      boxShadow: color === '#30437A'
-        ? '0px 8px 5px rgba(48, 55, 122, 0.2)'
-        : color === '#3DC9A7'
-        ? '0px 8px 5px rgba(61, 193, 173, 0.2)'
-        : color === '#B1B1B1'
-        ? '0px 8px 5px rgba(176, 176, 176, 0.2)'
-        : 'none',
-    }),
   };
 
   const paths = {
@@ -126,53 +180,81 @@ export default function PersonalProfile() {
   };
   
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.menu}>
-          <img src={logo} alt="Logo" style={{ width: '90px' }} />
-          {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-            <span
-              key={index}
-              style={styles.navLink(paths[text])}
-              onClick={() => handleNavigation(text)}
-            >
-              {text}
-            </span>
-          ))}
-
-        </div>
-
-        <div style={styles.datePicker}>
-          {['December 2024', 'January 2025', 'February 2025', 'March 2025', 'April 2025'].map((month, index) => (
-            <span key={index} style={index === 1 ? { ...styles.dateItem, ...styles.activeDate } : styles.dateItem}>
-              {month}
-            </span>
-          ))}
-        </div>
-
-        <Divider style={styles.divider} />
-      </div>
-
-      <div style={styles.bodyContainer}>
-        <div style={styles.cardContainer}>
-          <div style={styles.card('#3DC9A7')}>
-            <GiReceiveMoney style={{ fontSize: '40px', marginRight: '15px'}} />
-            $50,000
-            </div>
-          <div style={styles.card('#30437A')}>
-            <GiPayMoney style={{ fontSize: '40px', marginRight: '15px'}} />
-            $-15,000
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <div style={styles.menu}>
+            <img src={logo} alt="Logo" style={{ width: '90px' }} />
+            {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
+              <span
+                key={index}
+                style={styles.navLink(paths[text])}
+                onClick={() => handleNavigation(text)}
+              >
+                {text}
+              </span>
+            ))}
+  
           </div>
-          <div style={styles.card('#B1B1B1')}>
-            <GiMoneyStack style={{ fontSize: '40px', marginRight: '15px'}} />
-            $35,000
+  
+          <div style={styles.datePicker}>
+            {['December 2024', 'January 2025', 'February 2025', 'March 2025', 'April 2025'].map((month, index) => (
+              <span key={index} style={index === 1 ? { ...styles.dateItem, ...styles.activeDate } : styles.dateItem}>
+                {month}
+              </span>
+            ))}
+          </div>
+  
+          <Divider style={styles.divider} />
+        </div>
+  
+        <div style={styles.bodyContainer}>
+          <div style={styles.cardContainer}>
+            <form>
+              <div>
+                <input style={styles.input}
+                  type="text"
+                  {...register('name')}
+                  placeholder="Name"
+                />
+                {errors.name && <p style={{ color: 'red' }}>{errors.name.message}</p>}
+              </div>
+
+              <div>
+                <input style={styles.input}
+                  disabled
+                  type="email"
+                  {...register('email')}
+                  placeholder="Email"
+                  />
+                {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
+              </div>
+    
+              <div>
+                <input style={styles.input}
+                  type="text"
+                  {...register('username')}
+                  placeholder="Username"
+                />
+                {errors.username && <p style={{ color: 'red' }}>{errors.username.message}</p>}
+              </div>
+
+              <div>
+                <input style={styles.input}
+                  type="text"
+                  {...register('phoneNumber')}
+                  placeholder="PhoneNumber"
+                />
+                {errors.phoneNumber && <p style={{ color: 'red' }}>{errors.phoneNumber.message}</p>}
+              </div>
+            </form>
+          </div>
+  
+          <div style={styles.pieContainer}>
+            <button className='secondary_button' type="button" onClick={customSubmit}>UPDATE PROFILE</button>
+            <button className='primary_button' type="button">CHANGE PASSWORD</button>
+            <button className='logOut_button' type="button">LOG OUT</button>
           </div>
         </div>
-
-        <div style={styles.pieContainer}>
-          <h3 style={styles.title}>TOTAL BALANCE</h3>
-        </div>
       </div>
-    </div>
-  );
+    );
 }

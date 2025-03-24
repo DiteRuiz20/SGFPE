@@ -67,7 +67,7 @@ button:focus-visible {
   }
 }
 
-.primary_button, .secondary_button {
+.primary_button, .secondary_button, .logOut_button {
   width: 475px;
   padding: 15px 40px;
   border-radius: 8px;
@@ -77,6 +77,11 @@ button:focus-visible {
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s, transform 0.2s;
+}
+
+.logOut_button {
+  background-color: #dd1e1e;
+  box-shadow: 0px 8px 5px rgba(209, 23, 23, 0.2);
 }
 
 .primary_button {
@@ -90,6 +95,11 @@ button:focus-visible {
 }
 
 /* Hover Effects */
+.logOut_button:hover {
+  background-color: #bf2020;
+  transform: translateY(-2px);
+}
+
 .primary_button:hover {
   background-color: #24305E;
   transform: translateY(-2px);

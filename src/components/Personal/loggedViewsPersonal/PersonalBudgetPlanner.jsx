@@ -176,8 +176,8 @@ export default function PersonalBudgetPlanner() {
 
         <div style={styles.pieContainer}>
           <h3 style={styles.title}>TOTAL BALANCE</h3>
-          <PieChart width={300} height={300}>
-            <Pie data={data} cx={150} cy={150} innerRadius={80} outerRadius={120} dataKey="value">
+          <PieChart width={400} height={400}>
+            <Pie data={data} cx={150} cy={150} innerRadius={80} label outerRadius={120} dataKey="value">
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
