@@ -84,21 +84,21 @@ const BottomTabNavigator = ({ navigation }) => {
   );
 };
 
-const AppStack = ({ onLogOut }) => {
+const AppStack = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={BottomTabNavigator} options={{ headerShown: false }} />
       <Stack.Screen 
         name="Profile" 
-        component={(props) => <Profile {...props} onLogOut={onLogOut} />} 
+        component={Profile}
         options={{ headerShown: true }} 
       />
     </Stack.Navigator>
   );
 };
 
-export default function PersonalLoggedStack({ onLogOut }) {
-  return <AppStack onLogOut={onLogOut} />;
+export default function PersonalLoggedStack() {
+  return <AppStack />;
 }
 
 const getIconName = (routeName, focused) => {

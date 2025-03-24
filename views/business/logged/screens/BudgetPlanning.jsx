@@ -4,7 +4,7 @@ import React from 'react'
 export default function BudgetPlanning() {
   return (
     <View style={styles.container}>
-      <Text>Budget Planning Business</Text>
+      <Text>Budget Planning Business RawMaterial</Text>
     </View>
   )
 }

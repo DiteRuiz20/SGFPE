@@ -4,16 +4,15 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useAuth } from '../../../src/auth/AuthContext';
 import { Divider } from 'react-native-elements';
 
-export default function PersonalLogin({ navigation, onLoginPersonal }) {
-  const [email, setEmail] = useState('');
+export default function PersonalLogin({ navigation }) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
 
   const handleLogin = async () => {
     try {
-      await login(email, password, 'personal');
+      await login(username, password, 'personal');
       Alert.alert('Success', 'Login successful');
-      onLoginPersonal();
     } catch (error) {
       Alert.alert('Error', error.message || 'Invalid email or password');
     }
@@ -23,21 +22,21 @@ export default function PersonalLogin({ navigation, onLoginPersonal }) {
     <View style={styles.container}>
       <Text style={styles.title}>SGFPE</Text>
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
-      <Text style={styles.subtitle}>Gestión Financiera Personal</Text>
+      <Text style={styles.subtitle}>Personal Account Login</Text>
 
       <TextInput
         style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Correo Electrónico"
-        placeholderTextColor="#A9A9A9"
+        placeholder="Email Address"
+        value={username}
+        onChangeText={setUsername}
         keyboardType="email-address"
+        placeholderTextColor="#A9A9A9"
       />
       <TextInput
         style={styles.input}
+        placeholder="Password"
         value={password}
         onChangeText={setPassword}
-        placeholder="Contraseña"
         placeholderTextColor="#A9A9A9"
         secureTextEntry
       />
@@ -48,7 +47,7 @@ export default function PersonalLogin({ navigation, onLoginPersonal }) {
 
       <Divider style={styles.divider} />
 
-      <Text style={styles.orText}>o</Text>
+      <Text style={styles.orText}>or</Text>
       <Text style={styles.getStarted}>Sign up to get started</Text>
 
       <TouchableOpacity

@@ -59,9 +59,14 @@ export const AuthProvider = ({ children }) => {
             const isValidAccount = await validateAccount(email, accountType);
             
             if (!isValidAccount) {
-                const errorMessage = accountType === 'personal' 
-                    ? 'This email is registered as a business account. Please use the business login.'
-                    : 'This email is registered as a personal account. Please use the personal login.';
+                let errorMessage = '';
+                if (accountType === 'personal') {
+                    errorMessage = 'This email is registered as a business account. Please use the business login.';
+                } else if (accountType === 'business-raw-material') {
+                    errorMessage = 'This email is registered as a raw material business. Please use the raw material business login.';
+                } else if (accountType === 'business-new-products-expenses') {
+                    errorMessage = 'This email is registered as a new products expenses business. Please use the new products expenses business login.';
+                }
                 throw new Error(errorMessage);
             }
 
@@ -69,7 +74,8 @@ export const AuthProvider = ({ children }) => {
             const response = await api.post('/auth/login', null, {
                 params: {
                     email,
-                    password
+                    password,
+                    accountType
                 }
             });
     
@@ -128,7 +134,8 @@ export const AuthProvider = ({ children }) => {
                 login,
                 logout,
                 isPersonalUser: authState.accountType === 'personal',
-                isBusinessUser: authState.accountType === 'business'
+                isRawMaterialBusiness: authState.accountType === 'business-raw-material',
+                isNewProductsBusiness: authState.accountType === 'business-new-products-expenses'
             }}
         >
             {children}

@@ -155,4 +155,24 @@ export const deleteDebt = async (debtId) => {
     }
 };
 
+export const getSavingsByUserId = async (userId) => {
+    try {
+        const response = await api.get(`/api/personal/savings/user/${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching savings:', error);
+        throw error;
+    }
+};
+
+export const createSaving = async (savingData) => {
+    try {
+        const response = await api.post('/api/personal/savings', savingData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating saving:', error);
+        throw error;
+    }
+};
+
 export default api;

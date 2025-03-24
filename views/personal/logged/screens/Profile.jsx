@@ -3,7 +3,7 @@ import React from 'react'
 import { Divider, Icon } from 'react-native-elements'
 import { useAuth } from '../../../../src/auth/AuthContext';
 
-export default function Profile({ onLogOut }) {
+export default function Profile() {
   const { logout } = useAuth();
 
   const handleLogOut = () => {
@@ -16,7 +16,6 @@ export default function Profile({ onLogOut }) {
           onPress: async () => {
             try {
               await logout();
-              onLogOut();
             } catch (error) {
               Alert.alert('Error', 'Failed to log out. Please try again.');
             }

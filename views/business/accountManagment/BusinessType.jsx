@@ -1,18 +1,18 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 
-export default function BusinessType( { navigation }) {
+export default function BusinessType({ navigation }) {
   return (
     <View style={styles.container}>
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
 
       <Text style={styles.title}>What type of business do you run?</Text>
 
-      <TouchableOpacity  style={styles.primary_button} onPress={() => navigation.navigate('Business')}>
+      <TouchableOpacity style={styles.primary_button} onPress={() => navigation.navigate('Business Login', { accountType: 'business-raw-material' })}>
         <Text style={styles.buttonText}>RAW MATERIAL</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity  style={styles.secondary_button} onPress={() => navigation.navigate('Business')}>
+      <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('Business Login', { accountType: 'business-new-products-expenses' })}>
         <Text style={styles.buttonText}>NEW PRODUCTS EXPENSES</Text>
       </TouchableOpacity>
     </View>
