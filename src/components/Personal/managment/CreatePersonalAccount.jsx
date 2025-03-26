@@ -56,7 +56,21 @@ export default function CreatePersonalAccount() {
             navigate('/login-personal');
         } catch (error) {
             console.error('Error al crear la cuenta:', error);
-            alert('Hubo un error al crear la cuenta');
+            
+            // Manejo de errores específicos
+            if (error.response) {
+                if (error.response.status === 403) {
+                    alert('Error de permisos: No tienes permisos para registrar una cuenta');
+                } else if (error.response.status === 400) {
+                    alert('Datos inválidos: Verifica la información ingresada');
+                } else if (error.response.status === 409) {
+                    alert('El email o nombre de usuario ya está registrado');
+                } else {
+                    alert(`Error del servidor (${error.response.status}): Contacta al administrador`);
+                }
+            } else {
+                alert('Hubo un error al crear la cuenta. Intenta de nuevo más tarde.');
+            }
         }
     };
 
@@ -159,8 +173,8 @@ export default function CreatePersonalAccount() {
 
       return (
         <div style={styles.upperContainer}>
-          <text style={styles.subtitle}>Thanks for joining us!</text>
-          <text style={styles.subtitle}>Please fill out the required data about you.</text>
+          <p style={styles.subtitle}>Thanks for joining us!</p>
+          <p style={styles.subtitle}>Please fill out the required data about you.</p>
           <div style={styles.fatherContainer}>
               <div style={styles.container}>
                 <form>
@@ -197,7 +211,7 @@ export default function CreatePersonalAccount() {
                       {...register('phoneNumber')}
                       placeholder="PhoneNumber"
                     />
-                    {errors.phone && <p style={{ color: 'red' }}>{errors.phone.message}</p>}
+                    {errors.phoneNumber && <p style={{ color: 'red' }}>{errors.phoneNumber.message}</p>}
                   </div>
   
                   <div>
@@ -212,8 +226,8 @@ export default function CreatePersonalAccount() {
               </div>
               <div style={styles.container}>
                   <img style={styles.image} src={logo} alt="logo" />
-                  <text style={styles.subtitle}>Note:</text>
-                  <text style={styles.subtitle}>You will be sent a confirmation code via email, which will be used to authenticate your account.</text>
+                  <p style={styles.subtitle}>Note:</p>
+                  <p style={styles.subtitle}>You will be sent a confirmation code via email, which will be used to authenticate your account.</p>
                   <button className='secondary_button' type="button" onClick={customSubmit}>SIGN UP</button>
               </div>
           </div>        

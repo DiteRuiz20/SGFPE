@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import api from '../../../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/logo.png';
-import {Divider} from '@mui/material';
+import { Divider } from '@mui/material';
 
 const schema = yup.object().shape({
     email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
@@ -15,39 +14,27 @@ const schema = yup.object().shape({
 
 export default function BusinessLogin() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login } = useAuth();
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(schema),
     });
 
     const onSubmit = async (data) => {
+        setErrorMessage('');
+        setIsLoading(true);
         try {
-            // Hacer la petición al backend para obtener el token y userId
-            const response = await api.post('/auth/login', null, {
-                params: {
-                    email: data.email,
-                    password: data.password,
-                }
-            });
-
-            const token = response.data.token; // Asegúrate que tu backend regrese así el token
-            const userId = response.data.userId; // Asegúrate que el backend lo regrese
-
-            // Guardar token y userId en localStorage
-            login(token);
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId);
-
-            console.log('Token guardado:', token);
-            console.log('User ID guardado:', userId);
-            console.log('Redirigiendo a personal-expenses...');
-            
-            alert('Inicio de sesión exitoso');
-            navigate('/personal-expenses');
+            await login(data.email, data.password, 'business');
+            // Obtener la ruta anterior del estado de la ubicación
+            const from = location.state?.from?.pathname || '/business-dashboard';
+            navigate(from, { replace: true });
         } catch (error) {
-            console.error('Error al iniciar sesión:', error);
-            alert('Correo o contraseña incorrectos');
+            setErrorMessage(error.message || 'Error al iniciar sesión');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -138,6 +125,19 @@ export default function BusinessLogin() {
                 <text style={styles.subtitle}>Business Finance Managment</text>
             </div>
             <div style={styles.containerLeft}>
+                {errorMessage && (
+                    <div style={{
+                        backgroundColor: '#ffebee',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        marginBottom: '15px',
+                        color: '#d32f2f',
+                        width: '444px',
+                    }}>
+                        {errorMessage}
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div>
                         <input style={styles.input}
@@ -157,7 +157,9 @@ export default function BusinessLogin() {
                         {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                     </div>
 
-                    <button className='primary_button' type="submit">LOGIN</button>
+                    <button className='primary_button' type="submit" disabled={isLoading}>
+                        {isLoading ? 'PROCESANDO...' : 'LOGIN'}
+                    </button>
                 </form>
                 <Divider style={styles.divider}/>
                 <text style={styles.orText}>or</text>

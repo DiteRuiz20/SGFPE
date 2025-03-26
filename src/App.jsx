@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext'; // Importar el AuthProvider
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import PersonalLogin from './components/Personal/managment/PersonalLogin';
 import CreatePersonalAccount from './components/Personal/managment/CreatePersonalAccount';
 import PersonalExpensesTracker from './components/Personal/loggedViewsPersonal/PersonalExpenseTracker';
@@ -12,6 +13,7 @@ import PersonalDebtTracker from './components/Personal/loggedViewsPersonal/Perso
 import PersonalSavingTracker from './components/Personal/loggedViewsPersonal/PersonalSavingTracker';
 import PersonalGraphics from './components/Personal/loggedViewsPersonal/PersonalGraphics';
 import PersonalProfile from './components/Personal/loggedViewsPersonal/PersonalProfile';
+import VerifyAccount from './components/Personal/managment/VerifyAccount';
 import logo from './assets/logo.png';
 
 function Home() {
@@ -59,21 +61,67 @@ function Home() {
 
 function App() {
     return (
-        <AuthProvider> {/* Envuelve el Router con el AuthProvider */}
+        <AuthProvider>
             <Router>
                 <Routes>
+                    {/* Rutas públicas */}
                     <Route path="/" element={<Home />} />
                     <Route path="/login-personal" element={<PersonalLogin />} />
                     <Route path="/login-empresarial" element={<BusinessLogin />} />
                     <Route path="/create-business-account" element={<CreateBusinessAccount />} />
                     <Route path="/choose-business" element={<ChooseBusiness />} />
                     <Route path="/create-personal-account" element={<CreatePersonalAccount />} />
-                    <Route path="/personal-budget-planner" element={<PersonalBudgetPlanner />} />
-                    <Route path="/personal-expenses" element={<PersonalExpensesTracker />} />
-                    <Route path="/personal-debt-tracker" element={<PersonalDebtTracker />} />
-                    <Route path="/personal-saving-tracker" element={<PersonalSavingTracker />} />
-                    <Route path="/personal-graphics" element={<PersonalGraphics />} />
-                    <Route path="/personal-profile" element={<PersonalProfile />} />
+                    <Route path="/verify-account" element={<VerifyAccount />} />
+
+                    {/* Rutas protegidas para usuarios personales */}
+                    <Route 
+                        path="/personal-budget-planner" 
+                        element={
+                            <ProtectedRoute requiredAccountType="personal">
+                                <PersonalBudgetPlanner />
+                            </ProtectedRoute>
+                        } 
+                    />
+                    <Route 
+                        path="/personal-expenses" 
+                        element={
+                            <ProtectedRoute requiredAccountType="personal">
+                                <PersonalExpensesTracker />
+                            </ProtectedRoute>
+                        } 
+                    />
+                    <Route 
+                        path="/personal-debt-tracker" 
+                        element={
+                            <ProtectedRoute requiredAccountType="personal">
+                                <PersonalDebtTracker />
+                            </ProtectedRoute>
+                        } 
+                    />
+                    <Route 
+                        path="/personal-saving-tracker" 
+                        element={
+                            <ProtectedRoute requiredAccountType="personal">
+                                <PersonalSavingTracker />
+                            </ProtectedRoute>
+                        } 
+                    />
+                    <Route 
+                        path="/personal-graphics" 
+                        element={
+                            <ProtectedRoute requiredAccountType="personal">
+                                <PersonalGraphics />
+                            </ProtectedRoute>
+                        } 
+                    />
+                    <Route 
+                        path="/personal-profile" 
+                        element={
+                            <ProtectedRoute requiredAccountType="personal">
+                                <PersonalProfile />
+                            </ProtectedRoute>
+                        } 
+                    />
                 </Routes>
             </Router>
         </AuthProvider>

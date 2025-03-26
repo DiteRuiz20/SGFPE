@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getPersonalExpensesByUserId, createPersonalExpense } from '../../../services/PersonalExpensesService';
-import { getAllCategories } from '../../../services/CategoriesService';
+import { getSavingsByUserId, createSaving } from '../../../services/SavingsService';
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { useLocation } from 'react-router-dom';
@@ -12,222 +11,231 @@ import { Modal, Box } from '@mui/material';
 import { TbPigMoney } from "react-icons/tb";
 
 export default function PersonalSavingTracker() {
-    const [personalExpenses, setPersonalExpenses] = useState([]);
-    const [filteredExpenses, setFilteredExpenses] = useState([]);
-    const [categories, setCategories] = useState([]);  // Estado para las categorías
+    const [personalSavings, setPersonalSavings] = useState([]);
+    const [filteredSavings, setFilteredSavings] = useState([]);
+    const [selectedMonth, setSelectedMonth] = useState(new Date());
     const [newSaving, setNewSaving] = useState({
         description: '',
         amount: '',
-    });  // Estado para el nuevo ahorro
-    const [open, setIsOpen] = React.useState(false); //Estado para abrir el modal de crear gasto
-    const openForm = () => setIsOpen(true); //Settear el estado del modal de crear gasto para abrir
-    const closeForm = () => setIsOpen(false); //Settear el estado del modal de crear gasto para cerrar
+    });
+    const [open, setIsOpen] = React.useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Cargar los gastos
-    useEffect(() => {
-        const fetchPersonalExpenses = async () => {
-            const userId = localStorage.getItem('userId');
+    // Configuración para el selector de fechas
+    const [dateWindow, setDateWindow] = useState({
+        center: new Date(),
+        range: 3,
+    });
 
+    // Verificar si dos fechas pertenecen al mismo mes
+    const isSameMonth = (date1, date2) => {
+        return (
+            new Date(date1).getFullYear() === new Date(date2).getFullYear() &&
+            new Date(date1).getMonth() === new Date(date2).getMonth()
+        );
+    };
+
+    // Función para generar los meses en el selector
+    const generateMonths = () => {
+        const { center, range } = dateWindow;
+        const centerDate = new Date(center);
+        const months = [];
+        
+        for (let i = -range; i <= range; i++) {
+            const date = new Date(centerDate);
+            date.setMonth(centerDate.getMonth() + i);
+            
+            months.push({
+                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+                date,
+                isStart: i === -range,
+                isEnd: i === range
+            });
+        }
+        
+        return months;
+    };
+
+    // Generar los meses visibles
+    const months = generateMonths();
+
+    // Manejar la selección de un mes
+    const handleMonthSelect = (monthObj) => {
+        setSelectedMonth(monthObj.date);
+        
+        if (monthObj.isStart) {
+            const newCenter = new Date(dateWindow.center);
+            newCenter.setMonth(newCenter.getMonth() - 3);
+            setDateWindow(prev => ({
+                ...prev,
+                center: newCenter
+            }));
+        } else if (monthObj.isEnd) {
+            const newCenter = new Date(dateWindow.center);
+            newCenter.setMonth(newCenter.getMonth() + 3);
+            setDateWindow(prev => ({
+                ...prev,
+                center: newCenter
+            }));
+        }
+    };
+
+    // Filtrar los ahorros por el mes seleccionado
+    useEffect(() => {
+        if (personalSavings.length > 0) {
+            const filtered = personalSavings.filter(saving =>
+                isSameMonth(saving.date, selectedMonth)
+            );
+            setFilteredSavings(filtered);
+        }
+    }, [personalSavings, selectedMonth]);
+
+    // Cargar los ahorros
+    useEffect(() => {
+        const fetchPersonalSavings = async () => {
+            const userId = localStorage.getItem('userId');
             if (!userId) {
-                navigate('/login-personal'); // Redirige si no hay userId
+                navigate('/login-personal');
                 return;
             }
 
             try {
-                const response = await getPersonalExpensesByUserId(userId);
-                console.log('Gastos personales obtenidos:', response);
+                const response = await getSavingsByUserId(userId);
+                console.log('Ahorros personales obtenidos:', response);
 
                 if (!response || !Array.isArray(response)) {
-                    console.warn('No hay gastos registrados para este usuario.');
-                    setPersonalExpenses([]); // ✅ Evita crasheos
-                    setFilteredExpenses([]); // ✅ Evita crasheos también en los gastos filtrados
+                    console.warn('No hay ahorros registrados para este usuario.');
+                    setPersonalSavings([]);
+                    setFilteredSavings([]);
                     return;
                 }
 
-                const fetchedExpenses = response.map(expense => ({
-                    ...expense,
-                    categoryName: expense.categoryName || 'Sin categoría',
-                }));
-
-                setPersonalExpenses(fetchedExpenses);
-                setFilteredExpenses(fetchedExpenses); // Inicializa los gastos filtrados
+                setPersonalSavings(response);
+                setFilteredSavings(response.filter(saving => 
+                    isSameMonth(saving.date, selectedMonth)
+                ));
             } catch (error) {
-                console.error('Error al obtener los gastos personales:', error);
+                console.error('Error al obtener los ahorros personales:', error);
             }
         };
 
-        fetchPersonalExpenses();
+        fetchPersonalSavings();
     }, [navigate]);
 
-    // Obtener categorías para el selector
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await getAllCategories();  // Llamada a la API para obtener las categorías
-                setCategories(data);  // Establecemos las categorías en el estado
-            } catch (error) {
-                console.error('Error al obtener las categorías:', error);
-            }
-        };
+    const openForm = () => setIsOpen(true);
+    const closeForm = () => setIsOpen(false);
 
-        fetchCategories();
-    }, []);
-
-    // Manejar cambio en los campos del formulario
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setNewExpense({
-            ...newExpense,
-            [name]: value,
-        });
+        setNewSaving(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    // Enviar el formulario para crear un nuevo gasto
     const handleSubmit = async (e) => {
         e.preventDefault();
         const userId = localStorage.getItem('userId');
-
+        
         if (!userId) {
-            navigate('/login-personal');
+            console.error('No hay usuario autenticado');
             return;
         }
 
-        const expenseData = {
-            ...newExpense,
-            userId,
-        };
-
         try {
-            const createdExpense = await createPersonalExpense(expenseData);
-            console.log('Gasto creado:', createdExpense);
+            const savingData = {
+                ...newSaving,
+                userId: userId,
+                amount: parseFloat(newSaving.amount)
+            };
 
-            const category = categories.find(cat => cat.id === createdExpense.categoryId);
-            createdExpense.categoryName = category ? category.name : 'Sin categoría';
-
-            setPersonalExpenses((prevExpenses) => [...prevExpenses, createdExpense]);
-            setFilteredExpenses((prevExpenses) => [...prevExpenses, createdExpense]);
-
-            // Limpiar el formulario
-            setNewExpense({
+            await createSaving(savingData);
+            console.log('Ahorro creado exitosamente');
+            
+            // Recargar los ahorros
+            const response = await getSavingsByUserId(userId);
+            setPersonalSavings(response);
+            setFilteredSavings(response.filter(saving => 
+                isSameMonth(saving.date, selectedMonth)
+            ));
+            
+            // Limpiar el formulario y cerrar el modal
+            setNewSaving({
                 description: '',
                 amount: '',
-                categoryId: '',
             });
-            closeForm(); // Cerrar el modal
+            closeForm();
         } catch (error) {
-            console.error('Error al crear el gasto:', error);
+            console.error('Error al crear el ahorro:', error);
         }
     };
 
-    // Preparar los datos para el gráfico de pastel
-    const categoryData = () => {
-        const categoryCounts = personalExpenses.reduce((acc, expense) => {
-            const categoryName = expense.categoryName || 'Sin categoría';
-            acc[categoryName] = (acc[categoryName] || 0) + expense.amount;
-            return acc;
-        }, {});
-
-        const labels = Object.keys(categoryCounts);
-        const data = Object.values(categoryCounts);
-
-        return {
-            labels,
-            datasets: [
-                {
-                    data,
-                    backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#F5A623', '#F9A825', '#8E24AA'],
-                    hoverOffset: 4,
-                },
-            ],
-        };
-    };
-
-    // Filtrar los gastos cuando se selecciona una categoría en el gráfico de pastel
-    const handleCategoryClick = (event, elements) => {
-        if (elements.length > 0) {
-            const categoryName = categoryData().labels[elements[0].index];
-            const filtered = personalExpenses.filter(expense => expense.categoryName === categoryName);
-            setFilteredExpenses(filtered); // Actualiza los gastos filtrados
-        }
-    };
+    // Calcular el total de ahorros del mes
+    const totalSavings = filteredSavings.reduce((sum, saving) => sum + saving.amount, 0);
 
     // Definir las columnas
     const columns = [
         {
-          selector: row => (
-            <div style={{ display: 'flex', alignItems: 'left' }}>
-              <CategoryIcon category={row.categoryName} />
-            </div>
-          ),
+            selector: row => (
+                <div style={{ display: 'flex', alignItems: 'left' }}>
+                    <CategoryIcon />
+                </div>
+            ),
+            grow: 0.05,
+            wrap: true,
+            minWidth: '10px',
+        },
+        {
+            selector: row => row.description,
+            grow: 0.2,
+            wrap: true,
+            minWidth: '20px',
+        },
+        {
+            selector: row => `$${row.amount.toFixed(2)}`,
+            grow: 0.15,
+            wrap: true,
+            minWidth: '80px',
+        },
+        {
+            selector: row => new Date(row.date).toLocaleDateString(),
+            grow: 0.2,
+            wrap: true,
+            minWidth: '80px',
+        },
+        {
+            selector: row => 'Active',
+            grow: 0.22,
+            right: true,
+            wrap: true,
+            sortable: true,
+            minWidth: '60px',
+        },
+    ];
 
-          grow: 0.05,
-          wrap: true,
-          minWidth: '10px',
-        },
-        { //CREDITOR
-          selector: row => 'CREDITOR',
-          grow: 0.1,
-          wrap: true,
-          minWidth: '20px',
-        },
-        { //AMOUNT
-          selector: row => '-$' + 'AMOUNT',
-
-          grow: 0.15,
-          wrap: true,
-          minWidth: '80px',
-        },
-        { //DATE
-          selector: row => (<strong>DATE</strong>),
-
-          grow: 0.2,
-          wrap: true,
-          minWidth: '80px',
-        },
-        { //DUE DATE
-          selector: row => (<strong>DUE DATE</strong>),
-
-          grow: 0.15,
-          wrap: true,
-          minWidth: '80px',
-        },
-        { //STATUS
-          selector: row => 'STATUS',
-          
-          grow: 0.22,
-          right: true,
-          wrap: true,
-          sortable: true,
-          minWidth: '60px',
-        },
-      ];      
-      
-      const CategoryIcon = () => {
-      
+    const CategoryIcon = () => {
         const icon = <TbPigMoney />;
         const color = '#3DC9A7';
-      
+    
         return (
-          <div
-            style={{
-              width: '30px',
-              height: '30px',
-              borderRadius: '50%',
-              backgroundColor: color,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <span style={{ fontSize: '18px', color: 'white' }}>
-              {icon}
-            </span>
-          </div>
+            <div
+                style={{
+                    width: '30px',
+                    height: '30px',
+                    borderRadius: '50%',
+                    backgroundColor: color,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
+                <span style={{ fontSize: '18px', color: 'white' }}>
+                    {icon}
+                </span>
+            </div>
         );
-      };      
-      
+    };
 
     const styles = {
         container: {
@@ -456,9 +464,15 @@ export default function PersonalSavingTracker() {
           </div>
       
           <div style={styles.datePicker}>
-            {['December 2024', 'January 2025', 'February 2025', 'March 2025', 'April 2025'].map((month, index) => (
-              <span key={index} style={index === 1 ? { ...styles.dateItem, ...styles.activeDate } : styles.dateItem}>
-                {month}
+            {months.map((monthObj, index) => (
+              <span
+                key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
+                onClick={() => handleMonthSelect(monthObj)}
+                style={isSameMonth(monthObj.date, selectedMonth) ?
+                  { ...styles.dateItem, ...styles.activeDate } :
+                  styles.dateItem}
+              >
+                {monthObj.label}
               </span>
             ))}
           </div>
@@ -473,7 +487,7 @@ export default function PersonalSavingTracker() {
                     <text>SAVINGS</text>
                     <GiReceiveMoney style={{ fontSize: '40px'}} />
                 </div>
-                <text style={styles.cardText}>$50,000</text>
+                <text style={styles.cardText}>${totalSavings.toFixed(2)}</text>
                 <text style={styles.cardSubtitle}>This month's savings</text>
             </div>
             <div style={styles.addButton} onClick={openForm}>
@@ -485,7 +499,7 @@ export default function PersonalSavingTracker() {
           <div style={styles.chartContainer}>
           <DataTable
             columns={columns}
-            data={filteredExpenses}
+            data={filteredSavings}
             customStyles={customStyles}
             pagination
           />
@@ -504,7 +518,7 @@ export default function PersonalSavingTracker() {
                 placeholder='Description'
                 type="text"
                 name="description"
-                value={newSaving.creditor}
+                value={newSaving.description}
                 onChange={handleInputChange}
                 required
                 />
@@ -519,6 +533,15 @@ export default function PersonalSavingTracker() {
                 required
                 />
             </div>
+            {/* <div>
+                <input style={styles.input}
+                type="date"
+                name="date"
+                value={newSaving.date}
+                onChange={handleInputChange}
+                required
+                />
+            </div> */}
             <Divider style={styles.divider} />
             <div style={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
               <button className='primary_button' style={{ width: '35%', marginRight: '10px' }} type="button" onClick={closeForm}>Cancel</button>

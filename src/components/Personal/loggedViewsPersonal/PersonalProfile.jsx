@@ -5,6 +5,7 @@ import { Divider } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useAuth } from '../../../context/AuthContext';
 
 // Esquema de validación con Yup
 const schema = yup.object().shape({
@@ -22,6 +23,7 @@ export default function PersonalProfile() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
   });
+  const { logout } = useAuth();
 
 // Obtener usuarios al cargar el componente
     useEffect(() => {
@@ -179,6 +181,11 @@ export default function PersonalProfile() {
     navigate(paths[text] || '/personal-profile');
   };
   
+  const handleLogout = () => {
+    logout();
+    navigate('/login-personal');
+  };
+
   return (
       <div style={styles.container}>
         <div style={styles.header}>
@@ -194,14 +201,6 @@ export default function PersonalProfile() {
               </span>
             ))}
   
-          </div>
-  
-          <div style={styles.datePicker}>
-            {['December 2024', 'January 2025', 'February 2025', 'March 2025', 'April 2025'].map((month, index) => (
-              <span key={index} style={index === 1 ? { ...styles.dateItem, ...styles.activeDate } : styles.dateItem}>
-                {month}
-              </span>
-            ))}
           </div>
   
           <Divider style={styles.divider} />
@@ -251,8 +250,8 @@ export default function PersonalProfile() {
   
           <div style={styles.pieContainer}>
             <button className='secondary_button' type="button" onClick={customSubmit}>UPDATE PROFILE</button>
-            <button className='primary_button' type="button">CHANGE PASSWORD</button>
-            <button className='logOut_button' type="button">LOG OUT</button>
+            
+            <button className='logOut_button' type="button" onClick={handleLogout}>LOG OUT</button>
           </div>
         </div>
       </div>

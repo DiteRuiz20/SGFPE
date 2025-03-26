@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import api from '../../../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/logo.png';
-import {Divider} from '@mui/material';
+import { Divider } from '@mui/material';
 
 const schema = yup.object().shape({
     email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
@@ -15,45 +14,30 @@ const schema = yup.object().shape({
 
 export default function PersonalLogin() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login } = useAuth();
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(schema),
     });
 
     const onSubmit = async (data) => {
+        setErrorMessage('');
+        setIsLoading(true);
         try {
-            // Hacer la petición al backend para obtener el token y userId
-            const response = await api.post('/auth/login', null, {
-                params: {
-                    email: data.email,
-                    password: data.password,
-                }
-            });
-
-            const token = response.data.token; // Asegúrate que tu backend regrese así el token
-            const userId = response.data.userId; // Asegúrate que el backend lo regrese
-
-            // Guardar token y userId en localStorage
-            login(token);
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId);
-
-            console.log('Token guardado:', token);
-            console.log('User ID guardado:', userId);
-            console.log('Redirigiendo a personal-expenses...');
-            
-            alert('Inicio de sesión exitoso');
-            navigate('/personal-budget-planner');
+            await login(data.email, data.password, 'personal');
+            const from = location.state?.from?.pathname || '/personal-expenses';
+            navigate(from, { replace: true });
         } catch (error) {
-            console.error('Error al iniciar sesión:', error);
-            alert('Correo o contraseña incorrectos');
+            setErrorMessage(error.message || 'Error al iniciar sesión');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const goToCreateAccount = () => {
-        navigate('/create-personal-account');
-    };
+    const goToCreateAccount = () => navigate('/create-personal-account');
 
     const styles = {
         fatherContainer: {
@@ -84,20 +68,20 @@ export default function PersonalLogin() {
             marginLeft: -50,
         },
         image: {
-          width: 230,
-          height: 230,
-          marginBottom: 40,
+            width: 230,
+            height: 230,
+            marginBottom: 40,
         },
         subtitle: {
-          fontSize: 17,
-          color: '#444',
-          marginBottom: 20,
+            fontSize: 17,
+            color: '#444',
+            marginBottom: 20,
         },
         title: {
-          fontSize: 32,
-          fontWeight: 'bold',
-          color: '#30437A',
-          marginBottom: 25,
+            fontSize: 32,
+            fontWeight: 'bold',
+            color: '#30437A',
+            marginBottom: 25,
         },
         input: {
             width: 444,
@@ -111,36 +95,51 @@ export default function PersonalLogin() {
             boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
         },
         divider: {
-          width: '60%',
-          height: 2,
-          backgroundColor: '#EAEAEA',
-          marginTop:20,
+            width: '60%',
+            height: 2,
+            backgroundColor: '#EAEAEA',
+            marginTop: 20,
         },
         orText: {
-          fontSize: 14,
-          color: '#666',
-          backgroundColor: 'white',
-          marginTop: -13,
-          marginBottom: 22,
+            fontSize: 14,
+            color: '#666',
+            backgroundColor: 'white',
+            marginTop: -13,
+            marginBottom: 22,
         },
-         getStarted: {
-          color: '#666',
-          fontSize: 14,
-          marginBottom: 10,
+        getStarted: {
+            color: '#666',
+            fontSize: 14,
+            marginBottom: 10,
         },
-      };
+    };
 
     return (
         <div style={styles.fatherContainer}>
             <div style={styles.container}>
-                <text style={styles.title}>LOGIN</text>
+                <p style={styles.title}>LOGIN</p>
                 <img style={styles.image} src={logo} alt="logo" />
-                <text style={styles.subtitle}>Personal Finance Managment</text>
+                <p style={styles.subtitle}>Personal Finance Managment</p>
             </div>
+
             <div style={styles.containerLeft}>
+                {errorMessage && (
+                    <div style={{
+                        backgroundColor: '#ffebee',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        marginBottom: '15px',
+                        color: '#d32f2f',
+                        width: '444px',
+                    }}>
+                        {errorMessage}
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div>
-                        <input style={styles.input}
+                        <input
+                            style={styles.input}
                             type="email"
                             {...register('email')}
                             placeholder="Email"
@@ -149,7 +148,8 @@ export default function PersonalLogin() {
                     </div>
 
                     <div>
-                        <input style={styles.input}
+                        <input
+                            style={styles.input}
                             type="password"
                             {...register('password')}
                             placeholder="Password"
@@ -157,11 +157,15 @@ export default function PersonalLogin() {
                         {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                     </div>
 
-                    <button className='primary_button' type="submit">LOGIN</button>
+                    <button className='primary_button' type="submit" disabled={isLoading}>
+                        {isLoading ? 'PROCESANDO...' : 'LOGIN'}
+                    </button>
                 </form>
-                <Divider style={styles.divider}/>
-                <text style={styles.orText}>or</text>
-                <text style={styles.getStarted}>Sign up to get started</text>
+
+                <Divider style={styles.divider} />
+                <p style={styles.orText}>or</p>
+                <p style={styles.getStarted}>Sign up to get started</p>
+
                 <button className='secondary_button' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
                     SIGN UP
                 </button>

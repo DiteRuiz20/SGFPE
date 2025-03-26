@@ -1,215 +1,338 @@
 import React, { useState, useEffect } from 'react';
-import { getPersonalExpensesByUserId, createPersonalExpense } from '../../../services/PersonalExpensesService';
-import { getAllCategories } from '../../../services/CategoriesService';
+import { getDebtsByUserId, createDebt, updateDebt, deleteDebt } from '../../../services/DebtsService';
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useLocation } from 'react-router-dom';
 import logo from '../../../assets/logo.png';
 import { Divider } from '@mui/material';
-import { color } from 'chart.js/helpers';
-import { GiTakeMyMoney } from 'react-icons/gi';
+import { GiTakeMyMoney } from "react-icons/gi";
+import { LiaMoneyCheckAltSolid } from "react-icons/lia";
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box } from '@mui/material';
-import { LiaMoneyCheckAltSolid } from 'react-icons/lia';
+import { FaUserCircle, FaMoneyBillWave, FaCalendarAlt, FaCalendarCheck, FaCheck, FaExclamationTriangle, FaTimes, FaQuestion, FaTrash } from 'react-icons/fa';
 
 export default function PersonalDebtTracker() {
-    const [personalExpenses, setPersonalExpenses] = useState([]);
-    const [filteredExpenses, setFilteredExpenses] = useState([]);
-    const [categories, setCategories] = useState([]);  // Estado para las categorías
+    const [personalDebts, setPersonalDebts] = useState([]);
+    const [filteredDebts, setFilteredDebts] = useState([]);
+    const [selectedMonth, setSelectedMonth] = useState(new Date());
     const [newDebt, setNewDebt] = useState({
         creditor: '',
         amount: '',
         dueDate: '',
-    });  // Estado para la nueva deuda
-    const [open, setIsOpen] = React.useState(false); //Estado para abrir el modal de crear gasto
-    const openForm = () => setIsOpen(true); //Settear el estado del modal de crear gasto para abrir
-    const closeForm = () => setIsOpen(false); //Settear el estado del modal de crear gasto para cerrar
+        status: 'PENDING'
+    });
+    const [open, setIsOpen] = React.useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Cargar los gastos
-    useEffect(() => {
-        const fetchPersonalExpenses = async () => {
-            const userId = localStorage.getItem('userId');
+    // Configuración para el selector de fechas
+    const [dateWindow, setDateWindow] = useState({
+        center: new Date(),
+        range: 3,
+    });
 
+    // Verificar si dos fechas pertenecen al mismo mes
+    const isSameMonth = (date1, date2) => {
+        return (
+            new Date(date1).getFullYear() === new Date(date2).getFullYear() &&
+            new Date(date1).getMonth() === new Date(date2).getMonth()
+        );
+    };
+
+    // Función para generar los meses en el selector
+    const generateMonths = () => {
+        const { center, range } = dateWindow;
+        const centerDate = new Date(center);
+        const months = [];
+        
+        for (let i = -range; i <= range; i++) {
+            const date = new Date(centerDate);
+            date.setMonth(centerDate.getMonth() + i);
+            
+            months.push({
+                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+                date,
+                isStart: i === -range,
+                isEnd: i === range
+            });
+        }
+        
+        return months;
+    };
+
+    // Generar los meses visibles
+    const months = generateMonths();
+
+    // Manejar la selección de un mes
+    const handleMonthSelect = (monthObj) => {
+        setSelectedMonth(monthObj.date);
+        
+        if (monthObj.isStart) {
+            const newCenter = new Date(dateWindow.center);
+            newCenter.setMonth(newCenter.getMonth() - 3);
+            setDateWindow(prev => ({
+                ...prev,
+                center: newCenter
+            }));
+        } else if (monthObj.isEnd) {
+            const newCenter = new Date(dateWindow.center);
+            newCenter.setMonth(newCenter.getMonth() + 3);
+            setDateWindow(prev => ({
+                ...prev,
+                center: newCenter
+            }));
+        }
+    };
+
+    // Filtrar las deudas por el mes seleccionado
+    useEffect(() => {
+        if (personalDebts.length > 0) {
+            const filtered = personalDebts.filter(debt =>
+                isSameMonth(debt.date, selectedMonth)
+            );
+            setFilteredDebts(filtered);
+        }
+    }, [personalDebts, selectedMonth]);
+
+    // Cargar las deudas
+    useEffect(() => {
+        const fetchPersonalDebts = async () => {
+            const userId = localStorage.getItem('userId');
             if (!userId) {
-                navigate('/login-personal'); // Redirige si no hay userId
+                navigate('/login-personal');
                 return;
             }
 
             try {
-                const response = await getPersonalExpensesByUserId(userId);
-                console.log('Gastos personales obtenidos:', response);
+                const response = await getDebtsByUserId(userId);
+                console.log('Deudas personales obtenidas:', response);
 
                 if (!response || !Array.isArray(response)) {
-                    console.warn('No hay gastos registrados para este usuario.');
-                    setPersonalExpenses([]); // ✅ Evita crasheos
-                    setFilteredExpenses([]); // ✅ Evita crasheos también en los gastos filtrados
+                    console.warn('No hay deudas registradas para este usuario.');
+                    setPersonalDebts([]);
+                    setFilteredDebts([]);
                     return;
                 }
 
-                const fetchedExpenses = response.map(expense => ({
-                    ...expense,
-                    categoryName: expense.categoryName || 'Sin categoría',
-                }));
-
-                setPersonalExpenses(fetchedExpenses);
-                setFilteredExpenses(fetchedExpenses); // Inicializa los gastos filtrados
+                setPersonalDebts(response);
+                setFilteredDebts(response.filter(debt => 
+                    isSameMonth(debt.date, selectedMonth)
+                ));
             } catch (error) {
-                console.error('Error al obtener los gastos personales:', error);
+                console.error('Error al obtener las deudas personales:', error);
             }
         };
 
-        fetchPersonalExpenses();
+        fetchPersonalDebts();
     }, [navigate]);
 
-    // Obtener categorías para el selector
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await getAllCategories();  // Llamada a la API para obtener las categorías
-                setCategories(data);  // Establecemos las categorías en el estado
-            } catch (error) {
-                console.error('Error al obtener las categorías:', error);
-            }
-        };
+    const openForm = () => setIsOpen(true);
+    const closeForm = () => setIsOpen(false);
 
-        fetchCategories();
-    }, []);
-
-    // Manejar cambio en los campos del formulario
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setNewExpense({
-            ...newExpense,
-            [name]: value,
-        });
+        setNewDebt(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    // Enviar el formulario para crear un nuevo gasto
     const handleSubmit = async (e) => {
         e.preventDefault();
         const userId = localStorage.getItem('userId');
 
         if (!userId) {
-            navigate('/login-personal');
+            console.error('No hay usuario autenticado');
             return;
         }
 
-        const expenseData = {
-            ...newExpense,
-            userId,
-        };
-
         try {
-            const createdExpense = await createPersonalExpense(expenseData);
-            console.log('Gasto creado:', createdExpense);
+            const debtData = {
+                ...newDebt,
+                userId: userId,
+                amount: parseFloat(newDebt.amount),
+                date: new Date().toISOString(),
+                status: 'PENDING'
+            };
 
-            const category = categories.find(cat => cat.id === createdExpense.categoryId);
-            createdExpense.categoryName = category ? category.name : 'Sin categoría';
-
-            setPersonalExpenses((prevExpenses) => [...prevExpenses, createdExpense]);
-            setFilteredExpenses((prevExpenses) => [...prevExpenses, createdExpense]);
-
-            // Limpiar el formulario
-            setNewExpense({
-                description: '',
+            await createDebt(debtData);
+            console.log('Deuda creada exitosamente');
+            
+            // Recargar las deudas
+            const response = await getDebtsByUserId(userId);
+            setPersonalDebts(response);
+            setFilteredDebts(response.filter(debt => 
+                isSameMonth(debt.date, selectedMonth)
+            ));
+            
+            // Limpiar el formulario y cerrar el modal
+            setNewDebt({
+                creditor: '',
                 amount: '',
-                categoryId: '',
+                dueDate: '',
+                status: 'PENDING'
             });
-            closeForm(); // Cerrar el modal
+            closeForm();
         } catch (error) {
-            console.error('Error al crear el gasto:', error);
+            console.error('Error al crear la deuda:', error);
         }
     };
 
-    // Preparar los datos para el gráfico de pastel
-    const categoryData = () => {
-        const categoryCounts = personalExpenses.reduce((acc, expense) => {
-            const categoryName = expense.categoryName || 'Sin categoría';
-            acc[categoryName] = (acc[categoryName] || 0) + expense.amount;
-            return acc;
-        }, {});
+    const handleStatusUpdate = async (debtId, newStatus) => {
+        try {
+            const debt = personalDebts.find(d => d.id === debtId);
+            if (!debt) return;
 
-        const labels = Object.keys(categoryCounts);
-        const data = Object.values(categoryCounts);
-
-        return {
-            labels,
-            datasets: [
-                {
-                    data,
-                    backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#F5A623', '#F9A825', '#8E24AA'],
-                    hoverOffset: 4,
-                },
-            ],
-        };
-    };
-
-    // Filtrar los gastos cuando se selecciona una categoría en el gráfico de pastel
-    const handleCategoryClick = (event, elements) => {
-        if (elements.length > 0) {
-            const categoryName = categoryData().labels[elements[0].index];
-            const filtered = personalExpenses.filter(expense => expense.categoryName === categoryName);
-            setFilteredExpenses(filtered); // Actualiza los gastos filtrados
+            await updateDebt(debtId, { ...debt, status: newStatus });
+            
+            // Recargar las deudas
+            const userId = localStorage.getItem('userId');
+            const response = await getDebtsByUserId(userId);
+            setPersonalDebts(response);
+            setFilteredDebts(response.filter(d => 
+                isSameMonth(d.date, selectedMonth)
+            ));
+        } catch (error) {
+            console.error('Error al actualizar el estado de la deuda:', error);
         }
     };
+
+    const handleDeleteDebt = async (debtId) => {
+        try {
+            await deleteDebt(debtId);
+            
+            // Recargar las deudas
+            const userId = localStorage.getItem('userId');
+            const response = await getDebtsByUserId(userId);
+            setPersonalDebts(response);
+            setFilteredDebts(response.filter(debt => 
+                isSameMonth(debt.date, selectedMonth)
+            ));
+        } catch (error) {
+            console.error('Error al eliminar la deuda:', error);
+        }
+    };
+
+    // Calcular el total de deudas del mes
+    const totalDebts = filteredDebts.reduce((sum, debt) => sum + debt.amount, 0);
 
     // Definir las columnas
     const columns = [
         {
           selector: row => (
             <div style={{ display: 'flex', alignItems: 'left' }}>
-              <CategoryIcon category={row.categoryName} />
+                    <CategoryIcon />
             </div>
           ),
-
           grow: 0.05,
           wrap: true,
           minWidth: '10px',
         },
-        { //CREDITOR
-          selector: row => 'CREDITOR',
-          grow: 0.1,
+        {
+            selector: row => row.creditor,
+            grow: 0.2,
           wrap: true,
           minWidth: '20px',
         },
-        { //AMOUNT
-          selector: row => '-$' + 'AMOUNT',
-
+        {
+            selector: row => `$${row.amount.toFixed(2)}`,
           grow: 0.15,
           wrap: true,
           minWidth: '80px',
         },
-        { //DATE
-          selector: row => (<strong>DATE</strong>),
-
-          grow: 0.2,
+        {
+            selector: row => new Date(row.date).toLocaleDateString(),
+            grow: 0.15,
           wrap: true,
           minWidth: '80px',
         },
-        { //DUE DATE
-          selector: row => (<strong>DUE DATE</strong>),
-
+        {
+            selector: row => new Date(row.dueDate).toLocaleDateString(),
           grow: 0.15,
           wrap: true,
           minWidth: '80px',
         },
-        { //STATUS
-          selector: row => 'STATUS',
-          
-          grow: 0.22,
+        {
+            selector: row => (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <span style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: '4px',
+                        backgroundColor: getStatusColor(row.status),
+                        color: 'white'
+                    }}>
+                        {row.status}
+                    </span>
+                    {row.status !== 'PENDING' && (
+                        <button
+                            onClick={() => handleDeleteDebt(row.id)}
+                            style={{
+                                padding: '4px 8px',
+                                backgroundColor: '#ff4444',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Eliminar
+                        </button>
+                    )}
+                    {row.status === 'PENDING' && (
+                        <button
+                            onClick={() => handleStatusUpdate(row.id, 'PAID')}
+                            style={{
+                                padding: '4px 8px',
+                                backgroundColor: '#4CAF50',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Marcar como Pagada
+                        </button>
+                    )}
+                    {row.status === 'PENDING' && (
+                        <button
+                            onClick={() => handleStatusUpdate(row.id, 'CANCELLED')}
+                            style={{
+                                padding: '4px 8px',
+                                backgroundColor: '#ff9800',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Cancelar
+                        </button>
+                    )}
+                </div>
+            ),
+            grow: 0.3,
           right: true,
           wrap: true,
-          sortable: true,
-          minWidth: '60px',
+            minWidth: '200px',
         },
-      ];      
+    ];
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'PENDING':
+                return '#ff9800';
+            case 'PAID':
+                return '#4CAF50';
+            case 'OVERDUE':
+                return '#f44336';
+            case 'CANCELLED':
+                return '#9e9e9e';
+            default:
+                return '#757575';
+        }
+    };
       
       const CategoryIcon = () => {
-      
         const icon = <LiaMoneyCheckAltSolid />;
         const color = '#B1B1B1';
       
@@ -231,7 +354,6 @@ export default function PersonalDebtTracker() {
           </div>
         );
       };      
-      
 
     const styles = {
         container: {
@@ -323,7 +445,7 @@ export default function PersonalDebtTracker() {
           display: 'flex',
           flexDirection: 'column',
           fontSize: '20px',
-          boxShadow:'0px 8px 5px rgba(176, 176, 176, 0.2)'
+            boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)'
         },
         cardText: {
           fontSize: '20px',
@@ -345,7 +467,7 @@ export default function PersonalDebtTracker() {
           alignSelf: 'flex-end',
           margin: '15px',
           fontSize: '35px',
-          color: '#B1B1B1',
+            color: '#30437A',
         },
         addButton: {
           cursor: 'pointer',
@@ -358,7 +480,7 @@ export default function PersonalDebtTracker() {
           flexDirection: 'column',
           fontSize: '20px',
           color: 'black',
-          boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)'
+            boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)'
         },
         input: {
           width: 370,
@@ -369,18 +491,7 @@ export default function PersonalDebtTracker() {
           borderRadius: 8,
           color: 'black',
           marginBottom: 15,
-          boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
-        },
-        selector: {
-          width: 400,
-          height: 50,
-          backgroundColor: '#EAEAEA',
-          padding: 15,
-          borderWidth: 0,
-          borderRadius: 8,
-          color: 'black',
-          marginBottom: 15,
-          boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
+            boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)'
         },
         modalStyle: {
           position: 'absolute',
@@ -396,7 +507,7 @@ export default function PersonalDebtTracker() {
         title: {
           fontSize: 28,
           fontWeight: 'bold',
-          color: '#B1B1B1',
+            color: '#30437A',
         },
       };
 
@@ -460,9 +571,15 @@ export default function PersonalDebtTracker() {
           </div>
       
           <div style={styles.datePicker}>
-            {['December 2024', 'January 2025', 'February 2025', 'March 2025', 'April 2025'].map((month, index) => (
-              <span key={index} style={index === 1 ? { ...styles.dateItem, ...styles.activeDate } : styles.dateItem}>
-                {month}
+                    {months.map((monthObj, index) => (
+                        <span
+                            key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
+                            onClick={() => handleMonthSelect(monthObj)}
+                            style={isSameMonth(monthObj.date, selectedMonth) ?
+                                { ...styles.dateItem, ...styles.activeDate } :
+                                styles.dateItem}
+                        >
+                            {monthObj.label}
               </span>
             ))}
           </div>
@@ -472,16 +589,16 @@ export default function PersonalDebtTracker() {
 
         <div style={styles.bodyContainer}>
           <div style={styles.cardContainer}>
-            <div style={styles.card}>
+                    <div style={{...styles.card, backgroundColor: '#B1B1B1'}}>
                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-                    <text>DEBT</text>
+                            <text>DEBTS</text>
                     <GiTakeMyMoney style={{ fontSize: '40px'}} />
                 </div>
-                <text style={styles.cardText}>-$50,000</text>
-                <text style={styles.cardSubtitle}>This month's debt</text>
+                        <text style={styles.cardText}>-${totalDebts.toFixed(2)}</text>
+                        <text style={styles.cardSubtitle}>This month's debts</text>
             </div>
-            <div style={styles.addButton} onClick={openForm}>
-              <MdOutlineAddToPhotos style={styles.button} />
+                    <div style={{...styles.addButton, border: '1px solid #B1B1B1'}} onClick={openForm}>
+                        <MdOutlineAddToPhotos style={{...styles.button, color: '#B1B1B1'}} />
               <text style={styles.buttonText}>ADD DEBT</text>
             </div>
           </div>
@@ -489,14 +606,13 @@ export default function PersonalDebtTracker() {
           <div style={styles.chartContainer}>
           <DataTable
             columns={columns}
-            data={filteredExpenses}
+                        data={filteredDebts}
             customStyles={customStyles}
             pagination
           />
           </div>
         </div>
 
-        {/* Modal */}
         <Modal open={open} onClose={closeForm}>
         <Box sx={styles.modalStyle}>
             <form onSubmit={handleSubmit}>
@@ -525,7 +641,6 @@ export default function PersonalDebtTracker() {
             </div>
             <div>
                 <input style={styles.input}
-                placeholder='Due Date'
                 type="date"
                 name="dueDate"
                 value={newDebt.dueDate}

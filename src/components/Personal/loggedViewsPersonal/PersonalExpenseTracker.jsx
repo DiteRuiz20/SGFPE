@@ -17,8 +17,16 @@ import { FaTheaterMasks, FaRegHospital } from 'react-icons/fa';
 export default function PersonalExpensesTracker() {
   const [personalExpenses, setPersonalExpenses] = useState([]);
   const [filteredExpenses, setFilteredExpenses] = useState([]);
+  const [totalExpenses, setTotalExpenses] = useState(0);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [categories, setCategories] = useState([]);  // Estado para las categorías
+  
+  // Configuración para el selector de fechas
+  const [dateWindow, setDateWindow] = useState({
+    center: new Date(), // Fecha central (actual)
+    range: 3,           // Número de meses a cada lado (total: 2*range + 1)
+  });
+  
   const [newExpense, setNewExpense] = useState({
     description: '',
     amount: '',
@@ -37,20 +45,63 @@ export default function PersonalExpensesTracker() {
     );
   };
 
-  const months = Array.from({ length: 6 }, (_, i) => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - 3 + i); // 3 meses atrás y 3 adelante
-    return {
-      label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-      date
-    };
-  });
+  // Función para generar los meses en el selector
+  const generateMonths = () => {
+    const { center, range } = dateWindow;
+    const centerDate = new Date(center);
+    const months = [];
+    
+    // Generar meses desde (center - range) hasta (center + range)
+    for (let i = -range; i <= range; i++) {
+      const date = new Date(centerDate);
+      date.setMonth(centerDate.getMonth() + i);
+      
+      months.push({
+        label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+        date,
+        isStart: i === -range,
+        isEnd: i === range
+      });
+    }
+    
+    return months;
+  };
+
+  // Generar los meses visibles
+  const months = generateMonths();
+
+  // Manejar la selección de un mes
+  const handleMonthSelect = (monthObj) => {
+    setSelectedMonth(monthObj.date);
+    
+    // Si selecciona un mes en los extremos, desplazar la ventana
+    if (monthObj.isStart) {
+      // Desplazar ventana hacia atrás (3 meses más hacia el pasado)
+      const newCenter = new Date(dateWindow.center);
+      newCenter.setMonth(newCenter.getMonth() - 3);
+      setDateWindow(prev => ({
+        ...prev,
+        center: newCenter
+      }));
+    } else if (monthObj.isEnd) {
+      // Desplazar ventana hacia adelante (3 meses más hacia el futuro)
+      const newCenter = new Date(dateWindow.center);
+      newCenter.setMonth(newCenter.getMonth() + 3);
+      setDateWindow(prev => ({
+        ...prev,
+        center: newCenter
+      }));
+    }
+  };
 
   useEffect(() => {
     const filtered = personalExpenses.filter(exp =>
       isSameMonth(exp.date, selectedMonth)
     );
     setFilteredExpenses(filtered);
+
+    setTotalExpenses(filtered.reduce((sum, exp) => sum + parseFloat(exp.amount), 0));
+    console.log('Total de gastos del mes seleccionado:', totalExpenses);
   }, [personalExpenses, selectedMonth]);
 
   // Cargar los gastos
@@ -489,8 +540,8 @@ export default function PersonalExpensesTracker() {
         <div style={styles.datePicker}>
           {months.map((monthObj, index) => (
             <span
-              key={index}
-              onClick={() => setSelectedMonth(monthObj.date)}
+              key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
+              onClick={() => handleMonthSelect(monthObj)}
               style={isSameMonth(monthObj.date, selectedMonth) ?
                 { ...styles.dateItem, ...styles.activeDate } :
                 styles.dateItem}
@@ -508,15 +559,15 @@ export default function PersonalExpensesTracker() {
         <div style={styles.cardContainer}>
           <div style={styles.card}>
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-              <text>SPENT</text>
+              <span>SPENT</span>
               <GiPayMoney style={{ fontSize: '40px' }} />
             </div>
-            <text style={styles.cardText}>-$50,000</text>
-            <text style={styles.cardSubtitle}>This month's expenses</text>
+            <span style={styles.cardText}>-${totalExpenses}</span>
+            <span style={styles.cardSubtitle}>This month's expenses</span>
           </div>
           <div style={styles.addButton} onClick={openForm}>
             <MdOutlineAddToPhotos style={styles.button} />
-            <text style={styles.buttonText}>ADD EXPENSE</text>
+            <span style={styles.buttonText}>ADD EXPENSE</span>
           </div>
         </div>
 
@@ -535,7 +586,7 @@ export default function PersonalExpensesTracker() {
         <Box sx={styles.modalStyle}>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '20px' }}>
-              <text style={styles.title}>Add Expense</text>
+              <span style={styles.title}>Add Expense</span>
             </div>
             <div>
               <input style={styles.input}
