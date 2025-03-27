@@ -37,9 +37,9 @@ export default function SavingTracker() {
   };
 
   const generateMonths = (centerDate) => {
-    const generated = Array.from({ length: 11 }, (_, i) => {
+    const generated = Array.from({ length: 6 }, (_, i) => {
       const date = new Date(centerDate);
-      date.setMonth(centerDate.getMonth() - 5 + i);
+      date.setMonth(centerDate.getMonth() - 2 + i);
       return {
         label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
         date
@@ -47,7 +47,7 @@ export default function SavingTracker() {
     });
     setMonths(generated);
     setTimeout(() => {
-      monthScrollRef.current?.scrollTo({ x: 115 * 5, animated: true });
+      monthScrollRef.current?.scrollTo({ x: 140, animated: true });
     }, 50);
   };
 

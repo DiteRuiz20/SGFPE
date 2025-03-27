@@ -58,9 +58,9 @@ export default function ExpenseTracker() {
     }, [personalExpenses, selectedDate]);
 
     const generateMonths = (centerDate) => {
-        const generatedMonths = Array.from({ length: 11 }, (_, i) => {
+        const generatedMonths = Array.from({ length: 6 }, (_, i) => {
             const date = new Date(centerDate);
-            date.setMonth(centerDate.getMonth() - 5 + i);
+            date.setMonth(centerDate.getMonth() - 2 + i);
             return {
                 label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
                 date
@@ -70,7 +70,7 @@ export default function ExpenseTracker() {
 
         // Centrar visualmente el mes actual en el ScrollView
         setTimeout(() => {
-            monthScrollRef.current?.scrollTo({ x: 115 * 5, animated: true });
+            monthScrollRef.current?.scrollTo({ x: 140, animated: true });
         }, 50);
     };
 
