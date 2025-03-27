@@ -91,7 +91,7 @@ export default function CreatePersonalAccount() {
 
       return (
         <div className='container'>
-          <div className='container-fluid d-flex flex-column justify-content-center align-items-center mb-5'>
+          <div className='d-flex flex-column justify-content-center align-items-center mb-md-5'>
             <p style={styles.subtitle}>Thanks for joining us!</p>
             <p style={styles.subtitle}>Please fill out the required data about you.</p>
           </div>
