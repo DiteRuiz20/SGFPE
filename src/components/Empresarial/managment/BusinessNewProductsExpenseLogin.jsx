@@ -12,12 +12,13 @@ const schema = yup.object().shape({
     password: yup.string().required('La contraseña es obligatoria'),
 });
 
-export default function BusinessLogin() {
+export default function BusinessNewProductsExpenseLogin() {
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
     const [errorMessage, setErrorMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [accountType] = useState('business-new-product-expense'); // Tipo de cuenta fijo
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(schema),
@@ -27,8 +28,7 @@ export default function BusinessLogin() {
         setErrorMessage('');
         setIsLoading(true);
         try {
-            await login(data.email, data.password, 'business');
-            // Obtener la ruta anterior del estado de la ubicación
+            await login(data.email, data.password, accountType);
             const from = location.state?.from?.pathname || '/business-dashboard';
             navigate(from, { replace: true });
         } catch (error) {
@@ -38,9 +38,7 @@ export default function BusinessLogin() {
         }
     };
 
-    const goToCreateAccount = () => {
-        navigate('/create-business-account');
-    };
+    const goToCreateAccount = () => navigate('/create-business-new-product-expense-account');
 
     const styles = {
         fatherContainer: {
@@ -71,20 +69,20 @@ export default function BusinessLogin() {
             marginLeft: -50,
         },
         image: {
-          width: 230,
-          height: 230,
-          marginBottom: 40,
+            width: 230,
+            height: 230,
+            marginBottom: 40,
         },
         subtitle: {
-          fontSize: 17,
-          color: '#444',
-          marginBottom: 20,
+            fontSize: 17,
+            color: '#444',
+            marginBottom: 20,
         },
         title: {
-          fontSize: 32,
-          fontWeight: 'bold',
-          color: '#30437A',
-          marginBottom: 25,
+            fontSize: 32,
+            fontWeight: 'bold',
+            color: '#30437A',
+            marginBottom: 25,
         },
         input: {
             width: 444,
@@ -98,32 +96,33 @@ export default function BusinessLogin() {
             boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
         },
         divider: {
-          width: '60%',
-          height: 2,
-          backgroundColor: '#EAEAEA',
-          marginTop:20,
+            width: '60%',
+            height: 2,
+            backgroundColor: '#EAEAEA',
+            marginTop: 20,
         },
         orText: {
-          fontSize: 14,
-          color: '#666',
-          backgroundColor: 'white',
-          marginTop: -13,
-          marginBottom: 22,
+            fontSize: 14,
+            color: '#666',
+            backgroundColor: 'white',
+            marginTop: -13,
+            marginBottom: 22,
         },
-         getStarted: {
-          color: '#666',
-          fontSize: 14,
-          marginBottom: 10,
+        getStarted: {
+            color: '#666',
+            fontSize: 14,
+            marginBottom: 10,
         },
-      };
+    };
 
     return (
         <div style={styles.fatherContainer}>
             <div style={styles.container}>
-                <text style={styles.title}>LOGIN</text>
+                <p style={styles.title}>LOGIN</p>
                 <img style={styles.image} src={logo} alt="logo" />
-                <text style={styles.subtitle}>Business Finance Managment</text>
+                <p style={styles.subtitle}>Business Finance Management</p>
             </div>
+
             <div style={styles.containerLeft}>
                 {errorMessage && (
                     <div style={{
@@ -140,7 +139,8 @@ export default function BusinessLogin() {
 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div>
-                        <input style={styles.input}
+                        <input
+                            style={styles.input}
                             type="email"
                             {...register('email')}
                             placeholder="Email"
@@ -149,7 +149,8 @@ export default function BusinessLogin() {
                     </div>
 
                     <div>
-                        <input style={styles.input}
+                        <input
+                            style={styles.input}
                             type="password"
                             {...register('password')}
                             placeholder="Password"
@@ -161,13 +162,15 @@ export default function BusinessLogin() {
                         {isLoading ? 'PROCESANDO...' : 'LOGIN'}
                     </button>
                 </form>
-                <Divider style={styles.divider}/>
-                <text style={styles.orText}>or</text>
-                <text style={styles.getStarted}>Sign up to get started</text>
+
+                <Divider style={styles.divider} />
+                <p style={styles.orText}>or</p>
+                <p style={styles.getStarted}>Sign up to get started</p>
+
                 <button className='secondary_button' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
                     SIGN UP
                 </button>
             </div>
         </div>
     );
-}
+} 

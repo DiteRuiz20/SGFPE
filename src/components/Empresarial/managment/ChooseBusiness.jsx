@@ -34,10 +34,10 @@ export default function ChooseBusiness() {
             <img style={styles.image} src={logo} alt="logo" />
             <text style={styles.title}>What type of business do you run?</text>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <button className='primary_button' onClick={() => navigate('/login-empresarial')}>
+                <button className='primary_button' onClick={() => navigate('/business-raw-materials-login')}>
                     RAW MATERIAL
                 </button>
-                <button className='secondary_button' onClick={() => navigate('/login-empresarial')}>
+                <button className='secondary_button' onClick={() => navigate('/business-new-products-expense-login')}>
                     NEW PROUDCTS EXPENSES
                 </button>
             </div>
