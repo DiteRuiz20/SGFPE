@@ -20,15 +20,6 @@ function Home() {
     const navigate = useNavigate();
 
     const styles = {
-        container: {
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'white',
-          width: '100vw',
-          height: '100vh',
-        },
         image: {
           width: '150px',
           height: '150px',
@@ -38,24 +29,25 @@ function Home() {
           fontSize: '24px',
           marginBottom: '30px',
           textAlign: 'center',
-          maxWidth: '100%',
-          color: 'black'
+          maxWidth: '80%',
+          color: 'black',
+          marginHorizontal: '6px',
         }
       };
             
       return (
-        <div style={styles.container}>
-            <img style={styles.image} src={logo} alt="logo" />
-            <text style={styles.title}>What type of account do you want to create?</text>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className='d-flex flex-column align-items-center justify-content-center'>
+            <img className='col-4' style={styles.image} src={logo} alt="logo" />
+            <p style={styles.title}>What type of account do you want to create?</p>
+            <div className='d-flex flex-column col-sm-4'>
                 <button className='primary_button' onClick={() => navigate('/choose-business')}>
-                    BUSINESS
+                BUSINESS
                 </button>
                 <button className='secondary_button' onClick={() => navigate('/login-personal')}>
-                    PERSONAL
+                PERSONAL
                 </button>
             </div>
-        </div>
+            </div>
     );
 }
 

@@ -5,7 +5,7 @@ import * as yup from 'yup';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/logo.png';
-import { Divider } from '@mui/material';
+import { Divider, stepButtonClasses } from '@mui/material';
 
 const schema = yup.object().shape({
     email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
@@ -83,20 +83,9 @@ export default function PersonalLogin() {
             color: '#30437A',
             marginBottom: 25,
         },
-        input: {
-            width: 444,
-            height: 20,
-            backgroundColor: '#EAEAEA',
-            padding: 15,
-            borderWidth: 0,
-            borderRadius: 8,
-            color: 'black',
-            marginBottom: 15,
-            boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
-        },
         divider: {
             width: '60%',
-            height: 2,
+            height: 4,
             backgroundColor: '#EAEAEA',
             marginTop: 20,
         },
@@ -115,14 +104,16 @@ export default function PersonalLogin() {
     };
 
     return (
-        <div style={styles.fatherContainer}>
-            <div style={styles.container}>
+      <div className='col-12 row d-flex justify-content-center align-items-center'>
+        <div className='col-lg-6 mt-5 d-flex justify-content-center align-items-center flex-column'>
                 <p style={styles.title}>LOGIN</p>
-                <img style={styles.image} src={logo} alt="logo" />
+                <div className="col-4 mb-4">
+                    <img className='img-fluid' src={logo} alt="logo" />
+                </div>
                 <p style={styles.subtitle}>Personal Finance Managment</p>
             </div>
 
-            <div style={styles.containerLeft}>
+            <div className='col-lg-6 mt-5 d-flex justify-content-center align-items-center flex-column'>
                 {errorMessage && (
                     <div style={{
                         backgroundColor: '#ffebee',
@@ -130,16 +121,15 @@ export default function PersonalLogin() {
                         borderRadius: '4px',
                         marginBottom: '15px',
                         color: '#d32f2f',
-                        width: '444px',
+                        width: '80%',
                     }}>
                         {errorMessage}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <div>
-                        <input
-                            style={styles.input}
+                <form className='col-12 d-flex justify-content-center flex-column' onSubmit={handleSubmit(onSubmit)}>
+                    <div className='d-flex justify-content-center'>
+                        <input className='input col-8'
                             type="email"
                             {...register('email')}
                             placeholder="Email"
@@ -147,9 +137,8 @@ export default function PersonalLogin() {
                         {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
                     </div>
 
-                    <div>
-                        <input
-                            style={styles.input}
+                    <div className='d-flex justify-content-center'>
+                        <input className='input col-8'
                             type="password"
                             {...register('password')}
                             placeholder="Password"
@@ -157,19 +146,24 @@ export default function PersonalLogin() {
                         {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                     </div>
 
-                    <button className='primary_button' type="submit" disabled={isLoading}>
-                        {isLoading ? 'PROCESANDO...' : 'LOGIN'}
-                    </button>
+                    <div className="d-flex justify-content-center">
+                        <button className='primary_button col-md-8 ' type="submit" disabled={isLoading}>
+                            {isLoading ? 'PROCESANDO...' : 'LOGIN'}
+                        </button>
+                    </div>
                 </form>
 
                 <Divider style={styles.divider} />
-                <p style={styles.orText}>or</p>
-                <p style={styles.getStarted}>Sign up to get started</p>
+                <p>or</p>
+                <p>Sign up to get started</p>
 
-                <button className='secondary_button' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
-                    SIGN UP
-                </button>
+                <div className="d-flex justify-content-center col-12">
+                    <button className='secondary_button col-md-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
+                        SIGN UP
+                    </button>
+                </div>
             </div>
         </div>
+            
     );
 }
