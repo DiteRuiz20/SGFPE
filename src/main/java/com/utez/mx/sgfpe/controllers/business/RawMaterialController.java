@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -60,4 +61,17 @@ public class RawMaterialController {
     public ResponseEntity<List<RawMaterial>> getBySupplier(@PathVariable String supplier) {
         return ResponseEntity.ok(rawMaterialService.getRawMaterialsBySupplier(supplier));
     }
+
+    @PostMapping("/consume")
+    public ResponseEntity<String> consumeMaterial(@RequestBody Map<String, Object> payload) {
+        try {
+            String materialId = (String) payload.get("materialId");
+            double amountToConsume = Double.parseDouble(payload.get("quantity").toString());
+            rawMaterialService.consumeMaterial(materialId, amountToConsume);
+            return ResponseEntity.ok("Insumo consumido exitosamente");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
 }

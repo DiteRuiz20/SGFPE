@@ -100,4 +100,25 @@ public class RawMaterialService {
         workbook.close();
         return rawMaterialRepository.saveAll(materials);
     }
+
+    public void consumeMaterial(String materialId, double quantity) throws Exception {
+        Optional<RawMaterial> optional = rawMaterialRepository.findById(materialId);
+        if (optional.isEmpty()) {
+            throw new Exception("Materia prima no encontrada");
+        }
+
+        RawMaterial material = optional.get();
+
+        if (quantity > material.getQuantity()) {
+            throw new Exception("No hay suficiente cantidad disponible para consumir");
+        }
+
+        double newQuantity = material.getQuantity() - quantity;
+        if (newQuantity == 0) {
+            rawMaterialRepository.deleteById(materialId); // Se elimina al agotarse
+        } else {
+            material.setQuantity(newQuantity);
+            rawMaterialRepository.save(material); // Se actualiza
+        }
+    }
 }
