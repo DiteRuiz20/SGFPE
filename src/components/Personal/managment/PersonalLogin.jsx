@@ -5,7 +5,6 @@ import * as yup from 'yup';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/logo.png';
-import { Divider, stepButtonClasses } from '@mui/material';
 
 const schema = yup.object().shape({
     email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
@@ -40,42 +39,13 @@ export default function PersonalLogin() {
     const goToCreateAccount = () => navigate('/create-personal-account');
 
     const styles = {
-        fatherContainer: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            width: '100vw',
-            height: '100vh',
-        },
-        container: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            width: '100vw',
-            height: '100vh',
-        },
-        containerLeft: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            width: '100vw',
-            height: '100vh',
-            marginLeft: -50,
-        },
         image: {
-            width: 230,
-            height: 230,
-            marginBottom: 40,
+            width: '70%',
+            height: '70%',
         },
         subtitle: {
             fontSize: 17,
             color: '#444',
-            marginBottom: 20,
         },
         title: {
             fontSize: 32,
@@ -83,18 +53,10 @@ export default function PersonalLogin() {
             color: '#30437A',
             marginBottom: 25,
         },
-        divider: {
-            width: '60%',
-            height: 4,
-            backgroundColor: '#EAEAEA',
-            marginTop: 20,
-        },
         orText: {
             fontSize: 14,
             color: '#666',
-            backgroundColor: 'white',
-            marginTop: -13,
-            marginBottom: 22,
+            marginTop: 10
         },
         getStarted: {
             color: '#666',
@@ -105,13 +67,15 @@ export default function PersonalLogin() {
 
     return (
       <div className='col-12 row d-flex justify-content-center align-items-center'>
-        <div className='col-lg-6 mt-5 d-flex justify-content-center align-items-center flex-column'>
-                <p style={styles.title}>LOGIN</p>
-                <div className="col-4 mb-4">
-                    <img className='img-fluid' src={logo} alt="logo" />
-                </div>
-                <p style={styles.subtitle}>Personal Finance Managment</p>
-            </div>
+        <div className='col-lg-6 d-flex justify-content-center align-items-center flex-column'>
+          <p style={styles.title}>LOGIN</p>
+          <div className="col-4 mb-4 d-flex justify-content-center">
+            <img className='img-fluid' style={styles.image} src={logo} alt="logo" />
+          </div>
+          <div className="d-flex justify-content-center">
+            <p style={styles.subtitle}>Personal Finance Managment</p>
+          </div>
+        </div>
 
             <div className='col-lg-6 mt-5 d-flex justify-content-center align-items-center flex-column'>
                 {errorMessage && (
@@ -121,14 +85,14 @@ export default function PersonalLogin() {
                         borderRadius: '4px',
                         marginBottom: '15px',
                         color: '#d32f2f',
-                        width: '80%',
+                        width: '66%',
                     }}>
                         {errorMessage}
                     </div>
                 )}
 
                 <form className='col-12 d-flex justify-content-center flex-column' onSubmit={handleSubmit(onSubmit)}>
-                    <div className='d-flex justify-content-center'>
+                    <div className='d-flex flex-column justify-content-center align-items-center'>
                         <input className='input col-8'
                             type="email"
                             {...register('email')}
@@ -137,7 +101,7 @@ export default function PersonalLogin() {
                         {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
                     </div>
 
-                    <div className='d-flex justify-content-center'>
+                    <div className='d-flex flex-column justify-content-center align-items-center'>
                         <input className='input col-8'
                             type="password"
                             {...register('password')}
@@ -153,9 +117,8 @@ export default function PersonalLogin() {
                     </div>
                 </form>
 
-                <Divider style={styles.divider} />
-                <p>or</p>
-                <p>Sign up to get started</p>
+                <p style={styles.orText}>or</p>
+                <p style={styles.getStarted}>Sign up to get started</p>
 
                 <div className="d-flex justify-content-center col-12">
                     <button className='secondary_button col-md-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
