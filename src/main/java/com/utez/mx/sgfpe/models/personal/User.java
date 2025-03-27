@@ -17,18 +17,23 @@ public class User {
     private String password; // Password for authentication (store securely)
     private String phoneNumber; // Phone number for contact
     private String accountType;
+    private String companyName;
+    private String address;
 
     // Default constructor required by MongoDB
     public User() {
     }
 
     // Constructor with all attributes for easy instantiation
-    public User(String name, String email, String password, String phoneNumber, String accountType) {
+    public User(String name, String email, String password, String phoneNumber, String accountType, String companyName,
+            String address) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.phoneNumber = phoneNumber;
         this.accountType = accountType;
+        this.companyName = companyName;
+        this.address = address;
     }
 
     public String getId() {
@@ -74,8 +79,25 @@ public class User {
     public String getAccountType() {
         return accountType;
     }
+
     public void setAccountType(String accountType) {
         this.accountType = accountType;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
 }

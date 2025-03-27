@@ -13,13 +13,14 @@ import java.time.Instant;
 public class RawMaterial {
 
     @Id
-    private ObjectId id; // Unique identifier for each raw material
+    private String id; // Unique identifier for each raw material
 
+    private String userId; // ID of the user who owns this raw material
     private Instant entryDate; // Date when the raw material was received
     private String materialDescription; // Description of the raw material
     private String supplier; // Supplier of the raw material
     private double quantity; // Quantity of raw material acquired
-    private String measurementUnit; // Unit of measurement (e.g., kg, liters)
+    private String measurementUnit; // Unidad de medida (e.g., kg, litros)
     private BigDecimal unitPrice; // Price per unit of the raw material
     private String notes; // Additional notes
 
@@ -28,7 +29,8 @@ public class RawMaterial {
     }
 
     // Constructor with all attributes for easy instantiation
-    public RawMaterial(Instant entryDate, String materialDescription, String supplier, double quantity, String measurementUnit, BigDecimal unitPrice, String notes) {
+    public RawMaterial(String userId, Instant entryDate, String materialDescription, String supplier, double quantity, String measurementUnit, BigDecimal unitPrice, String notes) {
+        this.userId = userId;
         this.entryDate = entryDate;
         this.materialDescription = materialDescription;
         this.supplier = supplier;
@@ -38,16 +40,11 @@ public class RawMaterial {
         this.notes = notes;
     }
 
-    // Method to calculate total cost (unitPrice * quantity)
-    public BigDecimal getTotal() {
-        return unitPrice.multiply(BigDecimal.valueOf(quantity));
-    }
-
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -105,5 +102,13 @@ public class RawMaterial {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }
