@@ -40,22 +40,22 @@ export default function PersonalLogin() {
 
     const styles = {
         image: {
-            width: '70%',
-            height: '70%',
+            width: '75%',
+            height: '75%',
         },
         subtitle: {
-            fontSize: 17,
+            fontSize: 20,
             color: '#444',
         },
         title: {
-            fontSize: 32,
+            fontSize: 34,
             fontWeight: 'bold',
             color: '#30437A',
             marginBottom: 25,
         },
         getStarted: {
-            color: '#666',
-            fontSize: 14,
+            color: '#222',
+            fontSize: 16,
             marginBottom: 10,
         },
     };
@@ -63,7 +63,7 @@ export default function PersonalLogin() {
     return (
       <div className="container">
         <div className='row d-flex justify-content-center align-items-center'>
-        <div className='col-lg-6 d-flex justify-content-center align-items-center flex-column'>
+        <div className='col-sm-6 d-flex justify-content-center align-items-center flex-column'>
           <p style={styles.title}>INICIO DE SESIÓN</p>
           <div className="col-4 mb-4 d-flex justify-content-center">
             <img className='img-fluid' style={styles.image} src={logo} alt="logo" />
@@ -73,7 +73,7 @@ export default function PersonalLogin() {
           </div>
         </div>
 
-            <div className='col-lg-6 mt-5 d-flex justify-content-center align-items-center flex-column'>
+            <div className='col-sm-6 d-flex justify-content-center align-items-center flex-column'>
                 {errorMessage && (
                     <div style={{
                         backgroundColor: '#ffebee',
@@ -107,20 +107,18 @@ export default function PersonalLogin() {
                     </div>
 
                     <div className="d-flex justify-content-center">
-                        <button className='primary_button col-md-8 ' type="submit" disabled={isLoading}>
+                        <button className='primary_button col-8 ' type="submit" disabled={isLoading}>
                             {isLoading ? 'PROCESANDO...' : 'INICIAR SESIÓN'}
                         </button>
                     </div>
                 </form>
 
-                
-
-                <div className="d-flex justify-content-center col-12 mt-4">
-                    <button className='secondary_button col-md-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
+                <div className="d-flex flex-column justify-content-center align-items-center col-12 mt-md-3 mt-lg-5">
+                <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
+                    <button className='secondary_button col-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
                         REGISTRARSE
                     </button>
                 </div>
-                <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
             </div>
         </div>
       </div>

@@ -84,7 +84,7 @@ export default function CreatePersonalAccount() {
         height: '70%',
       },
       subtitle: {
-        fontSize: 17,
+        fontSize: '18px',
         color: '#444',
       },
     };
@@ -101,7 +101,7 @@ export default function CreatePersonalAccount() {
                     <img className='img-fluid' style={styles.image} src={logo} alt="logo" />
                   </div>
                   <div className='d-flex flex-column justify-content-center align-items-center text-center'>
-                    <p stytle={styles.subtitle}>Nota:</p>
+                    <p style={styles.subtitle}>Nota:</p>
                     <p style={styles.subtitle}>Se te enviará un código de confirmación por correo electrónico, que se utilizará para autenticar tu cuenta.</p>
                   </div>
                   <button className='secondary_button col-8' type="button" onClick={customSubmit}>REGISTRARSE</button>

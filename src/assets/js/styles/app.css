@@ -2,7 +2,7 @@ body {
   margin: 0;
   height: '100%';
   overflow: hidden;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   display: flex;
   justify-content: center;
   background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../../imgs/backimg.jpg');

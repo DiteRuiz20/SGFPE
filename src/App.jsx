@@ -31,13 +31,12 @@ function Home() {
           marginBottom: '40px',
         },
         title: {
-          fontSize: '24px',
+          fontSize: '26px',
           marginBottom: '30px',
           textAlign: 'center',
           maxWidth: '80%',
           color: 'black',
           marginHorizontal: '6px',
-          fontFamily: 'Poppins, sans-serif', 
         }
       };
             
