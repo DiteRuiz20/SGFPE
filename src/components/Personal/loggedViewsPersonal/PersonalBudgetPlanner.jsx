@@ -222,19 +222,19 @@ export default function PersonalBudgetPlanner() {
   };
   
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.menu}>
+    <div className='container-fluid'>
+      <div className="navbar fixed-top bg-body-tertiary">
+        <div className="container-fluid">
           <img src={logo} alt="Logo" style={{ width: '90px' }} />
-          {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-            <span
-              key={index}
-              style={styles.navLink(paths[text])}
-              onClick={() => handleNavigation(text)}
-            >
-              {text}
-            </span>
-          ))}
+            {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
+              <span
+                key={index}
+                style={styles.navLink(paths[text])}
+                onClick={() => handleNavigation(text)}
+              >
+                {text}
+              </span>
+            ))}
         </div>
 
         <div style={styles.datePicker}>

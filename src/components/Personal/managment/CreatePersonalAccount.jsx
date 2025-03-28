@@ -92,8 +92,8 @@ export default function CreatePersonalAccount() {
       return (
         <div className='container'>
           <div className='d-flex flex-column justify-content-center align-items-center mb-md-5'>
-            <p style={styles.subtitle}>Thanks for joining us!</p>
-            <p style={styles.subtitle}>Please fill out the required data about you.</p>
+            <p style={styles.subtitle}>¡Gracias por unirte a nosotros!</p>
+            <p style={styles.subtitle}>Por favor, llena los campos solicitados.</p>
           </div>
           <div className='row justify-content-center align-items-center'>
               <div className='col-sm-6'>
@@ -102,7 +102,7 @@ export default function CreatePersonalAccount() {
                     <input className='input col-8'
                       type="text"
                       {...register('name')}
-                      placeholder="Name"
+                      placeholder="Nombre"
                     />
                     {errors.name && <p style={{ color: 'red' }}>{errors.name.message}</p>}
                   </div>
@@ -111,7 +111,7 @@ export default function CreatePersonalAccount() {
                     <input className='input col-8'
                       type="email"
                       {...register('email')}
-                      placeholder="Email"
+                      placeholder="Correo electrónico"
                     />
                     {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
                   </div>
@@ -120,7 +120,7 @@ export default function CreatePersonalAccount() {
                     <input className='input col-8'
                       type="text"
                       {...register('username')}
-                      placeholder="Username"
+                      placeholder="Nombre de usuario"
                     />
                     {errors.username && <p style={{ color: 'red' }}>{errors.username.message}</p>}
                   </div>
@@ -129,7 +129,7 @@ export default function CreatePersonalAccount() {
                     <input className='input col-8'
                       type="text"
                       {...register('phoneNumber')}
-                      placeholder="PhoneNumber"
+                      placeholder="Numero telefónico"
                     />
                     {errors.phoneNumber && <p style={{ color: 'red' }}>{errors.phoneNumber.message}</p>}
                   </div>
@@ -138,7 +138,7 @@ export default function CreatePersonalAccount() {
                     <input className='input col-8'
                       type="password"
                       {...register('password')}
-                      placeholder="Password"
+                      placeholder="Contraseña"
                     />
                     {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                   </div>
@@ -149,10 +149,10 @@ export default function CreatePersonalAccount() {
                     <img className='img-fluid' style={styles.image} src={logo} alt="logo" />
                   </div>
                   <div className='d-flex flex-column justify-content-center align-items-center text-center'>
-                    <p stytle={styles.subtitle}>Note:</p>
-                    <p style={styles.subtitle}>You will be sent a confirmation code via email, which will be used to authenticate your account.</p>
+                    <p stytle={styles.subtitle}>Nota:</p>
+                    <p style={styles.subtitle}>Se te enviará un código de confirmación por correo electrónico, que se utilizará para autenticar tu cuenta.</p>
                   </div>
-                  <button className='secondary_button col-8' type="button" onClick={customSubmit}>SIGN UP</button>
+                  <button className='secondary_button col-8' type="button" onClick={customSubmit}>REGISTRARSE</button>
               </div>
           </div>        
         </div>

@@ -27,7 +27,7 @@ export default function PersonalLogin() {
         setIsLoading(true);
         try {
             await login(data.email, data.password, 'personal');
-            const from = location.state?.from?.pathname || '/personal-expenses';
+            const from = location.state?.from?.pathname || '/personal-budget-planner';
             navigate(from, { replace: true });
         } catch (error) {
             setErrorMessage(error.message || 'Error al iniciar sesión');
@@ -53,12 +53,8 @@ export default function PersonalLogin() {
             color: '#30437A',
             marginBottom: 25,
         },
-        orText: {
-            fontSize: 14,
-            color: '#666',
-            marginTop: 10
-        },
         getStarted: {
+            marginTop: 22,
             color: '#666',
             fontSize: 14,
             marginBottom: 10,
@@ -68,12 +64,12 @@ export default function PersonalLogin() {
     return (
       <div className='col-12 row d-flex justify-content-center align-items-center'>
         <div className='col-lg-6 d-flex justify-content-center align-items-center flex-column'>
-          <p style={styles.title}>LOGIN</p>
+          <p style={styles.title}>INICIO DE SESIÓN</p>
           <div className="col-4 mb-4 d-flex justify-content-center">
             <img className='img-fluid' style={styles.image} src={logo} alt="logo" />
           </div>
-          <div className="d-flex justify-content-center">
-            <p style={styles.subtitle}>Personal Finance Managment</p>
+          <div className="d-flex justify-content-center mt-2">
+            <p style={styles.subtitle}>Gestión Financiera Personal</p>
           </div>
         </div>
 
@@ -96,7 +92,7 @@ export default function PersonalLogin() {
                         <input className='input col-8'
                             type="email"
                             {...register('email')}
-                            placeholder="Email"
+                            placeholder="Correo electrónico"
                         />
                         {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
                     </div>
@@ -105,24 +101,23 @@ export default function PersonalLogin() {
                         <input className='input col-8'
                             type="password"
                             {...register('password')}
-                            placeholder="Password"
+                            placeholder="Contraseña"
                         />
                         {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                     </div>
 
                     <div className="d-flex justify-content-center">
                         <button className='primary_button col-md-8 ' type="submit" disabled={isLoading}>
-                            {isLoading ? 'PROCESANDO...' : 'LOGIN'}
+                            {isLoading ? 'PROCESANDO...' : 'INICIAR SESIÓN'}
                         </button>
                     </div>
                 </form>
 
-                <p style={styles.orText}>or</p>
-                <p style={styles.getStarted}>Sign up to get started</p>
+                <p style={styles.getStarted}>¿No tienes una cuenta?</p>
 
                 <div className="d-flex justify-content-center col-12">
                     <button className='secondary_button col-md-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
-                        SIGN UP
+                        REGISTRARSE
                     </button>
                 </div>
             </div>

@@ -42,10 +42,10 @@ function Home() {
       return (
         <div className='d-flex flex-column align-items-center justify-content-center'>
             <img className='col-4' style={styles.image} src={logo} alt="logo" />
-            <p style={styles.title}>What type of account do you want to create?</p>
+            <p style={styles.title}>¿Qué tipo de cuenta deseas?</p>
             <div className='d-flex flex-column col-sm-4'>
                 <button className='primary_button' onClick={() => navigate('/choose-business')}>
-                    BUSINESS
+                    EMPRESARIAL
                 </button>
                 <button className='secondary_button' onClick={() => navigate('/login-personal')}>
                     PERSONAL
