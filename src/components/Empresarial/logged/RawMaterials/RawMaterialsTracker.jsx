@@ -6,6 +6,7 @@ import { Modal, Box, Divider } from '@mui/material';
 import { GiPayMoney } from 'react-icons/gi';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import logo from '../../../../assets/logo.png';
+import MaterialUsageTracker from './MaterialUsageTracker';
 
 const RawMaterialsTracker = () => {
     const [rawMaterials, setRawMaterials] = useState([]);
@@ -13,10 +14,13 @@ const RawMaterialsTracker = () => {
     const [totalMaterials, setTotalMaterials] = useState(0);
     const [open, setIsOpen] = useState(false);
     const [file, setFile] = useState(null);
+    const [openUsageModal, setOpenUsageModal] = useState(false);
     const navigate = useNavigate();
 
     const openForm = () => setIsOpen(true);
     const closeForm = () => setIsOpen(false);
+    const openUsageForm = () => setOpenUsageModal(true);
+    const closeUsageForm = () => setOpenUsageModal(false);
 
     // Definir la función fetchRawMaterials fuera del useEffect
     const fetchRawMaterials = async () => {
@@ -96,6 +100,9 @@ const RawMaterialsTracker = () => {
                         <MdOutlineAddToPhotos style={{ fontSize: '20px' }} />
                         <span>Añadir Material</span>
                     </div>
+                    <div style={{ cursor: 'pointer', border: '1px solid #30437A', padding: '10px', borderRadius: '5px', marginLeft: '10px' }} onClick={openUsageForm}>
+                        <span>Registrar Consumo</span>
+                    </div>
                 </div>
             </div>
 
@@ -120,8 +127,19 @@ const RawMaterialsTracker = () => {
                         <div style={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
                             <button type="button" onClick={closeForm} style={{ marginRight: '10px' }}>Cancelar</button>
                             <button type="submit">Subir</button>
+                            <button onClick={() => navigate('/material-usage-tracker')}>
+                                Ir a insumos
+                            </button>
+                            <button onClick={() => navigate('/raw-material-order')}>Ir a pedidos</button>
                         </div>
                     </form>
+                </Box>
+            </Modal>
+
+            {/* Modal para el uso de materiales */}
+            <Modal open={openUsageModal} onClose={closeUsageForm}>
+                <Box sx={{ /* estilos del modal */ }}>
+                    <MaterialUsageTracker />
                 </Box>
             </Modal>
         </div>
