@@ -1,84 +1,89 @@
 package com.utez.mx.sgfpe.models.business;
 
-import lombok.Data;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
-@Data
-@Document(collection = "orders") // MongoDB collection for customer orders
+@Document(collection = "orders")
 public class Order {
 
     @Id
-    private ObjectId id; // Unique identifier for each order
+    private String id;
 
-    private String companyId; // ID of the company handling this order
-    private Instant orderDate; // Date the order was placed
-    private BigDecimal totalAmount; // Total amount for the order
-    private String customerName; // Name of the customer placing the order
-    private String status; // Status of the order: "pending", "completed", "cancelled"
+    private String userId;
+    private String orderDescription;
+    private List<String> materialUsageIds;
+    private BigDecimal income;
+    private BigDecimal netProfit;
+    private Instant createdAt;
 
-    // Default constructor required by MongoDB
-    public Order(){
+    public Order() {}
+
+    public Order(String userId, String orderDescription, List<String> materialUsageIds, BigDecimal income, BigDecimal netProfit) {
+        this.userId = userId;
+        this.orderDescription = orderDescription;
+        this.materialUsageIds = materialUsageIds;
+        this.income = income;
+        this.netProfit = netProfit;
+        this.createdAt = Instant.now();
     }
 
-    // Constructor with all attributes for easy instantiation
-    public Order(String companyId, Instant orderDate, BigDecimal totalAmount, String customerName, String status) {
-        this.companyId = companyId;
-        this.orderDate = orderDate;
-        this.totalAmount = totalAmount;
-        this.customerName = customerName;
-        this.status = status;
-    }
-
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getCompanyId() {
-        return companyId;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setCompanyId(String companyId) {
-        this.companyId = companyId;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public Instant getOrderDate() {
-        return orderDate;
+    public String getOrderDescription() {
+        return orderDescription;
     }
 
-    public void setOrderDate(Instant orderDate) {
-        this.orderDate = orderDate;
+    public void setOrderDescription(String orderDescription) {
+        this.orderDescription = orderDescription;
     }
 
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
+    public List<String> getMaterialUsageIds() {
+        return materialUsageIds;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
+    public void setMaterialUsageIds(List<String> materialUsageIds) {
+        this.materialUsageIds = materialUsageIds;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public BigDecimal getIncome() {
+        return income;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setIncome(BigDecimal income) {
+        this.income = income;
     }
 
-    public String getStatus() {
-        return status;
+    public BigDecimal getNetProfit() {
+        return netProfit;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setNetProfit(BigDecimal netProfit) {
+        this.netProfit = netProfit;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

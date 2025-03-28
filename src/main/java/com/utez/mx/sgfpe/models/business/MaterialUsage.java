@@ -21,6 +21,7 @@ public class MaterialUsage {
     private BigDecimal unitPrice;
     private BigDecimal totalCost; // unitPrice * quantityUsed
     private Instant createdAt;
+    private boolean usedInOrder = false;
 
     public MaterialUsage() {}
 
@@ -32,6 +33,7 @@ public class MaterialUsage {
         this.unitPrice = unitPrice;
         this.totalCost = unitPrice.multiply(BigDecimal.valueOf(quantityUsed));
         this.createdAt = Instant.now();
+        this.usedInOrder = false;
     }
 
     public String getId() {
@@ -96,5 +98,13 @@ public class MaterialUsage {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isUsedInOrder() {
+        return usedInOrder;
+    }
+
+    public void setUsedInOrder(boolean usedInOrder) {
+        this.usedInOrder = usedInOrder;
     }
 }

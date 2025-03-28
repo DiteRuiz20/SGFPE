@@ -6,51 +6,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/business/orders") // Base URL for order-related endpoints
+@RequestMapping("/api/orders")
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
 
-    // Get all orders
-    @GetMapping
-    public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
-    }
+    @PostMapping("/create")
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> body) {
+        try {
+            String userId = (String) body.get("userId");
+            String description = (String) body.get("orderDescription");
+            List<String> usageIds = (List<String>) body.get("materialUsageIds");
+            BigDecimal income = new BigDecimal(body.get("income").toString());
 
-    // Get order by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable String id) {
-        Optional<Order> order = orderService.getOrderById(id);
-        return order.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // Create a new order
-    @PostMapping
-    public Order createOrder(@RequestBody Order order) {
-        return orderService.saveOrUpdateOrder(order);
-    }
-
-    // Update an existing order
-    @PutMapping("/{id}")
-    public ResponseEntity<Order> updateOrder(@PathVariable String id, @RequestBody Order updatedOrder) {
-        Optional<Order> existingOrder = orderService.getOrderById(id);
-        if (existingOrder.isPresent()) {
-            updatedOrder.setId(existingOrder.get().getId());
-            return ResponseEntity.ok(orderService.saveOrUpdateOrder(updatedOrder));
-        } else {
-            return ResponseEntity.notFound().build();
+            Order order = orderService.createOrder(userId, description, usageIds, income);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 
-    // Delete an order by ID
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Order>> getOrdersByUserId(@PathVariable String userId) {
+        return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable String id) {
-        orderService.deleteOrderById(id);
+    public ResponseEntity<?> deleteOrder(@PathVariable String id) {
+        orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -57,5 +58,20 @@ public class MaterialUsageService {
         }
 
         return materialUsageRepository.save(usage);
+    }
+
+    // Método para obtener todos los registros
+    public List<MaterialUsage> getAllUsages() {
+        return materialUsageRepository.findAll();
+    }
+
+    // Método para obtener registros por userId
+    public List<MaterialUsage> getUsagesByUserId(String userId) {
+        return materialUsageRepository.findByUserId(userId);
+    }
+
+    // Método para eliminar un registro
+    public void deleteUsage(String id) {
+        materialUsageRepository.deleteById(id);
     }
 }
