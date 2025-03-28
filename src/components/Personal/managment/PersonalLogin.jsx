@@ -54,7 +54,6 @@ export default function PersonalLogin() {
             marginBottom: 25,
         },
         getStarted: {
-            marginTop: 22,
             color: '#666',
             fontSize: 14,
             marginBottom: 10,
@@ -62,7 +61,8 @@ export default function PersonalLogin() {
     };
 
     return (
-      <div className='col-12 row d-flex justify-content-center align-items-center'>
+      <div className="container">
+        <div className='row d-flex justify-content-center align-items-center'>
         <div className='col-lg-6 d-flex justify-content-center align-items-center flex-column'>
           <p style={styles.title}>INICIO DE SESIÓN</p>
           <div className="col-4 mb-4 d-flex justify-content-center">
@@ -113,15 +113,17 @@ export default function PersonalLogin() {
                     </div>
                 </form>
 
-                <p style={styles.getStarted}>¿No tienes una cuenta?</p>
+                
 
-                <div className="d-flex justify-content-center col-12">
+                <div className="d-flex justify-content-center col-12 mt-4">
                     <button className='secondary_button col-md-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
                         REGISTRARSE
                     </button>
                 </div>
+                <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
             </div>
         </div>
+      </div>
             
     );
 }

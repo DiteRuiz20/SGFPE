@@ -19,6 +19,7 @@ import PersonalProfile from './components/Personal/loggedViewsPersonal/PersonalP
 import VerifyAccount from './components/Personal/managment/VerifyAccount';
 import RawMaterialsTracker from './components/Empresarial/logged/RawMaterials/RawMaterialsTracker';
 import logo from './assets/logo.png';
+import './assets/js/styles/app.css';
 
 function Home() {
     const navigate = useNavigate();
@@ -36,23 +37,24 @@ function Home() {
           maxWidth: '80%',
           color: 'black',
           marginHorizontal: '6px',
+          fontFamily: 'Poppins, sans-serif', 
         }
       };
             
       return (
-        <div className='d-flex flex-column align-items-center justify-content-center'>
+       <div className='container d-flex flex-column align-items-center justify-content-center'>
             <img className='col-4' style={styles.image} src={logo} alt="logo" />
             <p style={styles.title}>¿Qué tipo de cuenta deseas?</p>
             <div className='d-flex flex-column col-sm-4'>
-                <button className='primary_button' onClick={() => navigate('/choose-business')}>
-                    EMPRESARIAL
-                </button>
-                <button className='secondary_button' onClick={() => navigate('/login-personal')}>
-                    PERSONAL
-                </button>
+              <button className='primary_button' onClick={() => navigate('/choose-business')}>
+                EMPRESARIAL
+              </button>
+              <button className='secondary_button' onClick={() => navigate('/login-personal')}>
+                PERSONAL
+              </button>
             </div>
-        </div>
-    );
+          </div>
+      );
 }
 
 function App() {

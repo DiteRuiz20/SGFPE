@@ -95,7 +95,17 @@ export default function CreatePersonalAccount() {
             <p style={styles.subtitle}>¡Gracias por unirte a nosotros!</p>
             <p style={styles.subtitle}>Por favor, llena los campos solicitados.</p>
           </div>
-          <div className='row justify-content-center align-items-center'>
+          <div className='row justify-content-center align-items-center col-12'>
+              <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+                  <div className="col-4 mb-4 d-flex justify-content-center">
+                    <img className='img-fluid' style={styles.image} src={logo} alt="logo" />
+                  </div>
+                  <div className='d-flex flex-column justify-content-center align-items-center text-center'>
+                    <p stytle={styles.subtitle}>Nota:</p>
+                    <p style={styles.subtitle}>Se te enviará un código de confirmación por correo electrónico, que se utilizará para autenticar tu cuenta.</p>
+                  </div>
+                  <button className='secondary_button col-8' type="button" onClick={customSubmit}>REGISTRARSE</button>
+              </div>
               <div className='col-sm-6'>
                 <form>
                   <div className='d-flex flex-column justify-content-center align-items-center'>
@@ -143,16 +153,6 @@ export default function CreatePersonalAccount() {
                     {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                   </div>
                 </form>
-              </div>
-              <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
-                  <div className="col-4 mb-4 d-flex justify-content-center">
-                    <img className='img-fluid' style={styles.image} src={logo} alt="logo" />
-                  </div>
-                  <div className='d-flex flex-column justify-content-center align-items-center text-center'>
-                    <p stytle={styles.subtitle}>Nota:</p>
-                    <p style={styles.subtitle}>Se te enviará un código de confirmación por correo electrónico, que se utilizará para autenticar tu cuenta.</p>
-                  </div>
-                  <button className='secondary_button col-8' type="button" onClick={customSubmit}>REGISTRARSE</button>
               </div>
           </div>        
         </div>

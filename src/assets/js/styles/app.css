@@ -1,0 +1,34 @@
+body {
+  margin: 0;
+  height: '100%';
+  overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../../imgs/backimg.jpg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.container {
+  text-align: center;
+  animation: slideUp 1.5s ease-in-out forwards;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .hide-on-small {
+      display: none;
+  }
+}
