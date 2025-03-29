@@ -23,7 +23,7 @@ export const getAllMaterialUsages = async () => {
 export const getMaterialUsagesByUserId = async (userId) => {
     try {
         const response = await api.get(`/api/material-usage/user/${userId}`);
-        return response.data; // Devuelve solo los datos de la respuesta
+        return response; // Devuelve solo los datos de la respuesta
     } catch (error) {
         throw error; // Lanza el error para manejarlo en el componente
     }

@@ -20,7 +20,8 @@ export const createRawMaterial = (data) => {
 
 // Método para obtener materiales por usuario
 export const getRawMaterialsByUser = (userId) => {
-    return api.get(`/api/raw-materials/user/${userId}`);
+    const response = api.get(`/api/raw-materials/user/${userId}`);
+    return response;
 };
 
 // Método para eliminar un material
