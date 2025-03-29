@@ -82,6 +82,11 @@
 			<version>5.2.3</version> <!-- O la última versión estable -->
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 		<!-- (Opcional) Para trabajar con fechas y conversiones de Java 8 en adelante -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>

@@ -1,7 +1,9 @@
 package com.utez.mx.sgfpe.services.personal;
 
+import com.utez.mx.sgfpe.models.personal.DTO.RegistrationRequest;
 import com.utez.mx.sgfpe.models.personal.User;
 import com.utez.mx.sgfpe.repositories.personal.UserRepository;
+import com.utez.mx.sgfpe.services.email.EmailService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     // Get all users
     public List<User> getAllUsers() {
@@ -43,4 +48,42 @@ public class UserService {
     public boolean emailExists(String email) {
         return userRepository.existsByEmail(email);
     }
+
+    public String registerUserWithVerification(RegistrationRequest request) {
+        Optional<User> existingUser = getUserByEmail(request.getEmail());
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("Ya existe una cuenta con este correo.");
+        }
+
+        String code = generateVerificationCode();
+
+        User user = new User(
+                request.getName(),
+                request.getEmail(),
+                request.getPassword(),
+                request.getPhoneNumber(),
+                request.getAccountType(),
+                request.getCompanyName(),
+                request.getAddress(),
+                code,
+                false // emailVerified
+        );
+
+        userRepository.save(user);
+
+        // Enviar código
+        emailService.sendVerificationEmail(user.getEmail(), code);
+
+        return "Código de verificación enviado al correo.";
+    }
+
+    public String generateVerificationCode() {
+        int code = (int)(Math.random() * 900000) + 100000; // 6 dígitos
+        return String.valueOf(code);
+    }
+
+    public void updateUser(User user) {
+        userRepository.save(user);
+    }
+
 }

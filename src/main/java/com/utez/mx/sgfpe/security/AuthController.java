@@ -3,6 +3,8 @@ package com.utez.mx.sgfpe.security;
 import java.util.Map;
 import java.util.Optional;
 
+import com.utez.mx.sgfpe.models.personal.DTO.RegistrationRequest;
+import com.utez.mx.sgfpe.services.email.EmailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,10 +21,12 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
-    public AuthController(UserService userService, JwtUtil jwtUtil) {
+    public AuthController(UserService userService, JwtUtil jwtUtil, EmailService emailService) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.emailService = emailService;
     }
 
     @PostMapping("/validate-account")
@@ -59,10 +63,15 @@ public class AuthController {
         Optional<User> optionalUser = userService.getUserByEmail(email);
 
         if (optionalUser.isEmpty() || !optionalUser.get().getPassword().equals(password)) {
-            return ResponseEntity.status(401).body("Invalid credentials");
+            return ResponseEntity.status(401).body(Map.of("error", "Credenciales inválidas"));
         }
 
         User user = optionalUser.get();
+
+        // 🚫 Bloquear si no está verificado
+        if (!user.isEmailVerified()) {
+            return ResponseEntity.status(403).body(Map.of("error", "Tu correo no ha sido verificado. Revisa tu bandeja de entrada 📩"));
+        }
 
         String token = jwtUtil.generateToken(String.valueOf(user));
 
@@ -72,4 +81,77 @@ public class AuthController {
                 "accountType", user.getAccountType()
         ));
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegistrationRequest request) {
+        try {
+            String message = userService.registerUserWithVerification(request);
+            return ResponseEntity.ok(Map.of("message", message));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code");
+
+        if (email == null || code == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email y código son requeridos"));
+        }
+
+        Optional<User> optionalUser = userService.getUserByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Usuario no encontrado"));
+        }
+
+        User user = optionalUser.get();
+
+        if (user.isEmailVerified()) {
+            return ResponseEntity.ok(Map.of("message", "El correo ya ha sido verificado"));
+        }
+
+        if (!code.equals(user.getVerificationCode())) {
+            return ResponseEntity.status(400).body(Map.of("error", "Código de verificación incorrecto"));
+        }
+
+        user.setEmailVerified(true);
+        user.setVerificationCode(null); // Limpia el código si quieres
+        userService.updateUser(user); // Asegúrate de tener este método
+
+        return ResponseEntity.ok(Map.of("message", "Correo verificado correctamente ✅"));
+    }
+
+    @PostMapping("/resend-code")
+    public ResponseEntity<?> resendVerificationCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El correo es obligatorio"));
+        }
+
+        Optional<User> optionalUser = userService.getUserByEmail(email);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "No se encontró ningún usuario con ese correo"));
+        }
+
+        User user = optionalUser.get();
+
+        if (user.isEmailVerified()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Este correo ya fue verificado"));
+        }
+
+        // Generar un nuevo código
+        String newCode = String.format("%06d", (int)(Math.random() * 1000000));
+        user.setVerificationCode(newCode);
+        userService.saveOrUpdateUser(user); // Guardamos el nuevo código
+
+        // Enviamos el nuevo correo
+        emailService.sendVerificationEmail(user.getEmail(), newCode);
+
+        return ResponseEntity.ok(Map.of("message", "Nuevo código de verificación enviado"));
+    }
+
 }

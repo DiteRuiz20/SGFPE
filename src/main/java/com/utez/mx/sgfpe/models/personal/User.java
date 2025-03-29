@@ -3,7 +3,6 @@ package com.utez.mx.sgfpe.models.personal;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.bson.types.ObjectId;
 
 @Data
 @Document(collection = "users") // MongoDB collection for personal users
@@ -19,6 +18,8 @@ public class User {
     private String accountType;
     private String companyName;
     private String address;
+    private boolean emailVerified = false;
+    private String verificationCode;
 
     // Default constructor required by MongoDB
     public User() {
@@ -26,7 +27,7 @@ public class User {
 
     // Constructor with all attributes for easy instantiation
     public User(String name, String email, String password, String phoneNumber, String accountType, String companyName,
-            String address) {
+            String address, String verificationCode, boolean emailVerified) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -34,6 +35,8 @@ public class User {
         this.accountType = accountType;
         this.companyName = companyName;
         this.address = address;
+        this.verificationCode = verificationCode;
+        this.emailVerified = emailVerified;
     }
 
     public String getId() {
@@ -100,4 +103,20 @@ public class User {
         this.address = address;
     }
 
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+    
 }
