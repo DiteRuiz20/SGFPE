@@ -53,7 +53,7 @@ export default function CreatePersonalAccount() {
 
             // Actualizar la lista de usuarios después de crear
             setUsers((prevUsers) => [...prevUsers, newUser]);
-            navigate('/login-personal');
+            navigate('/verify-account', { state: { email: data.email } });
         } catch (error) {
             console.error('Error al crear la cuenta:', error);
             
