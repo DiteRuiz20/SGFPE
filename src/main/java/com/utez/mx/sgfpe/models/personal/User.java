@@ -4,6 +4,8 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+
 @Data
 @Document(collection = "users") // MongoDB collection for personal users
 public class User {
@@ -20,14 +22,16 @@ public class User {
     private String address;
     private boolean emailVerified = false;
     private String verificationCode;
+    private String resetPasswordCode;
+    private Date resetCodeExpiry; // Opcional para que expire
 
     // Default constructor required by MongoDB
     public User() {
     }
 
-    // Constructor with all attributes for easy instantiation
-    public User(String name, String email, String password, String phoneNumber, String accountType, String companyName,
-            String address, String verificationCode, boolean emailVerified) {
+    // Constructor mínimo (el que estás usando)
+    public User(String name, String email, String password, String phoneNumber, String accountType,
+                String companyName, String address, String verificationCode, boolean emailVerified) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -37,6 +41,22 @@ public class User {
         this.address = address;
         this.verificationCode = verificationCode;
         this.emailVerified = emailVerified;
+    }
+
+    // Constructor completo (con reset password)
+    public User(String name, String email, String password, String phoneNumber, String accountType,
+                String companyName, String address, String verificationCode, boolean emailVerified,
+                String resetPasswordCode, Date resetCodeExpiry) {
+        this(name, email, password, phoneNumber, accountType, companyName, address, verificationCode, emailVerified);
+        this.resetPasswordCode = resetPasswordCode;
+        this.resetCodeExpiry = resetCodeExpiry;
+    }
+
+    // Constructor con ID (para updates)
+    public User(String id, String name, String email, String password, String phoneNumber, String accountType,
+                String companyName, String address, boolean emailVerified, String verificationCode) {
+        this(name, email, password, phoneNumber, accountType, companyName, address, verificationCode, emailVerified);
+        this.id = id;
     }
 
     public String getId() {
@@ -118,5 +138,20 @@ public class User {
     public void setVerificationCode(String verificationCode) {
         this.verificationCode = verificationCode;
     }
-    
+
+    public String getResetPasswordCode() {
+        return resetPasswordCode;
+    }
+
+    public void setResetPasswordCode(String resetPasswordCode) {
+        this.resetPasswordCode = resetPasswordCode;
+    }
+
+    public Date getResetCodeExpiry() {
+        return resetCodeExpiry;
+    }
+
+    public void setResetCodeExpiry(Date resetCodeExpiry) {
+        this.resetCodeExpiry = resetCodeExpiry;
+    }
 }

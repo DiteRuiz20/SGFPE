@@ -34,7 +34,9 @@ public class SecurityConfig {
                                 "/auth/register",           // 👈 nueva
                                 "/auth/verify-code",        // 👈 nueva
                                 "/auth/resend-code",        // 👈 nueva
-                                "/api/personal/users/register").permitAll()
+                                "/api/personal/users/register",
+                                "/auth/request-password-reset",
+                                "/auth/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)

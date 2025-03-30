@@ -66,8 +66,9 @@ public class UserService {
                 request.getCompanyName(),
                 request.getAddress(),
                 code,
-                false // emailVerified
+                false
         );
+
 
         userRepository.save(user);
 

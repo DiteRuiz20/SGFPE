@@ -1,5 +1,6 @@
 package com.utez.mx.sgfpe.security;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
@@ -153,5 +154,66 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of("message", "Nuevo código de verificación enviado"));
     }
+
+    @PostMapping("/request-password-reset")
+    public ResponseEntity<?> requestPasswordReset(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El correo es obligatorio"));
+        }
+
+        Optional<User> optionalUser = userService.getUserByEmail(email);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Correo no encontrado"));
+        }
+
+        User user = optionalUser.get();
+
+        // ✅ Validar que el correo esté verificado
+        if (!user.isEmailVerified()) {
+            return ResponseEntity.status(403).body(Map.of("error", "Tu correo aún no ha sido verificado"));
+        }
+
+        // 🚀 Generamos código y lo enviamos
+        String code = String.format("%06d", (int) (Math.random() * 1000000));
+        user.setResetPasswordCode(code);
+        user.setResetCodeExpiry(new Date(System.currentTimeMillis() + 15 * 60 * 1000)); // 15 minutos
+        userService.updateUser(user);
+
+        emailService.sendEmail(user.getEmail(), "Restablecer contraseña", "Tu código es: " + code);
+
+        return ResponseEntity.ok(Map.of("message", "Código enviado al correo 📩"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code");
+        String newPassword = request.get("newPassword");
+
+        Optional<User> optionalUser = userService.getUserByEmail(email);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Correo no encontrado"));
+        }
+
+        User user = optionalUser.get();
+
+        if (!code.equals(user.getResetPasswordCode())) {
+            return ResponseEntity.status(400).body(Map.of("error", "Código incorrecto"));
+        }
+
+        if (user.getResetCodeExpiry() != null && user.getResetCodeExpiry().before(new Date())) {
+            return ResponseEntity.status(400).body(Map.of("error", "El código ha expirado"));
+        }
+
+        user.setPassword(newPassword);
+        user.setResetPasswordCode(null);
+        user.setResetCodeExpiry(null);
+        userService.updateUser(user);
+
+        return ResponseEntity.ok(Map.of("message", "Contraseña restablecida con éxito"));
+    }
+
 
 }
