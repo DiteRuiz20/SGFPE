@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import logo from '../../../assets/logo.png';
 import { PieChart, Pie, Cell, Legend } from 'recharts';
 import { Divider, Tooltip } from '@mui/material';
 import { GiReceiveMoney } from 'react-icons/gi';
@@ -23,7 +24,7 @@ export default function PersonalBudgetPlanner() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [dateWindow, setDateWindow] = useState({
     center: new Date(),
-    offset: 3
+    offset: 3, // Mostrará 5 meses (2 antes, 2 después, y el actual)
   });
 
   const isSameMonth = (date1, date2) => {
@@ -64,6 +65,7 @@ export default function PersonalBudgetPlanner() {
     const filteredDebts = (personalDebts || []).filter(debt => 
       isSameMonth(new Date(debt.date), selectedMonth)
     );
+
     setFilteredExpenses(filteredExpenses);
     setFilteredSavings(filteredSavings);
     setFilteredDebts(filteredDebts);
@@ -120,7 +122,7 @@ export default function PersonalBudgetPlanner() {
         : 'none',
     }),
   };
-  
+
   return (
     <div>
       <div className="row justify-content-center mt-3 mb-5">
@@ -174,13 +176,13 @@ export default function PersonalBudgetPlanner() {
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Legend 
-              align='left' 
-              verticalAlign='middle' 
+            <Legend
+              align='left'
+              verticalAlign='middle'
               layout='vertical'
               iconType='plainline'
               iconSize={15}
-              wrapperStyle={{ top:100, left:200, right: 0, display: 'flex', justifyContent: 'flex-start' }} 
+              wrapperStyle={{ top: 100, left: 500, right: 0, display: 'flex', justifyContent: 'flex-start' }}
             />
           </PieChart>
         </div>
