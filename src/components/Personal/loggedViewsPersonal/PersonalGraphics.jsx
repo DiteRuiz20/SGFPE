@@ -7,6 +7,7 @@ import logo from '../../../assets/logo.png';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend as ChartJSLegend } from 'chart.js';
 import { getSavingsByUserId } from '../../../services/SavingsService';
 import { getDebtsByUserId } from '../../../services/DebtsService';
+import MonthSelector from '../../MonthSelector';
 
 ChartJS.register(ArcElement, Tooltip, ChartJSLegend);
 
@@ -22,7 +23,7 @@ export default function PersonalGraphics() {
   // Configuración para el selector de fechas
   const [dateWindow, setDateWindow] = useState({
     center: new Date(), // Fecha central (actual)
-    range: 3,           // Número de meses a cada lado (total: 2*range + 1)
+    offset: 3,           // Número de meses a cada lado (total: 2*range + 1)
   });
   
   const navigate = useNavigate();
@@ -337,19 +338,12 @@ export default function PersonalGraphics() {
 
         </div>
 
-        <div style={styles.datePicker}>
-          {months.map((monthObj, index) => (
-            <span
-              key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
-              onClick={() => handleMonthSelect(monthObj)}
-              style={isSameMonth(monthObj.date, selectedMonth) ?
-                { ...styles.dateItem, ...styles.activeDate } :
-                styles.dateItem}
-            >
-              {monthObj.label}
-            </span>
-          ))}
-        </div>
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+          dateWindow={dateWindow}
+          setDateWindow={setDateWindow}
+        />
 
         <Divider style={styles.divider} />
       </div>

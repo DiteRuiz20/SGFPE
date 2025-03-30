@@ -9,6 +9,7 @@ import { GiReceiveMoney } from "react-icons/gi";
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box } from '@mui/material';
 import { TbPigMoney } from "react-icons/tb";
+import MonthSelector from '../../MonthSelector';
 
 export default function PersonalSavingTracker() {
     const [personalSavings, setPersonalSavings] = useState([]);
@@ -25,7 +26,7 @@ export default function PersonalSavingTracker() {
     // Configuración para el selector de fechas
     const [dateWindow, setDateWindow] = useState({
         center: new Date(),
-        range: 3,
+        offset: 3,
     });
 
     // Verificar si dos fechas pertenecen al mismo mes
@@ -38,23 +39,23 @@ export default function PersonalSavingTracker() {
 
     // Función para generar los meses en el selector
     const generateMonths = () => {
-        const { center, range } = dateWindow;
-        const centerDate = new Date(center);
-        const months = [];
-        
-        for (let i = -range; i <= range; i++) {
-            const date = new Date(centerDate);
-            date.setMonth(centerDate.getMonth() + i);
-            
-            months.push({
-                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-                date,
-                isStart: i === -range,
-                isEnd: i === range
-            });
-        }
-        
-        return months;
+      const { center, range } = dateWindow;
+      const months = [];
+  
+      for (let i = -range; i <= range; i++) {
+        const year = center.getFullYear();
+        const month = center.getMonth() + i;
+        const date = new Date(year, month, 1); // <== esta forma evita mutaciones inesperadas
+  
+        months.push({
+          label: `${date.toLocaleString('es-MX', { month: 'long' })} ${date.getFullYear()}`,
+          date,
+          isStart: i === -range,
+          isEnd: i === range,
+        });
+      }
+  
+      return months;
     };
 
     // Generar los meses visibles
@@ -463,19 +464,12 @@ export default function PersonalSavingTracker() {
             ))}
           </div>
       
-          <div style={styles.datePicker}>
-            {months.map((monthObj, index) => (
-              <span
-                key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
-                onClick={() => handleMonthSelect(monthObj)}
-                style={isSameMonth(monthObj.date, selectedMonth) ?
-                  { ...styles.dateItem, ...styles.activeDate } :
-                  styles.dateItem}
-              >
-                {monthObj.label}
-              </span>
-            ))}
-          </div>
+          <MonthSelector
+          selectedMonth={selectedMonth}
+          onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+          dateWindow={dateWindow}
+          setDateWindow={setDateWindow}
+        />
       
           <Divider style={styles.divider} />
         </div>

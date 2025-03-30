@@ -13,6 +13,7 @@ import { MdOutlineFastfood, MdOutlineSchool } from 'react-icons/md';
 import { IoShirtOutline, IoCarSportOutline } from 'react-icons/io5';
 import { RiHome2Line } from 'react-icons/ri';
 import { FaTheaterMasks, FaRegHospital } from 'react-icons/fa';
+import MonthSelector from '../../MonthSelector';
 
 export default function PersonalExpensesTracker() {
   const [personalExpenses, setPersonalExpenses] = useState([]);
@@ -20,13 +21,13 @@ export default function PersonalExpensesTracker() {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [categories, setCategories] = useState([]);  // Estado para las categorías
-  
+
   // Configuración para el selector de fechas
   const [dateWindow, setDateWindow] = useState({
     center: new Date(), // Fecha central (actual)
-    range: 3,           // Número de meses a cada lado (total: 2*range + 1)
+    offset: 3,           // Número de meses a cada lado (total: 2*range + 1)
   });
-  
+
   const [newExpense, setNewExpense] = useState({
     description: '',
     amount: '',
@@ -48,22 +49,21 @@ export default function PersonalExpensesTracker() {
   // Función para generar los meses en el selector
   const generateMonths = () => {
     const { center, range } = dateWindow;
-    const centerDate = new Date(center);
     const months = [];
-    
-    // Generar meses desde (center - range) hasta (center + range)
+
     for (let i = -range; i <= range; i++) {
-      const date = new Date(centerDate);
-      date.setMonth(centerDate.getMonth() + i);
-      
+      const year = center.getFullYear();
+      const month = center.getMonth() + i;
+      const date = new Date(year, month, 1); // <== esta forma evita mutaciones inesperadas
+
       months.push({
-        label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+        label: `${date.toLocaleString('es-MX', { month: 'long' })} ${date.getFullYear()}`,
         date,
         isStart: i === -range,
-        isEnd: i === range
+        isEnd: i === range,
       });
     }
-    
+
     return months;
   };
 
@@ -73,7 +73,7 @@ export default function PersonalExpensesTracker() {
   // Manejar la selección de un mes
   const handleMonthSelect = (monthObj) => {
     setSelectedMonth(monthObj.date);
-    
+
     // Si selecciona un mes en los extremos, desplazar la ventana
     if (monthObj.isStart) {
       // Desplazar ventana hacia atrás (3 meses más hacia el pasado)
@@ -537,20 +537,12 @@ export default function PersonalExpensesTracker() {
           ))}
         </div>
 
-        <div style={styles.datePicker}>
-          {months.map((monthObj, index) => (
-            <span
-              key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
-              onClick={() => handleMonthSelect(monthObj)}
-              style={isSameMonth(monthObj.date, selectedMonth) ?
-                { ...styles.dateItem, ...styles.activeDate } :
-                styles.dateItem}
-            >
-              {monthObj.label}
-            </span>
-          ))}
-        </div>
-
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+          dateWindow={dateWindow}
+          setDateWindow={setDateWindow}
+        />
 
         <Divider style={styles.divider} />
       </div>
