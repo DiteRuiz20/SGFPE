@@ -18,6 +18,7 @@ import PersonalGraphics from './components/Personal/loggedViewsPersonal/Personal
 import PersonalProfile from './components/Personal/loggedViewsPersonal/PersonalProfile';
 import VerifyAccount from './components/Personal/managment/VerifyAccount';
 import RawMaterialsTracker from './components/Empresarial/logged/RawMaterials/RawMaterialsTracker';
+import ForgottenPassword from './components/forgottenPassword';
 import logo from './assets/logo.png';
 import './assets/js/styles/app.css';
 
@@ -66,6 +67,7 @@ function App() {
                     <Route path="/login-personal" element={<PersonalLogin />} />
                     <Route path="/business-raw-materials-login" element={<BusinessRawMaterialsLogin />} />
                     <Route path="/business-new-products-expense-login" element={<BusinessNewProductsExpenseLogin />} />
+                    <Route path="/forgotten-password" element={<ForgottenPassword />} />
                     {/* <Route path="/create-business-account" element={<CreateBusinessAccount />} /> */}
                     <Route path="/create-business-raw-material-account" element={<CreateBusinessRawMaterialAccount />} />
                     <Route path="/create-business-new-product-expense-account" element={<CreateBusinessNewProductExpenseAccount />} />

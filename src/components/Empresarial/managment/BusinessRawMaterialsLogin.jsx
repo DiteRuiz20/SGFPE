@@ -95,7 +95,7 @@ export default function BusinessRawMaterialsLogin() {
                             style={styles.input}
                             type="email"
                             {...register('email')}
-                            placeholder="Email"
+                            placeholder="Correo electrónico"
                         />
                         {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
                     </div>
@@ -105,7 +105,7 @@ export default function BusinessRawMaterialsLogin() {
                             style={styles.input}
                             type="password"
                             {...register('password')}
-                            placeholder="Password"
+                            placeholder="Contraseña"
                         />
                         {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                     </div>
@@ -118,10 +118,11 @@ export default function BusinessRawMaterialsLogin() {
                 </form>
 
                 <div className="d-flex flex-column justify-content-center align-items-center col-12 mt-md-3 mt-lg-5">
-                <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
+                    <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
                     <button className='secondary_button col-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
                         REGISTRARSE
                     </button>
+                    <a className='col-8' href='/forgotten-password'>¿Olvidaste tu contraseña?</a>
                 </div>
             </div>
         </div>

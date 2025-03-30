@@ -13,7 +13,7 @@ body {
 
 .container {
   text-align: center;
-  animation: slideUp 1.5s ease-in-out forwards;
+  animation: slideUp 1s ease-in-out forwards;
 }
 
 @keyframes slideUp {

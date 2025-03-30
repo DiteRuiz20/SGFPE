@@ -114,10 +114,11 @@ export default function PersonalLogin() {
                 </form>
 
                 <div className="d-flex flex-column justify-content-center align-items-center col-12 mt-md-3 mt-lg-5">
-                <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
-                    <button className='secondary_button col-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
+                    <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
+                    <button className='secondary_button col-8' onClick={goToCreateAccount}>
                         REGISTRARSE
                     </button>
+                    <a className='col-8' href='/forgotten-password'>¿Olvidaste tu contraseña?</a>
                 </div>
             </div>
         </div>
