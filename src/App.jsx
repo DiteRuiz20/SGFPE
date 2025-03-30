@@ -21,6 +21,7 @@ import RawMaterialsTracker from './components/Empresarial/logged/RawMaterials/Ra
 import logo from './assets/logo.png';
 import MaterialUsageTracker from './components/Empresarial/logged/RawMaterials/MaterialUsageTracker';
 import RawMaterialOrder from './components/Empresarial/logged/RawMaterials/RawMaterialOrder';
+import ResetPassword from './components/ResetPassword/ResetPassword';
 
 function Home() {
     const navigate = useNavigate();
@@ -85,6 +86,7 @@ function App() {
                     <Route path="/business-raw-materials-tracker" element={<RawMaterialsTracker />} />
                     <Route path="/material-usage-tracker" element={<MaterialUsageTracker/>}/>
                     <Route path="/raw-material-order" element={<RawMaterialOrder/>}/>
+                    <Route path="/forgot-password" element={<ResetPassword />} />
 
                     {/* Rutas protegidas para usuarios personales */}
                     <Route

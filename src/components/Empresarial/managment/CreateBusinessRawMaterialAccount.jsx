@@ -4,6 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { createUser } from '../../../services/UserService';
+import { useNavigate } from 'react-router-dom';
 
 const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
@@ -15,6 +16,7 @@ const schema = yup.object().shape({
 });
 
 export default function CreateBusinessRawMaterialAccount() {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
         resolver: yupResolver(schema),
@@ -31,6 +33,8 @@ export default function CreateBusinessRawMaterialAccount() {
             console.log('Nuevo usuario creado:', createdUser);
             alert('Cuenta de negocio de materia prima creada exitosamente');
             reset();
+
+            navigate('/verify-account', { state: { email: data.email } });
         } catch (error) {
             console.error('Error al crear la cuenta:', error);
             alert('Hubo un error al crear la cuenta. Intenta de nuevo más tarde.');

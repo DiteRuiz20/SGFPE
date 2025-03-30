@@ -39,6 +39,8 @@ export default function PersonalLogin() {
 
     const goToCreateAccount = () => navigate('/create-personal-account');
 
+    const goToForgotPassword = () => navigate('/forgot-password');
+
     const styles = {
         fatherContainer: {
             display: 'flex',
@@ -168,6 +170,10 @@ export default function PersonalLogin() {
 
                 <button className='secondary_button' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
                     SIGN UP
+                </button>
+
+                <button className='secondary_button' onClick={goToForgotPassword} style={{ marginTop: '10px' }}>
+                    FORGOT PASSWORD
                 </button>
             </div>
         </div>
