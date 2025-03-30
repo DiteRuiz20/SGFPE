@@ -9,6 +9,8 @@ import { GiTakeMyMoney } from "react-icons/gi";
 import { LiaMoneyCheckAltSolid } from "react-icons/lia";
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box } from '@mui/material';
+import TopNavBar from './TopNavBar';
+import MonthSelector from '../../MonthSelector';
 import { FaUserCircle, FaMoneyBillWave, FaCalendarAlt, FaCalendarCheck, FaCheck, FaExclamationTriangle, FaTimes, FaQuestion, FaTrash } from 'react-icons/fa';
 
 export default function PersonalDebtTracker() {
@@ -28,7 +30,7 @@ export default function PersonalDebtTracker() {
     // Configuración para el selector de fechas
     const [dateWindow, setDateWindow] = useState({
         center: new Date(),
-        range: 3,
+        offset: 3,
     });
 
     // Verificar si dos fechas pertenecen al mismo mes
@@ -37,51 +39,6 @@ export default function PersonalDebtTracker() {
             new Date(date1).getFullYear() === new Date(date2).getFullYear() &&
             new Date(date1).getMonth() === new Date(date2).getMonth()
         );
-    };
-
-    // Función para generar los meses en el selector
-    const generateMonths = () => {
-        const { center, range } = dateWindow;
-        const centerDate = new Date(center);
-        const months = [];
-        
-        for (let i = -range; i <= range; i++) {
-            const date = new Date(centerDate);
-            date.setMonth(centerDate.getMonth() + i);
-            
-            months.push({
-                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-                date,
-                isStart: i === -range,
-                isEnd: i === range
-            });
-        }
-        
-        return months;
-    };
-
-    // Generar los meses visibles
-    const months = generateMonths();
-
-    // Manejar la selección de un mes
-    const handleMonthSelect = (monthObj) => {
-        setSelectedMonth(monthObj.date);
-        
-        if (monthObj.isStart) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() - 3);
-            setDateWindow(prev => ({
-                ...prev,
-                center: newCenter
-            }));
-        } else if (monthObj.isEnd) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() + 3);
-            setDateWindow(prev => ({
-                ...prev,
-                center: newCenter
-            }));
-        }
     };
 
     // Filtrar las deudas por el mes seleccionado
@@ -356,58 +313,12 @@ export default function PersonalDebtTracker() {
       };      
 
     const styles = {
-        container: {
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'white',
-          width: '100vw',
-          height: '100vh',
-        },
-        bodyContainer: {
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: 'white',
-          width: '80%',
-          marginTop: '50px',
-          paddingTop: '30px',
-        },
         divider: {
           width: '100%',
-          height: 2,
-          backgroundColor: '#EAEAEA',
+          height: '2px',
+          backgroundColor: '#999',
           marginTop: 20,
         },
-        menu: {
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          width: '80%',
-          marginBottom: '30px'
-        },
-        header: {
-          backgroundColor: 'white',
-          position: 'fixed',
-          top: 30,
-          display: 'flex',
-          alignSelf: 'center',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          width: '100vw',
-          zIndex: 10,
-        },
-        navLink: (path) => ({
-          cursor: 'pointer',
-          padding: '10px 20px',
-          fontSize: '16px',
-          color: location.pathname === path ? '#000' : '#888',
-          borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-          transition: 'border-color 0.3s',
-        }),
         datePicker: {
           alignSelf: 'center',
           display: 'flex',
@@ -422,19 +333,6 @@ export default function PersonalDebtTracker() {
           color: '#000',
           borderBottom: '2px solid #4AD8C2',
         },
-        cardContainer: {
-          marginTop: '-50px',
-          flexDirection: 'column',
-        },
-        chartContainer: {
-          marginTop: '-90px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '50vw',
-          zIndex: 1,
-        },
         card: {
           backgroundColor: '#B1B1B1',
           color: 'white',
@@ -445,7 +343,7 @@ export default function PersonalDebtTracker() {
           display: 'flex',
           flexDirection: 'column',
           fontSize: '20px',
-            boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)'
+          boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)'
         },
         cardText: {
           fontSize: '20px',
@@ -453,14 +351,9 @@ export default function PersonalDebtTracker() {
           marginTop: '-10px',
           fontWeight: 'bold',
         },
-        buttonText: {
-          fontSize: '20px',
-          alignSelf: 'center',
-        },
         cardSubtitle: {
           fontSize: '16px',
           alignSelf: 'center',
-          marginTop: '10px',
           color: 'white',
         },
         button: {
@@ -482,17 +375,6 @@ export default function PersonalDebtTracker() {
           color: 'black',
             boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)'
         },
-        input: {
-          width: 370,
-          height: 20,
-          backgroundColor: '#EAEAEA',
-          padding: 15,
-          borderWidth: 0,
-          borderRadius: 8,
-          color: 'black',
-          marginBottom: 15,
-            boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)'
-        },
         modalStyle: {
           position: 'absolute',
           top: '50%',
@@ -507,7 +389,7 @@ export default function PersonalDebtTracker() {
         title: {
           fontSize: 28,
           fontWeight: 'bold',
-            color: '#30437A',
+          color: '#30437A',
         },
       };
 
@@ -541,87 +423,54 @@ export default function PersonalDebtTracker() {
         },
       };      
 
-      const paths = {
-        'BUDGET PLANNING': '/personal-budget-planner',
-        'DEBT TRACKER': '/personal-debt-tracker',
-        'SAVINGS TRACKER': '/personal-saving-tracker',
-        'EXPENSE TRACKER': '/personal-expenses',
-        'GRAPHICS': '/personal-graphics',
-        'PROFILE': '/personal-profile',
-      };
-      
-      const handleNavigation = (text) => {
-        navigate(paths[text] || '/personal-debt-tracker');
-      };
-
     return (        
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <div style={styles.menu}>
-            <img src={logo} alt="Logo" style={{ width: '90px' }} />
-            {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-              <span
-                key={index}
-                style={styles.navLink(paths[text])}
-                onClick={() => handleNavigation(text)}
-              >
-              {text}
-              </span>
-            ))}
+      <div>
+          <div className="row justify-content-center mt-3 mb-5">
+            <TopNavBar/>
+            <MonthSelector
+              selectedMonth={selectedMonth}
+              onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+              dateWindow={dateWindow}
+              setDateWindow={setDateWindow}
+            />
+            <Divider style={styles.divider} />
           </div>
-      
-          <div style={styles.datePicker}>
-                    {months.map((monthObj, index) => (
-                        <span
-                            key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
-                            onClick={() => handleMonthSelect(monthObj)}
-                            style={isSameMonth(monthObj.date, selectedMonth) ?
-                                { ...styles.dateItem, ...styles.activeDate } :
-                                styles.dateItem}
-                        >
-                            {monthObj.label}
-              </span>
-            ))}
-          </div>
-      
-          <Divider style={styles.divider} />
-        </div>
-
-        <div style={styles.bodyContainer}>
-          <div style={styles.cardContainer}>
-                    <div style={{...styles.card, backgroundColor: '#B1B1B1'}}>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-                            <text>DEBTS</text>
-                    <GiTakeMyMoney style={{ fontSize: '40px'}} />
+    
+          <div className='row mt-5'>
+          <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+            <div style={styles.card}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+                <p>DEUDAS</p>
+                <GiTakeMyMoney style={{ fontSize: '40px'}} />
                 </div>
-                        <text style={styles.cardText}>-${totalDebts.toFixed(2)}</text>
-                        <text style={styles.cardSubtitle}>This month's debts</text>
+                  <p style={styles.cardText}>-${totalDebts.toFixed(2)}</p>
+                  <p style={styles.cardSubtitle}>Deudas del mes</p>
             </div>
-                    <div style={{...styles.addButton, border: '1px solid #B1B1B1'}} onClick={openForm}>
-                        <MdOutlineAddToPhotos style={{...styles.button, color: '#B1B1B1'}} />
-              <text style={styles.buttonText}>ADD DEBT</text>
+            <div style={{...styles.addButton, border: '1px solid #B1B1B1'}} onClick={openForm}>
+              <MdOutlineAddToPhotos style={{...styles.button, color: '#B1B1B1'}} />
+            <p style={{alignSelf: 'center'}}>NUEVA DEUDA</p>
             </div>
           </div>
             
-          <div style={styles.chartContainer}>
-          <DataTable
-            columns={columns}
-                        data={filteredDebts}
-            customStyles={customStyles}
-            pagination
-          />
+          <div className='col-sm-6 flex-column justify-content-center align-items-center'>
+            <DataTable
+              columns={columns}
+              data={filteredDebts}
+              customStyles={customStyles}
+              pagination
+            />
+            </div>
           </div>
-        </div>
 
         <Modal open={open} onClose={closeForm}>
         <Box sx={styles.modalStyle}>
             <form onSubmit={handleSubmit}>
             <div style={{marginBottom: '20px'}}>
-                <text style={styles.title}>Add Debt</text>
+                <text style={styles.title}>Nueva deuda</text>
             </div>
             <div>
-                <input style={styles.input}
-                placeholder='Creditor'
+                <input className='input col-12'
+                placeholder='Acreedor'
                 type="text"
                 name="creditor"
                 value={newDebt.creditor}
@@ -630,8 +479,8 @@ export default function PersonalDebtTracker() {
                 />
             </div>
             <div>
-                <input style={styles.input}
-                placeholder='Amount'
+                <input className='input col-12'
+                placeholder='Cantidad'
                 type="number"
                 name="amount"
                 value={newDebt.amount}
@@ -640,7 +489,7 @@ export default function PersonalDebtTracker() {
                 />
             </div>
             <div>
-                <input style={styles.input}
+                <input className='input col-12'
                 type="date"
                 name="dueDate"
                 value={newDebt.dueDate}
@@ -649,9 +498,9 @@ export default function PersonalDebtTracker() {
                 />
             </div>
             <Divider style={styles.divider} />
-            <div style={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
-              <button className='primary_button' style={{ width: '35%', marginRight: '10px' }} type="button" onClick={closeForm}>Cancel</button>
-              <button className='secondary_button' style={{ width: '35%' }} type="submit">Add</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+              <button className='primary_button' style={{ width: '40%'}} type="button" onClick={closeForm}>Cancelar</button>
+              <button className='secondary_button' style={{ width: '40%' }} type="submit">Agregar</button>
             </div>
             </form>
         </Box>

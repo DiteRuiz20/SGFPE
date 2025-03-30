@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from '../../../assets/logo.png';
 import { PieChart, Pie, Cell, Legend } from 'recharts';
-import { Divider } from '@mui/material';
+import { Divider, Tooltip } from '@mui/material';
 import { GiReceiveMoney } from 'react-icons/gi';
 import { GiPayMoney } from 'react-icons/gi';
 import { GiMoneyStack } from 'react-icons/gi';
 import { getPersonalExpensesByUserId } from '../../../services/PersonalExpensesService';
 import { getSavingsByUserId } from '../../../services/SavingsService';
 import { getDebtsByUserId } from '../../../services/DebtsService';
+import TopNavBar from './TopNavBar';
+import MonthSelector from '../../MonthSelector';
 
 export default function PersonalBudgetPlanner() {
   const navigate = useNavigate();
@@ -27,35 +28,6 @@ export default function PersonalBudgetPlanner() {
 
   const isSameMonth = (date1, date2) => {
     return date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
-  };
-
-  const generateMonths = () => {
-    const months = [];
-    const centerDate = new Date(dateWindow.center);
-    const startDate = new Date(centerDate.getFullYear(), centerDate.getMonth() - dateWindow.offset, 1);
-    const endDate = new Date(centerDate.getFullYear(), centerDate.getMonth() + dateWindow.offset, 1);
-
-    for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
-      months.push({
-        date: new Date(d),
-        label: d.toLocaleString('default', { month: 'long', year: 'numeric' })
-      });
-    }
-
-    return months;
-  };
-
-  const handleMonthSelect = (monthObj) => {
-    setSelectedMonth(monthObj.date);
-    const months = generateMonths();
-    const selectedIndex = months.findIndex(m => isSameMonth(m.date, monthObj.date));
-    
-    if (selectedIndex === 0 || selectedIndex === months.length - 1) {
-      setDateWindow(prev => ({
-        center: monthObj.date,
-        offset: prev.offset
-      }));
-    }
   };
 
   useEffect(() => {
@@ -100,7 +72,6 @@ export default function PersonalBudgetPlanner() {
   const totalExpenses = (filteredExpenses || []).reduce((sum, expense) => sum + expense.amount, 0);
   const totalSavings = (filteredSavings || []).reduce((sum, saving) => sum + saving.amount, 0);
   const totalDebts = (filteredDebts || []).reduce((sum, debt) => sum + debt.amount, 0);
-  const balance = totalSavings - totalExpenses;
 
   const chartData = [
     { name: 'EXPENSES', value: totalExpenses, color: '#30437A' },
@@ -108,59 +79,11 @@ export default function PersonalBudgetPlanner() {
   ];
 
   const styles = {
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'white',
-      width: '100vw',
-      height: '100vh',
-    },
-    bodyContainer: {
-      marginTop: '150px',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: 'white',
-      width: '70%',
-    },
     divider: {
       width: '100%',
-      height: 2,
-      backgroundColor: '#EAEAEA',
+      height: '2px',
+      backgroundColor: '#999',
       marginTop: 20,
-    },
-    menu: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: '80%',
-      marginBottom: '30px'
-    },
-    header: {
-      position: 'fixed',
-      marginTop: '30px',
-      top: 0,
-      display: 'flex',
-      alignSelf: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      width: '100vw',
-    },
-    navLink: (path) => ({
-      cursor: 'pointer',
-      padding: '10px 20px',
-      fontSize: '16px',
-      color: location.pathname === path ? '#000' : '#888',
-      borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-      transition: 'border-color 0.3s',
-    }),
-    datePicker: {
-      alignSelf: 'center',
-      display: 'flex',
-      justifyContent: 'center',
     },
     dateItem: {
       margin: '0 25px',
@@ -176,16 +99,6 @@ export default function PersonalBudgetPlanner() {
       fontWeight: 'bold',
       color: '#30437A',
       marginBottom: 20,
-    },
-    cardContainer: {
-      flexDirection: 'column',
-      justifyContent: 'left',
-    },
-    pieContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      width: '100%',
     },
     card: (color) => ({
       backgroundColor: color,
@@ -207,72 +120,47 @@ export default function PersonalBudgetPlanner() {
         : 'none',
     }),
   };
-
-  const paths = {
-    'BUDGET PLANNING': '/personal-budget-planner',
-    'DEBT TRACKER': '/personal-debt-tracker',
-    'SAVINGS TRACKER': '/personal-saving-tracker',
-    'EXPENSE TRACKER': '/personal-expenses',
-    'GRAPHICS': '/personal-graphics',
-    'PROFILE': '/personal-profile',
-  };
-  
-  const handleNavigation = (text) => {
-    navigate(paths[text] || '/personal-budget-planner');
-  };
   
   return (
-    <div className='container-fluid'>
-      <div className="navbar fixed-top bg-body-tertiary">
-        <div className="container-fluid">
-          <img src={logo} alt="Logo" style={{ width: '90px' }} />
-            {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-              <span
-                key={index}
-                style={styles.navLink(paths[text])}
-                onClick={() => handleNavigation(text)}
-              >
-                {text}
-              </span>
-            ))}
-        </div>
-
-        <div style={styles.datePicker}>
-          {generateMonths().map((monthObj, index) => (
-            <span
-              key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
-              onClick={() => handleMonthSelect(monthObj)}
-              style={isSameMonth(monthObj.date, selectedMonth) ?
-                { ...styles.dateItem, ...styles.activeDate } :
-                styles.dateItem}
-            >
-              {monthObj.label}
-            </span>
-          ))}
-        </div>
-
+    <div>
+      <div className="row justify-content-center mt-3 mb-5">
+        <TopNavBar/>
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+          dateWindow={dateWindow}
+          setDateWindow={setDateWindow}
+        />
         <Divider style={styles.divider} />
       </div>
 
-      <div style={styles.bodyContainer}>
-        <div style={styles.cardContainer}>
-          <div style={styles.card('#3DC9A7')}>
-            <GiReceiveMoney style={{ fontSize: '40px', marginRight: '15px'}} />
-            ${totalSavings.toFixed(2)}
-          </div>
-          <div style={styles.card('#30437A')}>
-            <GiPayMoney style={{ fontSize: '40px', marginRight: '15px'}} />
-            -${totalExpenses.toFixed(2)}
-          </div>
-          <div style={styles.card('#B1B1B1')}>
-            <GiMoneyStack style={{ fontSize: '40px', marginRight: '15px'}} />
-            -${totalDebts.toFixed(2)}
-          </div>
+      <div className='row mt-5'>
+        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+          <Tooltip title="Total de ahorros" arrow placement="left">
+            <div style={styles.card('#3DC9A7')}>
+              <GiReceiveMoney style={{ fontSize: '220%', marginRight: '15px'}} />
+              ${totalSavings.toFixed(2)}
+            </div>
+          </Tooltip>
+
+          <Tooltip title="Total de gastos" arrow placement="left">
+            <div style={styles.card('#30437A')}>
+              <GiPayMoney style={{ fontSize: '220%', marginRight: '15px'}} />
+              -${totalExpenses.toFixed(2)}
+            </div>
+          </Tooltip>
+
+          <Tooltip title="Total de deudas" arrow placement="left">
+            <div style={styles.card('#B1B1B1')}>
+              <GiMoneyStack style={{ fontSize: '220%', marginRight: '15px'}} />
+              -${totalDebts.toFixed(2)}
+            </div>
+          </Tooltip>
         </div>
 
-        <div style={styles.pieContainer}>
-          <h3 style={styles.title}>TOTAL BALANCE</h3>
-          <PieChart width={400} height={400}>
+        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+          <h3 style={styles.title}>PRESUPUESTO TOTAL</h3>
+          <PieChart width={350} height={350}>
             <Pie 
               data={chartData} 
               cx={150} 
@@ -292,7 +180,7 @@ export default function PersonalBudgetPlanner() {
               layout='vertical'
               iconType='plainline'
               iconSize={15}
-              wrapperStyle={{ top: 100, left: 500, right: 0, display: 'flex', justifyContent: 'flex-start' }} 
+              wrapperStyle={{ top:100, left:200, right: 0, display: 'flex', justifyContent: 'flex-start' }} 
             />
           </PieChart>
         </div>

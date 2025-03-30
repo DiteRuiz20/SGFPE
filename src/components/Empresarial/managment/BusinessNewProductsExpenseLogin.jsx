@@ -63,6 +63,7 @@ export default function BusinessNewProductsExpenseLogin() {
         };
     
         return (
+        <div className="background-container align-content-center">
           <div className="container">
                   <div className='row d-flex justify-content-center align-items-center'>
                   <div className='col-sm-6 d-flex justify-content-center align-items-center flex-column'>
@@ -127,5 +128,6 @@ export default function BusinessNewProductsExpenseLogin() {
                 </div>
             </div>
           </div>
+        </div>
     );
 } 

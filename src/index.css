@@ -28,7 +28,6 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
   width: 100%;
   height: 100%;
 }
@@ -80,6 +79,9 @@ button:focus-visible {
   cursor: pointer;
   font-size: 1.1em;
   transition: background-color 0.3s, transform 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .logOut_button {

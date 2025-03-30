@@ -44,7 +44,8 @@ function Home() {
       };
 
       return (
-       <div className='container d-flex flex-column align-items-center justify-content-center'>
+        <div className="background-container align-content-center">
+            <div className='container d-flex flex-column align-items-center justify-content-center'>
             <img className='col-4' style={styles.image} src={logo} alt="logo" />
             <p style={styles.title}>¿Qué tipo de cuenta deseas?</p>
             <div className='d-flex flex-column col-sm-4'>
@@ -56,6 +57,8 @@ function Home() {
               </button>
             </div>
           </div>
+        </div>
+       
       );
 }
 

@@ -22,6 +22,7 @@ export default function ChooseBusiness() {
   };
             
       return (
+      <div className="background-container align-content-center">
         <div className='container d-flex flex-column align-items-center justify-content-center'>
             <img className='col-4' style={styles.image} src={logo} alt="logo" />
             <p style={styles.title}>¿Qué tipo de empresa manejas?</p>
@@ -34,5 +35,6 @@ export default function ChooseBusiness() {
                 </button>
             </div>
         </div>
+      </div>
     );
 }

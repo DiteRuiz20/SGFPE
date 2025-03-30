@@ -49,6 +49,7 @@ export default function CreateBusinessRawMaterialAccount() {
           };
     
         return (
+        <div className="background-container align-content-center">
           <div className='container'>
                    <div className='d-flex flex-column justify-content-center align-items-center mb-md-5'>
                      <p style={styles.subtitle}>¡Gracias por unirte a nosotros!</p>
@@ -115,5 +116,6 @@ export default function CreateBusinessRawMaterialAccount() {
                     </div>
                 </div>
             </div>
+        </div>
         );
 } 

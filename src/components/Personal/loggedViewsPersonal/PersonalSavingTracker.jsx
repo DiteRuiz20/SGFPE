@@ -9,6 +9,8 @@ import { GiReceiveMoney } from "react-icons/gi";
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box } from '@mui/material';
 import { TbPigMoney } from "react-icons/tb";
+import TopNavBar from './TopNavBar';
+import MonthSelector from '../../MonthSelector';
 
 export default function PersonalSavingTracker() {
     const [personalSavings, setPersonalSavings] = useState([]);
@@ -25,7 +27,7 @@ export default function PersonalSavingTracker() {
     // Configuración para el selector de fechas
     const [dateWindow, setDateWindow] = useState({
         center: new Date(),
-        range: 3,
+        offset: 3,
     });
 
     // Verificar si dos fechas pertenecen al mismo mes
@@ -38,23 +40,23 @@ export default function PersonalSavingTracker() {
 
     // Función para generar los meses en el selector
     const generateMonths = () => {
-        const { center, range } = dateWindow;
-        const centerDate = new Date(center);
-        const months = [];
-        
-        for (let i = -range; i <= range; i++) {
-            const date = new Date(centerDate);
-            date.setMonth(centerDate.getMonth() + i);
-            
-            months.push({
-                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-                date,
-                isStart: i === -range,
-                isEnd: i === range
-            });
-        }
-        
-        return months;
+      const { center, range } = dateWindow;
+      const months = [];
+  
+      for (let i = -range; i <= range; i++) {
+        const year = center.getFullYear();
+        const month = center.getMonth() + i;
+        const date = new Date(year, month, 1); // <== esta forma evita mutaciones inesperadas
+  
+        months.push({
+          label: `${date.toLocaleString('es-MX', { month: 'long' })} ${date.getFullYear()}`,
+          date,
+          isStart: i === -range,
+          isEnd: i === range,
+        });
+      }
+  
+      return months;
     };
 
     // Generar los meses visibles
@@ -434,54 +436,21 @@ export default function PersonalSavingTracker() {
         },
       };      
 
-      const paths = {
-        'BUDGET PLANNING': '/personal-budget-planner',
-        'DEBT TRACKER': '/personal-debt-tracker',
-        'SAVINGS TRACKER': '/personal-saving-tracker',
-        'EXPENSE TRACKER': '/personal-expenses',
-        'GRAPHICS': '/personal-graphics',
-        'PROFILE': '/personal-profile',
-      };
-      
-      const handleNavigation = (text) => {
-        navigate(paths[text] || '/personal-saving-tracker');
-      };
-
     return (        
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <div style={styles.menu}>
-            <img src={logo} alt="Logo" style={{ width: '90px' }} />
-            {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-              <span
-                key={index}
-                style={styles.navLink(paths[text])}
-                onClick={() => handleNavigation(text)}
-              >
-              {text}
-              </span>
-            ))}
-          </div>
-      
-          <div style={styles.datePicker}>
-            {months.map((monthObj, index) => (
-              <span
-                key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
-                onClick={() => handleMonthSelect(monthObj)}
-                style={isSameMonth(monthObj.date, selectedMonth) ?
-                  { ...styles.dateItem, ...styles.activeDate } :
-                  styles.dateItem}
-              >
-                {monthObj.label}
-              </span>
-            ))}
-          </div>
-      
+      <div>
+        <div className="row justify-content-center mt-3 mb-5">
+          <TopNavBar/>
+          <MonthSelector
+            selectedMonth={selectedMonth}
+            onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+            dateWindow={dateWindow}
+            setDateWindow={setDateWindow}
+          />
           <Divider style={styles.divider} />
         </div>
-
-        <div style={styles.bodyContainer}>
-          <div style={styles.cardContainer}>
+        
+        <div className='row mt-5'>
+          <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
             <div style={styles.card}>
                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
                     <text>SAVINGS</text>
@@ -533,15 +502,6 @@ export default function PersonalSavingTracker() {
                 required
                 />
             </div>
-            {/* <div>
-                <input style={styles.input}
-                type="date"
-                name="date"
-                value={newSaving.date}
-                onChange={handleInputChange}
-                required
-                />
-            </div> */}
             <Divider style={styles.divider} />
             <div style={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
               <button className='primary_button' style={{ width: '35%', marginRight: '10px' }} type="button" onClick={closeForm}>Cancel</button>
