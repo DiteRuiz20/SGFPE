@@ -20,6 +20,8 @@ import VerifyAccount from './components/Personal/managment/VerifyAccount';
 import RawMaterialsTracker from './components/Empresarial/logged/RawMaterials/RawMaterialsTracker';
 import ForgottenPassword from './components/forgottenPassword';
 import logo from './assets/logo.png';
+import MaterialUsageTracker from './components/Empresarial/logged/RawMaterials/MaterialUsageTracker';
+import RawMaterialOrder from './components/Empresarial/logged/RawMaterials/RawMaterialOrder';
 import './assets/js/styles/app.css';
 
 function Home() {
@@ -40,7 +42,7 @@ function Home() {
           marginHorizontal: '6px',
         }
       };
-            
+
       return (
        <div className='container d-flex flex-column align-items-center justify-content-center'>
             <img className='col-4' style={styles.image} src={logo} alt="logo" />
@@ -72,9 +74,12 @@ function App() {
                     <Route path="/create-business-raw-material-account" element={<CreateBusinessRawMaterialAccount />} />
                     <Route path="/create-business-new-product-expense-account" element={<CreateBusinessNewProductExpenseAccount />} />
                     <Route path="/choose-business" element={<ChooseBusiness />} />
+                    <Route path="/raw-materials-tracker" element={<RawMaterialsTracker />} />
                     <Route path="/create-personal-account" element={<CreatePersonalAccount />} />
                     <Route path="/verify-account" element={<VerifyAccount />} />
                     <Route path="/business-raw-materials-tracker" element={<RawMaterialsTracker />} />
+                    <Route path="/material-usage-tracker" element={<MaterialUsageTracker/>}/>
+                    <Route path="/raw-material-order" element={<RawMaterialOrder/>}/>
 
                     {/* Rutas protegidas para usuarios personales */}
                     <Route

@@ -29,7 +29,7 @@ export default function BusinessRawMaterialsLogin() {
         setIsLoading(true);
         try {
             await login(data.email, data.password, accountType);
-            const from = location.state?.from?.pathname || '/business-dashboard';
+            const from = location.state?.from?.pathname || '/raw-materials-tracker';
             navigate(from, { replace: true });
         } catch (error) {
             setErrorMessage(error.message || 'Error al iniciar sesión');
