@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from '../../../assets/logo.png';
 import { Divider } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../../../context/AuthContext';
+import TopNavBar from './TopNavBar';
 
 // Esquema de validación con Yup
 const schema = yup.object().shape({
@@ -68,69 +68,11 @@ export default function PersonalProfile() {
     };
   
     const styles = {
-      container: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'white',
-        width: '100vw',
-        height: '100vh',
-      },
-      bodyContainer: {
-        marginTop: '150px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: 'white',
-        width: '70%',
-      },
       divider: {
         width: '100%',
-        height: 2,
-        backgroundColor: '#EAEAEA',
+        height: '2px',
+        backgroundColor: '#999',
         marginTop: 20,
-      },
-      menu: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '80%',
-        marginBottom: '30px'
-      },
-      header: {
-        position: 'fixed',
-        marginTop: '30px',
-        top: 0,
-        display: 'flex',
-        alignSelf: 'center',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        width: '100vw',
-      },
-      navLink: (path) => ({
-        cursor: 'pointer',
-        padding: '10px 20px',
-        fontSize: '16px',
-        color: location.pathname === path ? '#000' : '#888',
-        borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-        transition: 'border-color 0.3s',
-      }),
-      datePicker: {
-        alignSelf: 'center',
-        display: 'flex',
-        justifyContent: 'center',
-      },
-      dateItem: {
-        margin: '0 25px',
-        color: '#B0B0B0',
-        cursor: 'pointer',
-      },
-      activeDate: {
-        color: '#000',
-        borderBottom: '2px solid #4AD8C2',
       },
       title: {
         fontSize: 28,
@@ -138,122 +80,67 @@ export default function PersonalProfile() {
         color: '#30437A',
         marginBottom: 20,
       },
-      cardContainer: {
-        marginTop: '50px',
-        flexDirection: 'column',
-        justifyContent: 'left',
-      },
-      pieContainer: {
-        marginTop: '50px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-    image: {
-      width: 130,
-      height: 130,
-      marginBottom: 30,
-    },
-    input: {
-      width: 444,
-      height: 20,
-      backgroundColor: '#EAEAEA',
-      padding: 15,
-      borderWidth: 0,
-      borderRadius: 8,
-      color: 'black',
-      marginBottom: 15,
-      boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
-    },
   };
 
-  const paths = {
-    'BUDGET PLANNING': '/personal-budget-planner',
-    'DEBT TRACKER': '/personal-debt-tracker',
-    'SAVINGS TRACKER': '/personal-saving-tracker',
-    'EXPENSE TRACKER': '/personal-expenses',
-    'GRAPHICS': '/personal-graphics',
-    'PROFILE': '/personal-profile',
-  };
-  
-  const handleNavigation = (text) => {
-    navigate(paths[text] || '/personal-profile');
-  };
-  
   const handleLogout = () => {
     logout();
     navigate('/login-personal');
   };
 
   return (
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <div style={styles.menu}>
-            <img src={logo} alt="Logo" style={{ width: '90px' }} />
-            {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-              <span
-                key={index}
-                style={styles.navLink(paths[text])}
-                onClick={() => handleNavigation(text)}
-              >
-                {text}
-              </span>
-            ))}
-  
-          </div>
-  
-          <Divider style={styles.divider} />
-        </div>
-  
-        <div style={styles.bodyContainer}>
-          <div style={styles.cardContainer}>
-            <form>
-              <div>
-                <input style={styles.input}
+    <div>
+      <div className="row justify-content-center mb-5">
+        <TopNavBar/>
+        <Divider style={styles.divider} />
+      </div>
+    
+      <div className='row mt-5'>
+          <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+            <form className='d-flex flex-column col-8'>
+              <div className='d-flex flex-column justify-content-center align-items-center'>
+                <input className='input col-12'
                   type="text"
                   {...register('name')}
-                  placeholder="Name"
+                  placeholder="Nombre"
                 />
                 {errors.name && <p style={{ color: 'red' }}>{errors.name.message}</p>}
               </div>
 
-              <div>
-                <input style={styles.input}
+              <div className='d-flex flex-column justify-content-center align-items-center'>
+                <input className='input col-12'
                   disabled
                   type="email"
                   {...register('email')}
-                  placeholder="Email"
+                  placeholder="Correo electrónico"
                   />
                 {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
               </div>
     
-              <div>
-                <input style={styles.input}
+              <div className='d-flex flex-column justify-content-center align-items-center'>
+                <input className='input col-12'
                   type="text"
                   {...register('username')}
-                  placeholder="Username"
+                  placeholder="Nombre de usuario"
                 />
                 {errors.username && <p style={{ color: 'red' }}>{errors.username.message}</p>}
               </div>
 
-              <div>
-                <input style={styles.input}
+              <div className='d-flex flex-column justify-content-center align-items-center'>
+                <input className='input col-12'
                   type="text"
                   {...register('phoneNumber')}
-                  placeholder="PhoneNumber"
+                  placeholder="Número telefónico"
                 />
                 {errors.phoneNumber && <p style={{ color: 'red' }}>{errors.phoneNumber.message}</p>}
               </div>
             </form>
           </div>
   
-          <div style={styles.pieContainer}>
-            <button className='secondary_button' type="button" onClick={customSubmit}>UPDATE PROFILE</button>
-            
-            <button className='logOut_button' type="button" onClick={handleLogout}>LOG OUT</button>
+          <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+            <button className='secondary_button col-8' type="button" onClick={customSubmit}>EDITAR PERFIL</button>
+            <button className='logOut_button col-8' type="button" onClick={handleLogout}>CERRAR SESIÓN</button>
           </div>
-        </div>
       </div>
+    </div>
     );
 }

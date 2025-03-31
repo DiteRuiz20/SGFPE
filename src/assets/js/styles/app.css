@@ -7,6 +7,11 @@ body {
   justify-content: center;
 }
 
+#root, .app-container {
+  height: 100vh;
+  overflow-y: auto;
+}
+
 .background-container {
   background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../../imgs/backimg.jpg');
   background-repeat: no-repeat;

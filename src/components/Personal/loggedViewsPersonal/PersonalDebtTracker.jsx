@@ -3,7 +3,6 @@ import { getDebtsByUserId, createDebt, updateDebt, deleteDebt } from '../../../s
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { useLocation } from 'react-router-dom';
-import logo from '../../../assets/logo.png';
 import { Divider } from '@mui/material';
 import { GiTakeMyMoney } from "react-icons/gi";
 import { LiaMoneyCheckAltSolid } from "react-icons/lia";
@@ -11,7 +10,6 @@ import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box } from '@mui/material';
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../MonthSelector';
-import { FaUserCircle, FaMoneyBillWave, FaCalendarAlt, FaCalendarCheck, FaCheck, FaExclamationTriangle, FaTimes, FaQuestion, FaTrash } from 'react-icons/fa';
 
 export default function PersonalDebtTracker() {
   const [personalDebts, setPersonalDebts] = useState([]);
@@ -32,6 +30,14 @@ export default function PersonalDebtTracker() {
     center: new Date(),
     offset: 3,
   });
+
+  const isCurrentMonth = () => {
+    const currentMonth = new Date();
+    return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
+           selectedMonth.getMonth() === currentMonth.getMonth();
+  };
+
+  const isDisabled = !isCurrentMonth();
 
   // Verificar si dos fechas pertenecen al mismo mes
   const isSameMonth = (date1, date2) => {
@@ -177,46 +183,41 @@ export default function PersonalDebtTracker() {
   const columns = [
     {
       selector: row => (
-        <div style={{ display: 'flex', alignItems: 'left' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <CategoryIcon />
         </div>
       ),
-      grow: 0.05,
-      wrap: true,
-      minWidth: '10px',
+      minWidth: '60px',
+      maxWidth: '80px',
     },
     {
       selector: row => row.creditor,
-      grow: 0.2,
-      wrap: true,
-      minWidth: '20px',
+      grow: 0.3,
+      minWidth: '100px',
     },
     {
       selector: row => `$${row.amount.toFixed(2)}`,
-      grow: 0.15,
-      wrap: true,
-      minWidth: '80px',
+      grow: 0.3,
+      minWidth: '100px',
     },
     {
       selector: row => new Date(row.date).toLocaleDateString(),
-      grow: 0.15,
-      wrap: true,
-      minWidth: '80px',
+      grow: 0.3,
+      minWidth: '120px',
     },
     {
       selector: row => new Date(row.dueDate).toLocaleDateString(),
-      grow: 0.15,
-      wrap: true,
-      minWidth: '80px',
+      grow: 0.3,
+      minWidth: '120px',
     },
     {
       selector: row => (
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
           <span style={{
-            padding: '4px 8px',
-            borderRadius: '4px',
+            padding: '8px 16px',
+            borderRadius: '8px',
             backgroundColor: getStatusColor(row.status),
-            color: 'white'
+            color: 'white',
           }}>
             {row.status}
           </span>
@@ -224,55 +225,54 @@ export default function PersonalDebtTracker() {
             <button
               onClick={() => handleDeleteDebt(row.id)}
               style={{
-                padding: '4px 8px',
+                padding: '8px 16px',
                 backgroundColor: '#ff4444',
                 color: 'white',
                 border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
+                borderRadius: '8px',
+                cursor: 'pointer',
               }}
             >
               Eliminar
             </button>
           )}
           {row.status === 'PENDING' && (
-            <button
-              onClick={() => handleStatusUpdate(row.id, 'PAID')}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Marcar como Pagada
-            </button>
-          )}
-          {row.status === 'PENDING' && (
-            <button
-              onClick={() => handleStatusUpdate(row.id, 'CANCELLED')}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#ff9800',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Cancelar
-            </button>
+            <>
+              <button
+                onClick={() => handleStatusUpdate(row.id, 'PAID')}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                }}
+              >
+                Marcar como Pagada
+              </button>
+              <button
+                onClick={() => handleStatusUpdate(row.id, 'CANCELLED')}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#ff9800',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancelar
+              </button>
+            </>
           )}
         </div>
       ),
-      grow: 0.3,
-      right: true,
-      wrap: true,
-      minWidth: '200px',
+      grow: 1,
+      minWidth: '300px',
     },
   ];
+  
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -292,7 +292,7 @@ export default function PersonalDebtTracker() {
   const CategoryIcon = () => {
     const icon = <LiaMoneyCheckAltSolid />;
     const color = '#B1B1B1';
-
+  
     return (
       <div
         style={{
@@ -319,20 +319,6 @@ export default function PersonalDebtTracker() {
           backgroundColor: '#999',
           marginTop: 20,
         },
-        datePicker: {
-          alignSelf: 'center',
-          display: 'flex',
-          justifyContent: 'center',
-        },
-        dateItem: {
-          margin: '0 25px',
-          color: '#B0B0B0',
-          cursor: 'pointer',
-        },
-        activeDate: {
-          color: '#000',
-          borderBottom: '2px solid #4AD8C2',
-        },
         card: {
           backgroundColor: '#B1B1B1',
           color: 'white',
@@ -343,7 +329,13 @@ export default function PersonalDebtTracker() {
           display: 'flex',
           flexDirection: 'column',
           fontSize: '20px',
-          boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)'
+          boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)',
+        },
+        button: {
+          alignSelf: 'flex-end',
+          margin: '15px',
+          fontSize: '35px',
+          color: '#B1B1B1',
         },
         cardText: {
           fontSize: '20px',
@@ -354,26 +346,23 @@ export default function PersonalDebtTracker() {
         cardSubtitle: {
           fontSize: '16px',
           alignSelf: 'center',
+          marginTop: '10px',
           color: 'white',
         },
-        button: {
-          alignSelf: 'flex-end',
-          margin: '15px',
-          fontSize: '35px',
-            color: '#30437A',
-        },
         addButton: {
-          cursor: 'pointer',
           border: '1px solid #B1B1B1',
           width: '200px',
           height: '140px',
           margin: '20px 30px',
           borderRadius: '8px',
           display: 'flex',
+          padding: '10px',
           flexDirection: 'column',
           fontSize: '20px',
           color: 'black',
-            boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)'
+          boxShadow:'0px 8px 5px rgba(136, 136, 136, 0.2)',
+          opacity: isDisabled ? 0.6 : 1,
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
         },
         modalStyle: {
           position: 'absolute',
@@ -389,43 +378,47 @@ export default function PersonalDebtTracker() {
         title: {
           fontSize: 28,
           fontWeight: 'bold',
-          color: '#30437A',
+          color: '#B1B1B1',
         },
       };
 
-  const customStyles = {
-    headCells: {
-      style: {
-        height: '0px',
-        padding: '0px',
-        border: 'none',
-        visibility: 'hidden',
-      },
-    },
-    cells: {
-      style: {
-        fontSize: '14px',
-        padding: '10px',
-        display: 'flex',
-      },
-    },
-    rows: {
-      style: {
-        '&:hover': {
-          backgroundColor: '#e3e3e3',
+      const customStyles = {
+        headCells: {
+          style: {
+            height: '0px',
+            padding: '0px',
+            border: 'none',
+            visibility: 'hidden',
+          },
         },
-      },
-    },
-    table: {
-      style: {
-        width: '100%',
-      },
-    },
-  };
+        cells: {
+          style: {
+            fontSize: '14px',
+            padding: '10px',
+            display: 'flex',
+            whiteSpace: 'nowrap',
+          },
+        },
+        rows: {
+          style: {
+            '&:hover': {
+              backgroundColor: '#e3e3e3',
+            },
+          },
+        },
+        table: {
+          style: {
+            width: '100%',
+            maxWidth: '100%',
+            overflowX: 'auto',
+          },
+        },
+      };
+      
 
     return (
       <div>
-          <div className="row justify-content-center mt-3 mb-5">
+          <div className="row justify-content-center">
             <TopNavBar/>
             <MonthSelector
               selectedMonth={selectedMonth}
@@ -436,23 +429,26 @@ export default function PersonalDebtTracker() {
             <Divider style={styles.divider} />
           </div>
 
-          <div className='row mt-5'>
-          <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+        <div className='row mt-3'>
+          <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
             <div style={styles.card}>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-                <p>DEUDAS</p>
-                <GiTakeMyMoney style={{ fontSize: '40px'}} />
+                <text>DEUDAS</text>
+                <GiTakeMyMoney style={{ fontSize: '220%'}} />
                 </div>
-                  <p style={styles.cardText}>-${totalDebts.toFixed(2)}</p>
-                  <p style={styles.cardSubtitle}>Deudas del mes</p>
+                  <text style={styles.cardText}>-${totalDebts.toFixed(2)}</text>
+                  <text style={styles.cardSubtitle}>Deudas del mes</text>
             </div>
-            <div style={{...styles.addButton, border: '1px solid #B1B1B1'}} onClick={openForm}>
-              <MdOutlineAddToPhotos style={{...styles.button, color: '#B1B1B1'}} />
-            <p style={{alignSelf: 'center'}}>NUEVA DEUDA</p>
-            </div>
+            <button
+              style={styles.addButton}
+              onClick={() => !isDisabled && openForm()}
+              disabled={isDisabled}>
+              <MdOutlineAddToPhotos style={styles.button} />
+            <text style={{alignSelf: 'center'}}>NUEVA DEUDA</text>
+            </button>
           </div>
 
-          <div className='col-sm-6 flex-column justify-content-center align-items-center'>
+          <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', padding: '20px', boxSizing: 'border-box' }}>
             <DataTable
               columns={columns}
               data={filteredDebts}

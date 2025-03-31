@@ -4,7 +4,6 @@ import { getAllCategories } from '../../../services/CategoriesService';
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { useLocation } from 'react-router-dom';
-import logo from '../../../assets/logo.png';
 import { Divider } from '@mui/material';
 import { GiPayMoney } from 'react-icons/gi';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
@@ -14,6 +13,7 @@ import { IoShirtOutline, IoCarSportOutline } from 'react-icons/io5';
 import { RiHome2Line } from 'react-icons/ri';
 import { FaTheaterMasks, FaRegHospital } from 'react-icons/fa';
 import MonthSelector from '../../MonthSelector';
+import TopNavBar from './TopNavBar';
 
 export default function PersonalExpensesTracker() {
   const [personalExpenses, setPersonalExpenses] = useState([]);
@@ -27,6 +27,14 @@ export default function PersonalExpensesTracker() {
     center: new Date(), // Fecha central (actual)
     offset: 3,           // Número de meses a cada lado (total: 2*range + 1)
   });
+
+  const isCurrentMonth = () => {
+    const currentMonth = new Date();
+    return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
+           selectedMonth.getMonth() === currentMonth.getMonth();
+  };
+
+  const isDisabled = !isCurrentMonth();
 
   const [newExpense, setNewExpense] = useState({
     description: '',
@@ -236,34 +244,27 @@ export default function PersonalExpensesTracker() {
   const columns = [
     {
       selector: row => (
-        <div style={{ display: 'flex', alignItems: 'left' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <CategoryIcon category={row.categoryName} />
         </div>
       ),
-      grow: 0.05,
-      wrap: true,
-      minWidth: '10px',
+      minWidth: '60px',
+      maxWidth: '80px',
     },
     {
-      selector: row => (<strong>{row.description}</strong>),
-      grow: 0.3,
-      wrap: true,
-      minWidth: '120px',
+      selector: row => row.description,
+      grow: 0.4,
+      minWidth: '100px',
     },
     {
       selector: row => '-$' + row.amount,
-      grow: 0.2,
-      right: true,
-      wrap: true,
-      minWidth: '80px',
+      grow: 0.3,
+      minWidth: '100px',
     },
     {
       selector: row => new Date(row.date).toLocaleString(),
-      grow: 0.22,
-      right: true,
-      wrap: true,
-      sortable: true,
-      minWidth: '60px',
+      grow: 0.3,
+      minWidth: '100px',
     },
   ];
 
@@ -312,84 +313,11 @@ export default function PersonalExpensesTracker() {
 
 
   const styles = {
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'white',
-      width: '100vw',
-      height: '100vh',
-    },
-    bodyContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      backgroundColor: 'white',
-      width: '80%',
-      marginTop: '50px',
-      paddingTop: '30px',
-    },
     divider: {
       width: '100%',
-      height: 2,
-      backgroundColor: '#EAEAEA',
+      height: '2px',
+      backgroundColor: '#999',
       marginTop: 20,
-    },
-    menu: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: '80%',
-      marginBottom: '30px'
-    },
-    header: {
-      backgroundColor: 'white',
-      position: 'fixed',
-      top: 30,
-      display: 'flex',
-      alignSelf: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      width: '100vw',
-      zIndex: 10,
-    },
-    navLink: (path) => ({
-      cursor: 'pointer',
-      padding: '10px 20px',
-      fontSize: '16px',
-      color: location.pathname === path ? '#000' : '#888',
-      borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-      transition: 'border-color 0.3s',
-    }),
-    datePicker: {
-      alignSelf: 'center',
-      display: 'flex',
-      justifyContent: 'center',
-    },
-    dateItem: {
-      margin: '0 25px',
-      color: '#B0B0B0',
-      cursor: 'pointer',
-    },
-    activeDate: {
-      color: '#000',
-      borderBottom: '2px solid #4AD8C2',
-    },
-    cardContainer: {
-      marginTop: '-50px',
-      flexDirection: 'column',
-    },
-    chartContainer: {
-      marginTop: '-90px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '50vw',
-      zIndex: 1,
     },
     card: {
       backgroundColor: '#30437A',
@@ -401,7 +329,13 @@ export default function PersonalExpensesTracker() {
       display: 'flex',
       flexDirection: 'column',
       fontSize: '20px',
-      boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)'
+      boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)'
+    },
+    button: {
+      alignSelf: 'flex-end',
+      margin: '10px',
+      fontSize: '35px',
+      color: '#30437A',
     },
     cardText: {
       fontSize: '20px',
@@ -409,56 +343,26 @@ export default function PersonalExpensesTracker() {
       marginTop: '-10px',
       fontWeight: 'bold',
     },
-    buttonText: {
-      fontSize: '20px',
-      alignSelf: 'center',
-    },
     cardSubtitle: {
       fontSize: '16px',
       alignSelf: 'center',
       marginTop: '10px',
-      color: '#B0B0B0',
-    },
-    button: {
-      alignSelf: 'flex-end',
-      margin: '15px',
-      fontSize: '35px',
-      color: '#30437A',
+      color: 'white',
     },
     addButton: {
-      cursor: 'pointer',
       border: '1px solid #30437A',
       width: '200px',
       height: '140px',
       margin: '20px 30px',
+      padding: '10px',
       borderRadius: '8px',
       display: 'flex',
       flexDirection: 'column',
       fontSize: '20px',
       color: 'black',
-      boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)'
-    },
-    input: {
-      width: 370,
-      height: 20,
-      backgroundColor: '#EAEAEA',
-      padding: 15,
-      borderWidth: 0,
-      borderRadius: 8,
-      color: 'black',
-      marginBottom: 15,
-      boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
-    },
-    selector: {
-      width: 400,
-      height: 50,
-      backgroundColor: '#EAEAEA',
-      padding: 15,
-      borderWidth: 0,
-      borderRadius: 8,
-      color: 'black',
-      marginBottom: 15,
-      boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
+      boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)',
+      opacity: isDisabled ? 0.6 : 1,
+      cursor: isDisabled ? 'not-allowed' : 'pointer',
     },
     modalStyle: {
       position: 'absolute',
@@ -492,6 +396,7 @@ export default function PersonalExpensesTracker() {
         fontSize: '14px',
         padding: '10px',
         display: 'flex',
+        whiteSpace: 'nowrap',
       },
     },
     rows: {
@@ -504,66 +409,47 @@ export default function PersonalExpensesTracker() {
     table: {
       style: {
         width: '100%',
+        maxWidth: '100%',
+        overflowX: 'auto',
       },
     },
   };
 
-  const paths = {
-    'BUDGET PLANNING': '/personal-budget-planner',
-    'DEBT TRACKER': '/personal-debt-tracker',
-    'SAVINGS TRACKER': '/personal-saving-tracker',
-    'EXPENSE TRACKER': '/personal-expenses',
-    'GRAPHICS': '/personal-graphics',
-    'PROFILE': '/personal-profile',
-  };
-
-  const handleNavigation = (text) => {
-    navigate(paths[text] || '/personal-expenses');
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.menu}>
-          <img src={logo} alt="Logo" style={{ width: '90px' }} />
-          {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-            <span
-              key={index}
-              style={styles.navLink(paths[text])}
-              onClick={() => handleNavigation(text)}
-            >
-              {text}
-            </span>
-          ))}
+  <div>
+    <div className="row justify-content-center">
+      <TopNavBar/>
+      <MonthSelector
+        selectedMonth={selectedMonth}
+        onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+        dateWindow={dateWindow}
+        setDateWindow={setDateWindow}
+      />
+      <Divider style={styles.divider} />
+    </div>
+  
+    <div className='row mt-3'>
+      <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
+        <div style={styles.card}>
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+            <text>GASTOS</text>
+            <GiPayMoney style={{ fontSize: '220%'}} />
+          </div>
+
+          <text style={styles.cardText}>-${totalExpenses.toFixed(2)}</text>
+          <text style={styles.cardSubtitle}>Gastos del mes</text>
         </div>
 
-        <MonthSelector
-          selectedMonth={selectedMonth}
-          onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
-          dateWindow={dateWindow}
-          setDateWindow={setDateWindow}
-        />
-
-        <Divider style={styles.divider} />
+        <button
+          style={styles.addButton}
+          onClick={() => !isDisabled && openForm()}
+          disabled={isDisabled}>
+          <MdOutlineAddToPhotos style={styles.button} />
+          <text style={{ alignSelf: 'center' }}>NUEVO GASTO</text>
+        </button>
       </div>
 
-      <div style={styles.bodyContainer}>
-        <div style={styles.cardContainer}>
-          <div style={styles.card}>
-            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-              <span>SPENT</span>
-              <GiPayMoney style={{ fontSize: '40px' }} />
-            </div>
-            <span style={styles.cardText}>-${totalExpenses}</span>
-            <span style={styles.cardSubtitle}>This month's expenses</span>
-          </div>
-          <div style={styles.addButton} onClick={openForm}>
-            <MdOutlineAddToPhotos style={styles.button} />
-            <span style={styles.buttonText}>ADD EXPENSE</span>
-          </div>
-        </div>
-
-        <div style={styles.chartContainer}>
+        <div className='col-sm-8 flex-column justify-content-center align-items-center'>
           <DataTable
             columns={columns}
             data={filteredExpenses}
@@ -578,10 +464,10 @@ export default function PersonalExpensesTracker() {
         <Box sx={styles.modalStyle}>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '20px' }}>
-              <span style={styles.title}>Add Expense</span>
+              <text style={styles.title}>Nuevo gasto</text>
             </div>
             <div>
-              <input style={styles.input}
+              <input className='input col-12'
                 placeholder='Description'
                 type="text"
                 name="description"
@@ -591,7 +477,7 @@ export default function PersonalExpensesTracker() {
               />
             </div>
             <div>
-              <input style={styles.input}
+              <input className='input col-12'
                 placeholder='Amount'
                 type="number"
                 name="amount"
@@ -601,7 +487,7 @@ export default function PersonalExpensesTracker() {
               />
             </div>
             <div>
-              <select style={styles.selector}
+              <select className='input col-12'
                 name="categoryId"
                 value={newExpense.categoryId}
                 onChange={handleInputChange}
@@ -616,9 +502,9 @@ export default function PersonalExpensesTracker() {
               </select>
             </div>
             <Divider style={styles.divider} />
-            <div style={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
-              <button className='primary_button' style={{ width: '35%', marginRight: '10px' }} type="button" onClick={closeForm}>Cancel</button>
-              <button className='secondary_button' style={{ width: '35%' }} type="submit">Add</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+              <button className='primary_button' style={{ width: '40%', marginRight: '10px' }} type="button" onClick={closeForm}>Cancelar</button>
+              <button className='secondary_button' style={{ width: '40%' }} type="submit">Agregar</button>
             </div>
           </form>
         </Box>

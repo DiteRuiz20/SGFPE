@@ -5,6 +5,7 @@ import * as yup from 'yup';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/logo.png';
+import { Divider } from '@mui/material';
 
 const schema = yup.object().shape({
     email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
@@ -27,8 +28,7 @@ export default function PersonalLogin() {
         setIsLoading(true);
         try {
             await login(data.email, data.password, 'personal');
-            const from = location.state?.from?.pathname || '/personal-budget-planner';
-            navigate(from, { replace: true });
+            navigate('/personal-budget-planner');
         } catch (error) {
             setErrorMessage(error.message || 'Error al iniciar sesión');
         } finally {
@@ -57,6 +57,12 @@ export default function PersonalLogin() {
             color: '#222',
             fontSize: 16,
             marginBottom: 10,
+        },
+        divider: {
+            width: '65%',
+            height: '2px',
+            backgroundColor: '#999',
+            marginTop: 20,
         },
     };
 
@@ -112,9 +118,12 @@ export default function PersonalLogin() {
                             {isLoading ? 'PROCESANDO...' : 'INICIAR SESIÓN'}
                         </button>
                     </div>
+                    <div className="d-flex justify-content-center align-items-center my-2">
+                        <Divider style={styles.divider} />
+                    </div>
                 </form>
 
-                <div className="d-flex flex-column justify-content-center align-items-center col-12 mt-md-3 mt-lg-5">
+                <div className="d-flex flex-column justify-content-center align-items-center col-12 mt-3">
                     <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
                     <button className='secondary_button col-8' onClick={goToCreateAccount}>
                         REGISTRARSE

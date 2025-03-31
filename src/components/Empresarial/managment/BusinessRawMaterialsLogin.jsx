@@ -60,6 +60,12 @@ export default function BusinessRawMaterialsLogin() {
             fontSize: 16,
             marginBottom: 10,
         },
+        divider: {
+            width: '65%',
+            height: '2px',
+            backgroundColor: '#999',
+            marginTop: 20,
+        },
     };
 
     return (
@@ -116,9 +122,12 @@ export default function BusinessRawMaterialsLogin() {
                             {isLoading ? 'PROCESANDO...' : 'INICIAR SESIÓN'}
                         </button>
                     </div>
+                    <div className="d-flex justify-content-center align-items-center my-2">
+                        <Divider style={styles.divider} />
+                    </div>
                 </form>
 
-                <div className="d-flex flex-column justify-content-center align-items-center col-12 mt-md-3 mt-lg-5">
+                <div className="d-flex flex-column justify-content-center align-items-center col-12 mt-3">
                     <p style={styles.getStarted}>¿No tienes una cuenta?</p> 
                     <button className='secondary_button col-8' onClick={goToCreateAccount} style={{ marginTop: '10px' }}>
                         REGISTRARSE

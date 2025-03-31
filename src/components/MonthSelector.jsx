@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const isSameMonth = (date1, date2) => {
     const d1 = new Date(date1);
@@ -12,6 +12,14 @@ const isSameMonth = (date1, date2) => {
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 const MonthSelector = ({ selectedMonth, onMonthSelect, dateWindow, setDateWindow }) => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const generateMonths = () => {
         const centerDate = new Date(dateWindow.center);
         const start = new Date(centerDate.getFullYear(), centerDate.getMonth() - dateWindow.offset, 1);
@@ -32,18 +40,23 @@ const MonthSelector = ({ selectedMonth, onMonthSelect, dateWindow, setDateWindow
 
     const handleSelect = (monthObj) => {
         onMonthSelect(monthObj);
-
         const index = months.findIndex(m => isSameMonth(m.date, monthObj.date));
-
         if (index === 0 || index === months.length - 1) {
-            setDateWindow(prev => ({
-                ...prev,
-                center: monthObj.date
-            }));
+            setDateWindow(prev => ({ ...prev, center: monthObj.date }));
         }
     };
 
-    return (
+    return isMobile ? (
+        <select
+            value={months.findIndex(m => isSameMonth(m.date, selectedMonth))}
+            onChange={(e) => handleSelect(months[e.target.value])}
+            className='input col-10'
+        >
+            {months.map((monthObj, index) => (
+                <option key={index} value={index}>{monthObj.label}</option>
+            ))}
+        </select>
+    ) : (
         <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -60,7 +73,6 @@ const MonthSelector = ({ selectedMonth, onMonthSelect, dateWindow, setDateWindow
                         color: isSameMonth(monthObj.date, selectedMonth) ? '#000' : '#B0B0B0',
                         borderBottom: isSameMonth(monthObj.date, selectedMonth) ? '2px solid #4AD8C2' : 'none',
                         padding: '5px',
-                        fontWeight: isSameMonth(monthObj.date, selectedMonth)
                     }}
                 >
                     {monthObj.label}

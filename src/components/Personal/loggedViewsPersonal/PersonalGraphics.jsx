@@ -3,11 +3,11 @@ import { getPersonalExpensesByUserId } from '../../../services/PersonalExpensesS
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PieChart, Pie, Cell, Legend } from 'recharts';
 import { Divider } from '@mui/material';
-import logo from '../../../assets/logo.png';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend as ChartJSLegend } from 'chart.js';
 import { getSavingsByUserId } from '../../../services/SavingsService';
 import { getDebtsByUserId } from '../../../services/DebtsService';
 import MonthSelector from '../../MonthSelector';
+import TopNavBar from './TopNavBar';
 
 ChartJS.register(ArcElement, Tooltip, ChartJSLegend);
 
@@ -210,154 +210,43 @@ export default function PersonalGraphics() {
   };
 
   const styles = {
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'white',
-      width: '100vw',
-      height: '100vh',
-    },
-    bodyContainer: {
-      marginLeft: '-160px',
-      marginTop: '170px',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: 'white',
-      width: '90%',
-    },
     divider: {
       width: '100%',
-      height: 2,
-      backgroundColor: '#EAEAEA',
+      height: '2px',
+      backgroundColor: '#999',
       marginTop: 20,
     },
-    menu: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: '80%',
-      marginBottom: '30px'
-    },
-    header: {
-      position: 'fixed',
-      marginTop: '30px',
-      top: 0,
-      display: 'flex',
-      alignSelf: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      width: '100vw',
-    },
-    navLink: (path) => ({
-      cursor: 'pointer',
-      padding: '10px 20px',
-      fontSize: '16px',
-      color: location.pathname === path ? '#000' : '#888',
-      borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-      transition: 'border-color 0.3s',
-    }),
-    datePicker: {
-      alignSelf: 'center',
-      display: 'flex',
-      justifyContent: 'center',
-    },
-    dateItem: {
-      margin: '0 25px',
-      color: '#B0B0B0',
-      cursor: 'pointer',
-    },
-    activeDate: {
-      color: '#000',
-      borderBottom: '2px solid #4AD8C2',
-    },
-    title: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: '#30437A',
-      marginBottom: 20,
-    },
-    cardContainer: {
-      flexDirection: 'column',
-      justifyContent: 'left',
-      alignItems: 'left',
-    },
-    pieContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      width: '100%',
-    },
     expensesTitle: {
-      marginLeft: '160px',
       fontSize: 28,
       fontWeight: 'bold',
       color: '#30437A',
-    },
-    button: {
-      marginTop: '-30px',
-      marginBottom: '-40px',
-      marginRight: '30px',
-      alignSelf: 'flex-end',
-      width: '20%',
-      cursor: 'pointer',
-      zIndex:10
-    },
-  };
-
-  const paths = {
-    'BUDGET PLANNING': '/personal-budget-planner',
-    'DEBT TRACKER': '/personal-debt-tracker',
-    'SAVINGS TRACKER': '/personal-saving-tracker',
-    'EXPENSE TRACKER': '/personal-expenses',
-    'GRAPHICS': '/personal-graphics',
-    'PROFILE': '/personal-profile',
-  };
-  
-  const handleNavigation = (text) => {
-    navigate(paths[text] || '/personal-graphics');
+      textAlign: 'center',
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.menu}>
-          <img src={logo} alt="Logo" style={{ width: '90px' }} />
-          {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-            <span
-              key={index}
-              style={styles.navLink(paths[text])}
-              onClick={() => handleNavigation(text)}
-            >
-              {text}
-            </span>
-          ))}
-
-        </div>
-
+    <div>
+      <div className="row justify-content-center">
+        <TopNavBar/>
         <MonthSelector
           selectedMonth={selectedMonth}
           onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
           dateWindow={dateWindow}
           setDateWindow={setDateWindow}
         />
-
         <Divider style={styles.divider} />
       </div>
-
-      <div style={styles.bodyContainer}>
-        <div style={styles.pieContainer}>
-          <text style={styles.expensesTitle}>DEBTS VS SAVINGS</text>
+  
+      <div className='row mt-3'>
+        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center mb-5'>
+          <p style={styles.expensesTitle}>DEUDAS VS AHORROS</p>
           <PieChart width={400} height={400}>
             <Pie
               data={calculateTotals()}
               dataKey="value"
               nameKey="name"
-              cx={200}
-              cy={200}
+              cx={'50%'}
+              cy={'50%'}
               innerRadius={80}
               outerRadius={120}
               label
@@ -367,25 +256,24 @@ export default function PersonalGraphics() {
               ))}
             </Pie>
             <Legend 
-              align='left' 
-              verticalAlign='middle' 
-              layout='vertical'
-              iconType='plainline'
+              align="center"
+              verticalAlign="bottom"
+              layout="vertical"
+              iconType="plainline"
               iconSize={15}
-              wrapperStyle={{ top: 100, left: 430, right: 0, display: 'flex', justifyContent: 'flex-start' }} 
             />    
           </PieChart>
         </div>
 
-        <div style={styles.pieContainer}>
-          <text style={styles.expensesTitle}>EXPENSES</text>
-          <PieChart width={400} height={400}>
+        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+          <p style={styles.expensesTitle}>GASTOS</p>
+          <PieChart width={350} height={500}>
             <Pie
               data={categoryData()}
               dataKey="value"
               nameKey="name"
-              cx={200}
-              cy={200}
+              cx={'50%'}
+              cy={'50%'}
               innerRadius={80}
               outerRadius={120}
               label
@@ -395,17 +283,15 @@ export default function PersonalGraphics() {
               ))}
             </Pie>
             <Legend 
-              align='left' 
-              verticalAlign='middle' 
-              layout='vertical'
-              iconType='plainline'
+              align="center"
+              verticalAlign="bottom"
+              layout="vertical"
+              iconType="plainline"
               iconSize={15}
-              wrapperStyle={{ top: 100, left: 430, right: 0, display: 'flex', justifyContent: 'flex-start' }} 
             />    
           </PieChart>
         </div>
       </div>
-      <button className='primary_button' style={styles.button}>GENERATE REPORT</button>
     </div>
   );
 }

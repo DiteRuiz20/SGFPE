@@ -76,8 +76,8 @@ export default function PersonalBudgetPlanner() {
   const totalDebts = (filteredDebts || []).reduce((sum, debt) => sum + debt.amount, 0);
 
   const chartData = [
-    { name: 'EXPENSES', value: totalExpenses, color: '#30437A' },
-    { name: 'SAVINGS', value: totalSavings, color: '#3DC9A7' }
+    { name: 'AHORROS', value: totalSavings, color: '#3DC9A7' },
+    { name: 'GASTOS', value: totalExpenses, color: '#30437A' }
   ];
 
   const styles = {
@@ -100,7 +100,6 @@ export default function PersonalBudgetPlanner() {
       fontSize: 28,
       fontWeight: 'bold',
       color: '#30437A',
-      marginBottom: 20,
     },
     card: (color) => ({
       backgroundColor: color,
@@ -125,7 +124,7 @@ export default function PersonalBudgetPlanner() {
 
   return (
     <div>
-      <div className="row justify-content-center mt-3 mb-5">
+      <div className="row justify-content-center">
         <TopNavBar/>
         <MonthSelector
           selectedMonth={selectedMonth}
@@ -136,8 +135,8 @@ export default function PersonalBudgetPlanner() {
         <Divider style={styles.divider} />
       </div>
 
-      <div className='row mt-5'>
-        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+      <div className='row mt-3'>
+        <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
           <Tooltip title="Total de ahorros" arrow placement="left">
             <div style={styles.card('#3DC9A7')}>
               <GiReceiveMoney style={{ fontSize: '220%', marginRight: '15px'}} />
@@ -160,13 +159,13 @@ export default function PersonalBudgetPlanner() {
           </Tooltip>
         </div>
 
-        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+        <div className='col-sm-8 d-flex flex-column justify-content-center align-items-center'>
           <h3 style={styles.title}>PRESUPUESTO TOTAL</h3>
-          <PieChart width={350} height={350}>
-            <Pie 
+          <PieChart width={400} height={450} margin={{bottom: 50 }}>
+            <Pie
               data={chartData} 
-              cx={150} 
-              cy={150} 
+              cx={200} 
+              cy={200} 
               innerRadius={80} 
               label 
               outerRadius={120} 
@@ -177,12 +176,11 @@ export default function PersonalBudgetPlanner() {
               ))}
             </Pie>
             <Legend
-              align='left'
-              verticalAlign='middle'
-              layout='vertical'
-              iconType='plainline'
+              align="center"
+              verticalAlign="bottom"
+              layout="horizontal"
+              iconType="plainline"
               iconSize={15}
-              wrapperStyle={{ top: 100, left: 500, right: 0, display: 'flex', justifyContent: 'flex-start' }}
             />
           </PieChart>
         </div>
