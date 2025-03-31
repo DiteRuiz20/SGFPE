@@ -351,6 +351,7 @@ export default function PersonalExpensesTracker() {
     },
     addButton: {
       border: '1px solid #30437A',
+      backgroundColor: 'white',
       width: '200px',
       height: '140px',
       margin: '20px 30px',

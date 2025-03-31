@@ -273,6 +273,7 @@ export default function PersonalSavingTracker() {
         },
         addButton: {
           border: '1px solid #3DC9A7',
+          backgroundColor: 'white', 
           width: '200px',
           height: '140px',
           margin: '20px 30px',

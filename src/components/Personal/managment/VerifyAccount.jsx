@@ -16,7 +16,7 @@ export default function VerifyAccount() {
 
     useEffect(() => {
         if (!email) {
-            navigate('/login-personal');
+            navigate('/');
         }
     }, [email, navigate]);
 
@@ -59,74 +59,55 @@ export default function VerifyAccount() {
     };
 
     const styles = {
-        container: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            width: '100vw',
-            height: '100vh',
-        },
         image: {
-            width: 130,
-            height: 130,
-            marginBottom: 30,
-        },
-        title: {
-            fontSize: 28,
-            fontWeight: 'bold',
-            color: '#30437A',
-            marginBottom: 20,
+          width: '150px',
+          height: '150px',
+          marginBottom: '40px',
         },
         subtitle: {
-            fontSize: 16,
-            color: '#444',
-            marginBottom: 20,
-            textAlign: 'center',
-            maxWidth: '600px',
-            padding: '0 20px',
+          marginTop: '20px',
+          fontSize: 16,
+          color: '#444',
         },
-        input: {
-            width: '300px',
-            padding: '12px',
-            fontSize: '16px',
-            borderRadius: '8px',
-            border: '1px solid #ccc',
-            marginBottom: '20px',
+        title: {
+          fontSize: 34,
+          fontWeight: 'bold',
+          color: '#30437A',
+          marginBottom: 25,
         },
-        error: {
-            color: 'red',
-            marginBottom: 15,
+        text: {
+          marginTop: '20px',
+          fontSize: 20,
+          color: '#444',
         },
-        success: {
-            color: 'green',
-            marginBottom: 15,
-        },
-    };
+      };
 
     return (
-        <div style={styles.container}>
-            <img style={styles.image} src={logo} alt="logo" />
-            <h1 style={styles.title}>Verificación de Cuenta</h1>
-            <p style={styles.subtitle}>
+    <div className="background-container align-content-center">
+        <div className='container d-flex flex-column align-items-center justify-content-center'>
+            <p style={styles.title}>VERIFICACIÓN DE CORREO</p>
+            <p style={styles.text}>
                 Hemos enviado un código de 6 dígitos a tu correo. Ingresa el código para completar tu registro.
             </p>
-            <input
-                type="text"
-                placeholder="Código de verificación"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                style={styles.input}
-            />
-            {error && <p style={styles.error}>{error}</p>}
-            {success && <p style={styles.success}>✅ Cuenta verificada correctamente</p>}
-            <button className='primary_button' onClick={handleVerification} disabled={loading}>
-                {loading ? 'Verificando...' : 'VERIFICAR CUENTA'}
-            </button>
-            <button className='secondary_button' onClick={handleResendCode} disabled={loading} style={{ marginTop: 15 }}>
-                Reenviar código
-            </button>
+            <div className='d-flex flex-column col-sm-6 col-lg-4 mt-3'>
+                <input className='input'
+                    type="text"
+                    placeholder="Código de verificación"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    style={styles.input}
+                />
+                {error && <p style={styles.error}>{error}</p>}
+                {success && <p style={styles.success}>✅ Cuenta verificada correctamente</p>}
+                <button className='primary_button' onClick={handleVerification} disabled={loading}>
+                    {loading ? 'Verificando...' : 'VERIFICAR CUENTA'}
+                </button>
+                <p style={styles.subtitle}>¿No recibiste el correo?</p>
+                <button className='secondary_button' onClick={handleResendCode} disabled={loading}>
+                    Reenviar código
+                </button>
+            </div>
+          </div>
         </div>
     );
 }

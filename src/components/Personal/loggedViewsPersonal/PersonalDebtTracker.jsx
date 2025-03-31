@@ -351,6 +351,7 @@ export default function PersonalDebtTracker() {
         },
         addButton: {
           border: '1px solid #B1B1B1',
+          backgroundColor: 'white',
           width: '200px',
           height: '140px',
           margin: '20px 30px',
