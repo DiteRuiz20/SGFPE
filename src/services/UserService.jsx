@@ -5,10 +5,15 @@ export const getUsers = async () => {
     return response.data;
 };
 
-const getUser = async (id) => {
-    const response = await fetch(`/api/users/${id}`);
-    if (!response.ok) throw new Error('Failed to fetch user data');
-    return await response.json();
+export const getUser = async (id) => {
+    try {
+        const response = await api.get(`/api/personal/users/${id}`);
+        console.log('Respuesta completa:', response);
+        return response.data; // Axios maneja automáticamente el JSON
+    } catch (error) {
+        console.error('Error en getUser:', error);
+        throw error;
+    }
 };  
 
 export const createUser = async (user) => {
@@ -17,6 +22,11 @@ export const createUser = async (user) => {
 };
 
 export const updateUser = async (user) => {
-    const response = await api.put('/api/personal/users', user);
-    return response.data;
+    try {
+        const response = await api.put(`/api/personal/users/${user.id}`, user); // Asegúrate de incluir el ID en la URL
+        return response.data;
+    } catch (error) {
+        console.error('Error en updateUser:', error);
+        throw error;
+    }
 };

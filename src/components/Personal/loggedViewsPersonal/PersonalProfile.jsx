@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../../../context/AuthContext';
+import { getUser, updateUser } from '../../../services/UserService';
 
 // Esquema de validación con Yup
 const schema = yup.object().shape({
@@ -19,53 +20,63 @@ const schema = yup.object().shape({
 export default function PersonalProfile() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
+  const { userId, logout } = useAuth(); // Obtener userId y logout del contexto
+  const [user, setUser] = useState(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
   });
-  const { logout } = useAuth();
 
-// Obtener usuarios al cargar el componente
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await getUsers(); // Llamada a la función importada
-                console.log('Usuarios obtenidos:', response);  // Verifica la respuesta de la API
-                // Mapeamos la respuesta para asegurarnos de que cada usuario tenga un `accountType`
-                const fetchedUsers = response.map(user => ({
-                    ...user,
-                    accountType: user.accountType || 'Desconocido',  // Asegúrate de que `accountType` esté presente
-                }));
-                setUsers(fetchedUsers);
-            } catch (error) {
-                console.error('Error al obtener los usuarios:', error);
-            }
-        };
+  // Obtener datos del usuario al cargar el componente
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!userId) {
+        console.error('userId es undefined o null');
+        return;
+      }
 
-        fetchUsers();
-    }, []);
+      try {
+        console.log('ID del usuario:', userId);
+        const userInfo = await getUser(userId); // Obtener datos del usuario por ID
+        console.log('Usuario obtenido:', userInfo);
 
-    // Crear usuario
-    const onSubmit = async (data) => {
-        try {
-            // Asegúrate de que el `accountType` sea 'personal' al crear el nuevo usuario
-            const newUser = await createUser({ ...data, accountType: 'personal' });
-            console.log('Nuevo usuario creado:', newUser);  // Verifica los datos enviados y la respuesta
-            alert('Cuenta personal creada exitosamente');
-            reset();
-
-            // Actualizar la lista de usuarios después de crear
-            setUsers((prevUsers) => [...prevUsers, newUser]);
-            navigate('/login-personal');
-        } catch (error) {
-            console.error('Error al crear la cuenta:', error);
-            alert('Hubo un error al crear la cuenta');
+        if (!userInfo) {
+          console.error('No se encontraron datos para el usuario');
+          return;
         }
+
+        setUser(userInfo);
+        reset(userInfo); // Inicializar el formulario con los datos del usuario
+      } catch (error) {
+        if (error.response) {
+          console.error('Error en la respuesta del servidor:', error.response);
+        } else if (error.request) {
+          console.error('No se recibió respuesta del servidor:', error.request);
+        } else {
+          console.error('Error al realizar la solicitud:', error.message);
+        }
+      }
     };
 
-    const customSubmit = () => {
-        handleSubmit(onSubmit)();
-    };
+    fetchUser();
+  }, [userId, reset]);
+
+  // Actualizar usuario
+  const onSubmit = async (data) => {
+    try {
+        console.log('Datos enviados al backend:', { ...user, ...data }); // Inspecciona los datos
+        const updatedUser = await updateUser({ ...user, ...data }); // Actualizar solo los campos modificados
+        console.log('Usuario actualizado:', updatedUser);
+        alert('Perfil actualizado exitosamente');
+        setUser(updatedUser); // Actualizar el estado con los datos actualizados
+    } catch (error) {
+        console.error('Error al actualizar el perfil:', error);
+        alert('Hubo un error al actualizar el perfil');
+    }
+};
+
+  const customSubmit = () => {
+    handleSubmit(onSubmit)();
+  };
   
     const styles = {
       container: {
