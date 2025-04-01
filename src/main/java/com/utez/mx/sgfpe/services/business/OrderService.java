@@ -1,9 +1,11 @@
 package com.utez.mx.sgfpe.services.business;
 
 import com.utez.mx.sgfpe.models.business.MaterialUsage;
+import com.utez.mx.sgfpe.models.business.NewProductExpense;
 import com.utez.mx.sgfpe.models.business.Order;
 import com.utez.mx.sgfpe.repositories.business.MaterialUsageRepository;
 import com.utez.mx.sgfpe.repositories.business.OrderRepository;
+import com.utez.mx.sgfpe.repositories.business.NewProductExpenseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,9 @@ public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private NewProductExpenseRepository newProductExpenseRepository;
 
     @Autowired
     private MaterialUsageRepository materialUsageRepository;
@@ -66,4 +71,40 @@ public class OrderService {
     public void deleteOrder(String id) {
         orderRepository.deleteById(id);
     }
+
+    public Order createOrderFromNewProductExpenses(String userId, String description, List<String> productExpenseIds, BigDecimal income) throws Exception {
+        List<NewProductExpense> products = newProductExpenseRepository.findAllById(productExpenseIds);
+
+        if (products.size() != productExpenseIds.size()) {
+            throw new Exception("Algunos productos no fueron encontrados");
+        }
+
+        BigDecimal totalCost = products.stream()
+                .map(NewProductExpense::getTotalCost)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal netProfit = income.subtract(totalCost);
+
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setOrderDescription(description);
+        order.setNewProductExpenseIds(productExpenseIds);
+        order.setIncome(income);
+        order.setNetProfit(netProfit);
+        order.setCreatedAt(java.time.Instant.now());
+
+        // Reducir cantidad o eliminar
+        for (NewProductExpense product : products) {
+            double newQuantity = product.getQuantity() - 1;
+            if (newQuantity <= 0) {
+                newProductExpenseRepository.deleteById(product.getId());
+            } else {
+                product.setQuantity(newQuantity);
+                newProductExpenseRepository.save(product);
+            }
+        }
+
+        return orderRepository.save(order);
+    }
+
 }

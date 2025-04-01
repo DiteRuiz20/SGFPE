@@ -15,6 +15,7 @@ public class Order {
 
     private String userId;
     private String orderDescription;
+    private List<String> newProductExpenseIds; // Para pedidos desde nueva mercancía
     private List<String> materialUsageIds;
     private BigDecimal income;
     private BigDecimal netProfit;
@@ -29,6 +30,17 @@ public class Order {
         this.income = income;
         this.netProfit = netProfit;
         this.createdAt = Instant.now();
+    }
+
+    public Order(String userId, String orderDescription, List<String> materialUsageIds, List<String> newProductExpenseIds,
+                 BigDecimal income, BigDecimal netProfit, Instant createdAt) {
+        this.userId = userId;
+        this.orderDescription = orderDescription;
+        this.materialUsageIds = materialUsageIds;
+        this.newProductExpenseIds = newProductExpenseIds;
+        this.income = income;
+        this.netProfit = netProfit;
+        this.createdAt = createdAt;
     }
 
     public String getId() {
@@ -85,5 +97,13 @@ public class Order {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public List<String> getNewProductExpenseIds() {
+        return newProductExpenseIds;
+    }
+
+    public void setNewProductExpenseIds(List<String> newProductExpenseIds) {
+        this.newProductExpenseIds = newProductExpenseIds;
     }
 }
