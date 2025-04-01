@@ -5,7 +5,9 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #ffffff;
+  width: 100%;
+  height: 100%;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -14,8 +16,9 @@
 }
 
 a {
+  margin-top: 10px;
   font-weight: 500;
-  color: #646cff;
+  color: #4147c1;
   text-decoration: inherit;
 }
 a:hover {
@@ -25,14 +28,8 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  width: 100%;
+  height: 100%;
 }
 
 button {
@@ -68,15 +65,18 @@ button:focus-visible {
 }
 
 .primary_button, .secondary_button, .logOut_button {
-  width: 475px;
-  padding: 15px 40px;
+  width: '80%';
+  padding: 15px 35px;
   border-radius: 8px;
   margin-bottom: 15px;
   color: white;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1.1em;
   transition: background-color 0.3s, transform 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .logOut_button {
@@ -108,4 +108,14 @@ button:focus-visible {
 .secondary_button:hover {
   background-color: #2BAE92;
   transform: translateY(-2px);
+}
+
+.input {
+  background-color: #EAEAEA;
+  padding: 15px;
+  border-width: 0px;
+  border-radius: 8px;
+  color: black;
+  margin-bottom: 15px;
+  box-shadow: 0px 2px 2px rgba(136, 136, 136, 0.5);
 }

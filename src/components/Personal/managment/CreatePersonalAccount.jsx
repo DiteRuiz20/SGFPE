@@ -53,8 +53,8 @@ export default function CreatePersonalAccount() {
 
             // Actualizar la lista de usuarios después de crear
             setUsers((prevUsers) => [...prevUsers, newUser]);
-            navigate('/login-personal');
-        } catch (error) {
+            navigate('/verify-account', { state: { email: data.email, accountType: newUser.accountType } });
+          } catch (error) {
             console.error('Error al crear la cuenta:', error);
             
             // Manejo de errores específicos
@@ -79,158 +79,84 @@ export default function CreatePersonalAccount() {
     };
 
     const styles = {
-        fatherContainer: {
-            marginTop: 40,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: 'white',
-            width: '80vw',
-        },
-        upperContainer: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            width: '100vw',
-            height: '100vh',
-        },
-        container: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-        },
-        image: {
-          width: 130,
-          height: 130,
-          marginBottom: 30,
-        },
-        subtitle: {
-          alignSelf: 'center',
-          fontSize: 16,
-          color: '#444',
-          marginBottom: 20,
-        },
-        title: {
-          fontSize: 28,
-          fontWeight: 'bold',
-          color: '#30437A',
-          marginBottom: 20,
-        },
-        input: {
-            width: 444,
-            height: 20,
-            backgroundColor: '#EAEAEA',
-            padding: 15,
-            borderWidth: 0,
-            borderRadius: 8,
-            color: 'black',
-            marginBottom: 15,
-            boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
-        },
-        primary_button: {
-          width: '100%',
-          backgroundColor: '#30437A',
-          padding: 15,
-          borderRadius: 8,
-          alignItems: 'center',
-          marginBottom: 15,
-          shadowColor: '#30387a',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.5,
-          shadowRadius: 2,
-        },
-        orText: {
-          fontSize: 14,
-          color: '#666',
-          backgroundColor: 'white',
-          top: -23,
-        },
-        getStarted: {
-          color: '#666',
-          fontSize: 14,
-          marginBottom: 15,
-        },
-        secondary_button: {
-          width: '100%',
-          backgroundColor: '#3DC9A7',
-          padding: 15,
-          borderRadius: 8,
-          alignItems: 'center',
-          shadowColor: '#3dc1ad',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.5,
-          shadowRadius: 2,
-        },
-        button_text: {
-          color: 'white',
-          fontSize: 16,
-        },
-      };
+      image: {
+        width: '70%',
+        height: '70%',
+      },
+      subtitle: {
+        fontSize: '18px',
+        color: '#444',
+      },
+    };
 
       return (
-        <div style={styles.upperContainer}>
-          <p style={styles.subtitle}>Thanks for joining us!</p>
-          <p style={styles.subtitle}>Please fill out the required data about you.</p>
-          <div style={styles.fatherContainer}>
-              <div style={styles.container}>
+        <div className="background-container align-content-center">
+        <div className='container'>
+          <div className='d-flex flex-column justify-content-center align-items-center mb-md-5'>
+            <p style={styles.subtitle}>¡Gracias por unirte a nosotros!</p>
+            <p style={styles.subtitle}>Por favor, llena los campos solicitados.</p>
+          </div>
+          <div className='row justify-content-center align-items-center col-12'>
+              <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+                  <div className="col-4 mb-4 d-flex justify-content-center">
+                    <img className='img-fluid' style={styles.image} src={logo} alt="logo" />
+                  </div>
+                  <div className='d-flex flex-column justify-content-center align-items-center text-center'>
+                    <p style={styles.subtitle}>Nota:</p>
+                    <p style={styles.subtitle}>Se te enviará un código de confirmación por correo electrónico, que se utilizará para autenticar tu cuenta.</p>
+                  </div>
+                  <button className='secondary_button col-8' type="button" onClick={customSubmit}>REGISTRARSE</button>
+              </div>
+              <div className='col-sm-6'>
                 <form>
-                  <div>
-                    <input style={styles.input}
+                  <div className='d-flex flex-column justify-content-center align-items-center'>
+                    <input className='input col-8'
                       type="text"
                       {...register('name')}
-                      placeholder="Name"
+                      placeholder="Nombre"
                     />
                     {errors.name && <p style={{ color: 'red' }}>{errors.name.message}</p>}
                   </div>
   
-                  <div>
-                    <input style={styles.input}
+                  <div className='d-flex flex-column justify-content-center align-items-center'>
+                    <input className='input col-8'
                       type="email"
                       {...register('email')}
-                      placeholder="Email"
+                      placeholder="Correo electrónico"
                     />
                     {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
                   </div>
   
-                  <div>
-                    <input style={styles.input}
+                  <div className='d-flex flex-column justify-content-center align-items-center'>
+                    <input className='input col-8'
                       type="text"
                       {...register('username')}
-                      placeholder="Username"
+                      placeholder="Nombre de usuario"
                     />
                     {errors.username && <p style={{ color: 'red' }}>{errors.username.message}</p>}
                   </div>
 
-                  <div>
-                    <input style={styles.input}
+                  <div className='d-flex flex-column justify-content-center align-items-center'>
+                    <input className='input col-8'
                       type="text"
                       {...register('phoneNumber')}
-                      placeholder="PhoneNumber"
+                      placeholder="Numero telefónico"
                     />
                     {errors.phoneNumber && <p style={{ color: 'red' }}>{errors.phoneNumber.message}</p>}
                   </div>
   
-                  <div>
-                    <input style={styles.input}
+                  <div className='d-flex flex-column justify-content-center align-items-center'>
+                    <input className='input col-8'
                       type="password"
                       {...register('password')}
-                      placeholder="Password"
+                      placeholder="Contraseña"
                     />
                     {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                   </div>
                 </form>
               </div>
-              <div style={styles.container}>
-                  <img style={styles.image} src={logo} alt="logo" />
-                  <p style={styles.subtitle}>Note:</p>
-                  <p style={styles.subtitle}>You will be sent a confirmation code via email, which will be used to authenticate your account.</p>
-                  <button className='secondary_button' type="button" onClick={customSubmit}>SIGN UP</button>
-              </div>
           </div>        
         </div>
+      </div>
       );
 }

@@ -17,7 +17,7 @@ export const getUser = async (id) => {
 };  
 
 export const createUser = async (user) => {
-    const response = await api.post('/api/personal/users/register', user);
+    const response = await api.post('/auth/register', user);
     return response.data;
 };
 

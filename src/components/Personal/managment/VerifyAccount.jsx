@@ -2,74 +2,121 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/logo.png';
+import axios from 'axios';
 
 export default function VerifyAccount() {
     const location = useLocation();
     const navigate = useNavigate();
     const { login } = useAuth();
+    const [code, setCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
     const email = location.state?.email;
+    const accountType = location.state?.accountType;
 
     useEffect(() => {
-        // Si no hay email, redirigir al login
         if (!email) {
-            navigate('/login-personal');
+            navigate('/');
         }
     }, [email, navigate]);
 
-    const handleReturnToLogin = () => {
-        navigate('/login-personal');
-    };
+    const handleVerification = async () => {
+        if (!code) {
+            setError('Por favor, ingresa el código de verificación.');
+            return;
+        }
 
-    const styles = {
-        container: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            width: '100vw',
-            height: '100vh',
-        },
-        image: {
-            width: 130,
-            height: 130,
-            marginBottom: 30,
-        },
-        title: {
-            fontSize: 28,
-            fontWeight: 'bold',
-            color: '#30437A',
-            marginBottom: 20,
-        },
-        subtitle: {
-            fontSize: 16,
-            color: '#444',
-            marginBottom: 20,
-            textAlign: 'center',
-            maxWidth: '600px',
-            padding: '0 20px',
-        },
-        error: {
-            color: 'red',
-            marginBottom: 15,
+        try {
+            setLoading(true);
+            const response = await axios.post('http://localhost:8080/auth/verify-code', {
+                email,
+                code
+            });
+
+            setSuccess(true);
+            setError('');
+            setTimeout(() => {
+                if (accountType === 'personal') {
+                    navigate('/login-personal');
+                } else if (accountType === 'business-raw-material') {
+                    navigate('/business-raw-materials-login');
+                } else if (accountType === 'business-new-product') {
+                    navigate('/business-new-products-expense-login');
+                } else {
+                    navigate('/login'); // fallback en caso de que algo no coincida
+                }
+            }, 2500);
+        } catch (err) {
+            setError(err.response?.data?.error || 'Error al verificar el código');
+        } finally {
+            setLoading(false);
         }
     };
 
+    const handleResendCode = async () => {
+        try {
+            setLoading(true);
+            await axios.post('http://localhost:8080/auth/resend-code', { email });
+            setError('');
+            alert('Se ha enviado un nuevo código de verificación');
+        } catch (err) {
+            setError('Error al reenviar el código');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const styles = {
+        image: {
+            width: '150px',
+            height: '150px',
+            marginBottom: '40px',
+        },
+        subtitle: {
+            marginTop: '20px',
+            fontSize: 16,
+            color: '#444',
+        },
+        title: {
+            fontSize: 34,
+            fontWeight: 'bold',
+            color: '#30437A',
+            marginBottom: 25,
+        },
+        text: {
+            marginTop: '20px',
+            fontSize: 20,
+            color: '#444',
+        },
+    };
+
     return (
-        <div style={styles.container}>
-            <img style={styles.image} src={logo} alt="logo" />
-            <h1 style={styles.title}>Verificación de Cuenta</h1>
-            <p style={styles.subtitle}>
-                Este sistema de verificación está en mantenimiento. 
-                Actualmente no se requiere verificación de cuenta. 
-                Por favor, vuelva a la página de inicio de sesión.
-            </p>
-            {error && <p style={styles.error}>{error}</p>}
-            <button className='secondary_button' onClick={handleReturnToLogin}>
-                VOLVER AL LOGIN
-            </button>
+        <div className="background-container align-content-center">
+            <div className='container d-flex flex-column align-items-center justify-content-center'>
+                <p style={styles.title}>VERIFICACIÓN DE CORREO</p>
+                <p style={styles.text}>
+                    Hemos enviado un código de 6 dígitos a tu correo. Ingresa el código para completar tu registro.
+                </p>
+                <div className='d-flex flex-column col-sm-6 col-lg-4 mt-3'>
+                    <input className='input'
+                        type="text"
+                        placeholder="Código de verificación"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        style={styles.input}
+                    />
+                    {error && <p style={styles.error}>{error}</p>}
+                    {success && <p style={styles.success}>✅ Cuenta verificada correctamente</p>}
+                    <button className='primary_button' onClick={handleVerification} disabled={loading}>
+                        {loading ? 'Verificando...' : 'VERIFICAR CUENTA'}
+                    </button>
+                    <p style={styles.subtitle}>¿No recibiste el correo?</p>
+                    <button className='secondary_button' onClick={handleResendCode} disabled={loading}>
+                        Reenviar código
+                    </button>
+                </div>
+            </div>
         </div>
     );
-} 
+}

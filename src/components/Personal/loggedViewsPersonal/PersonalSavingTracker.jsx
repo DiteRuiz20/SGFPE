@@ -3,12 +3,13 @@ import { getSavingsByUserId, createSaving } from '../../../services/SavingsServi
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { useLocation } from 'react-router-dom';
-import logo from '../../../assets/logo.png';
 import { Divider } from '@mui/material';
 import { GiReceiveMoney } from "react-icons/gi";
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box } from '@mui/material';
 import { TbPigMoney } from "react-icons/tb";
+import TopNavBar from './TopNavBar';
+import MonthSelector from '../../MonthSelector';
 
 export default function PersonalSavingTracker() {
     const [personalSavings, setPersonalSavings] = useState([]);
@@ -25,8 +26,16 @@ export default function PersonalSavingTracker() {
     // Configuración para el selector de fechas
     const [dateWindow, setDateWindow] = useState({
         center: new Date(),
-        range: 3,
+        offset: 3,
     });
+
+    const isCurrentMonth = () => {
+      const currentMonth = new Date();
+      return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
+             selectedMonth.getMonth() === currentMonth.getMonth();
+    };
+
+    const isDisabled = !isCurrentMonth();
 
     // Verificar si dos fechas pertenecen al mismo mes
     const isSameMonth = (date1, date2) => {
@@ -38,23 +47,23 @@ export default function PersonalSavingTracker() {
 
     // Función para generar los meses en el selector
     const generateMonths = () => {
-        const { center, range } = dateWindow;
-        const centerDate = new Date(center);
-        const months = [];
-        
-        for (let i = -range; i <= range; i++) {
-            const date = new Date(centerDate);
-            date.setMonth(centerDate.getMonth() + i);
-            
-            months.push({
-                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-                date,
-                isStart: i === -range,
-                isEnd: i === range
-            });
-        }
-        
-        return months;
+      const { center, range } = dateWindow;
+      const months = [];
+  
+      for (let i = -range; i <= range; i++) {
+        const year = center.getFullYear();
+        const month = center.getMonth() + i;
+        const date = new Date(year, month, 1); // <== esta forma evita mutaciones inesperadas
+  
+        months.push({
+          label: `${date.toLocaleString('es-MX', { month: 'long' })} ${date.getFullYear()}`,
+          date,
+          isStart: i === -range,
+          isEnd: i === range,
+        });
+      }
+  
+      return months;
     };
 
     // Generar los meses visibles
@@ -178,39 +187,27 @@ export default function PersonalSavingTracker() {
     const columns = [
         {
             selector: row => (
-                <div style={{ display: 'flex', alignItems: 'left' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                     <CategoryIcon />
                 </div>
             ),
-            grow: 0.05,
-            wrap: true,
-            minWidth: '10px',
+            minWidth: '60px',
+            maxWidth: '80px',
         },
         {
             selector: row => row.description,
-            grow: 0.2,
-            wrap: true,
-            minWidth: '20px',
+            grow: 0.4,
+            minWidth: '100px',
         },
         {
             selector: row => `$${row.amount.toFixed(2)}`,
-            grow: 0.15,
-            wrap: true,
-            minWidth: '80px',
+            grow: 0.3,
+            minWidth: '100px',
         },
         {
             selector: row => new Date(row.date).toLocaleDateString(),
-            grow: 0.2,
-            wrap: true,
-            minWidth: '80px',
-        },
-        {
-            selector: row => 'Active',
-            grow: 0.22,
-            right: true,
-            wrap: true,
-            sortable: true,
-            minWidth: '60px',
+            grow: 0.3,
+            minWidth: '100px',
         },
     ];
 
@@ -238,85 +235,12 @@ export default function PersonalSavingTracker() {
     };
 
     const styles = {
-        container: {
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'white',
-          width: '100vw',
-          height: '100vh',
-        },
-        bodyContainer: {
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: 'white',
-          width: '80%',
-          marginTop: '50px',
-          paddingTop: '30px',
-        },
-        divider: {
-          width: '100%',
-          height: 2,
-          backgroundColor: '#EAEAEA',
-          marginTop: 20,
-        },
-        menu: {
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          width: '80%',
-          marginBottom: '30px'
-        },
-        header: {
-          backgroundColor: 'white',
-          position: 'fixed',
-          top: 30,
-          display: 'flex',
-          alignSelf: 'center',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          width: '100vw',
-          zIndex: 10,
-        },
-        navLink: (path) => ({
-          cursor: 'pointer',
-          padding: '10px 20px',
-          fontSize: '16px',
-          color: location.pathname === path ? '#000' : '#888',
-          borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-          transition: 'border-color 0.3s',
-        }),
-        datePicker: {
-          alignSelf: 'center',
-          display: 'flex',
-          justifyContent: 'center',
-        },
-        dateItem: {
-          margin: '0 25px',
-          color: '#B0B0B0',
-          cursor: 'pointer',
-        },
-        activeDate: {
-          color: '#000',
-          borderBottom: '2px solid #4AD8C2',
-        },
-        cardContainer: {
-          marginTop: '-50px',
-          flexDirection: 'column',
-        },
-        chartContainer: {
-          marginTop: '-90px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '50vw',
-          zIndex: 1,
-        },
+      divider: {
+        width: '100%',
+        height: '2px',
+        backgroundColor: '#999',
+        marginTop: 20,
+      },
         card: {
           backgroundColor: '#3DC9A7',
           color: 'white',
@@ -335,10 +259,6 @@ export default function PersonalSavingTracker() {
           marginTop: '-10px',
           fontWeight: 'bold',
         },
-        buttonText: {
-          fontSize: '20px',
-          alignSelf: 'center',
-        },
         cardSubtitle: {
           fontSize: '16px',
           alignSelf: 'center',
@@ -347,44 +267,25 @@ export default function PersonalSavingTracker() {
         },
         button: {
           alignSelf: 'flex-end',
-          margin: '15px',
+          margin: '10px',
           fontSize: '35px',
           color: '#3DC9A7',
         },
         addButton: {
-          cursor: 'pointer',
           border: '1px solid #3DC9A7',
+          backgroundColor: 'white', 
           width: '200px',
           height: '140px',
           margin: '20px 30px',
+          padding: '10px',
           borderRadius: '8px',
           display: 'flex',
           flexDirection: 'column',
           fontSize: '20px',
           color: 'black',
-          boxShadow:'0px 8px 5px rgba(61, 193, 173, 0.2)'
-        },
-        input: {
-          width: 370,
-          height: 20,
-          backgroundColor: '#EAEAEA',
-          padding: 15,
-          borderWidth: 0,
-          borderRadius: 8,
-          color: 'black',
-          marginBottom: 15,
-          boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)'
-        },
-        selector: {
-          width: 400,
-          height: 50,
-          backgroundColor: '#EAEAEA',
-          padding: 15,
-          borderWidth: 0,
-          borderRadius: 8,
-          color: 'black',
-          marginBottom: 15,
-          boxShadow: '0px 2px 2px rgba(136, 136, 136, 0.5)',
+          boxShadow:'0px 8px 5px rgba(61, 193, 173, 0.2)',
+          opacity: isDisabled ? 0.6 : 1,
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
         },
         modalStyle: {
           position: 'absolute',
@@ -418,6 +319,7 @@ export default function PersonalSavingTracker() {
             fontSize: '14px',
             padding: '10px',
             display: 'flex',
+            whiteSpace: 'nowrap',
           },
         },
         rows: {
@@ -430,73 +332,45 @@ export default function PersonalSavingTracker() {
         table: {
           style: {
             width: '100%',
+            maxWidth: '100%',
+            overflowX: 'auto',
           },
         },
       };      
 
-      const paths = {
-        'BUDGET PLANNING': '/personal-budget-planner',
-        'DEBT TRACKER': '/personal-debt-tracker',
-        'SAVINGS TRACKER': '/personal-saving-tracker',
-        'EXPENSE TRACKER': '/personal-expenses',
-        'GRAPHICS': '/personal-graphics',
-        'PROFILE': '/personal-profile',
-      };
-      
-      const handleNavigation = (text) => {
-        navigate(paths[text] || '/personal-saving-tracker');
-      };
-
     return (        
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <div style={styles.menu}>
-            <img src={logo} alt="Logo" style={{ width: '90px' }} />
-            {['BUDGET PLANNING', 'DEBT TRACKER', 'SAVINGS TRACKER', 'EXPENSE TRACKER', 'GRAPHICS', 'PROFILE'].map((text, index) => (
-              <span
-                key={index}
-                style={styles.navLink(paths[text])}
-                onClick={() => handleNavigation(text)}
-              >
-              {text}
-              </span>
-            ))}
-          </div>
-      
-          <div style={styles.datePicker}>
-            {months.map((monthObj, index) => (
-              <span
-                key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
-                onClick={() => handleMonthSelect(monthObj)}
-                style={isSameMonth(monthObj.date, selectedMonth) ?
-                  { ...styles.dateItem, ...styles.activeDate } :
-                  styles.dateItem}
-              >
-                {monthObj.label}
-              </span>
-            ))}
-          </div>
-      
+      <div>
+        <div className="row justify-content-center">
+          <TopNavBar/>
+          <MonthSelector
+            selectedMonth={selectedMonth}
+            onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+            dateWindow={dateWindow}
+            setDateWindow={setDateWindow}
+          />
           <Divider style={styles.divider} />
         </div>
-
-        <div style={styles.bodyContainer}>
-          <div style={styles.cardContainer}>
+        
+        <div className='row mt-3'>
+          <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
             <div style={styles.card}>
                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-                    <text>SAVINGS</text>
-                    <GiReceiveMoney style={{ fontSize: '40px'}} />
+                    <text>AHORROS</text>
+                    <GiReceiveMoney style={{ fontSize: '220%'}} />
                 </div>
                 <text style={styles.cardText}>${totalSavings.toFixed(2)}</text>
-                <text style={styles.cardSubtitle}>This month's savings</text>
+                <text style={styles.cardSubtitle}>Ahorros del mes</text>
             </div>
-            <div style={styles.addButton} onClick={openForm}>
+            <button
+              style={styles.addButton}
+              onClick={() => !isDisabled && openForm()}
+              disabled={isDisabled}>
               <MdOutlineAddToPhotos style={styles.button} />
-              <text style={styles.buttonText}>ADD SAVING</text>
-            </div>
+              <text style={{alignSelf: 'center'}}>NUEVO AHORRO</text>
+            </button>
           </div>
             
-          <div style={styles.chartContainer}>
+          <div className='col-sm-8 flex-column justify-content-center align-items-center'>
           <DataTable
             columns={columns}
             data={filteredSavings}
@@ -511,11 +385,11 @@ export default function PersonalSavingTracker() {
         <Box sx={styles.modalStyle}>
             <form onSubmit={handleSubmit}>
             <div style={{marginBottom: '20px'}}>
-                <text style={styles.title}>Add Saving</text>
+                <text style={styles.title}>Nuevo ahorro</text>
             </div>
             <div>
-                <input style={styles.input}
-                placeholder='Description'
+                <input className='input col-12'
+                placeholder='Descripción'
                 type="text"
                 name="description"
                 value={newSaving.description}
@@ -524,8 +398,8 @@ export default function PersonalSavingTracker() {
                 />
             </div>
             <div>
-                <input style={styles.input}
-                placeholder='Amount'
+                <input className='input col-12'
+                placeholder='Cantidad'
                 type="number"
                 name="amount"
                 value={newSaving.amount}
@@ -533,19 +407,10 @@ export default function PersonalSavingTracker() {
                 required
                 />
             </div>
-            {/* <div>
-                <input style={styles.input}
-                type="date"
-                name="date"
-                value={newSaving.date}
-                onChange={handleInputChange}
-                required
-                />
-            </div> */}
             <Divider style={styles.divider} />
-            <div style={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
-              <button className='primary_button' style={{ width: '35%', marginRight: '10px' }} type="button" onClick={closeForm}>Cancel</button>
-              <button className='secondary_button' style={{ width: '35%' }} type="submit">Add</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+              <button className='primary_button' style={{ width: '40%', marginRight: '10px' }} type="button" onClick={closeForm}>Cancelar</button>
+              <button className='secondary_button' style={{ width: '40%' }} type="submit">Agregar</button>
             </div>
             </form>
         </Box>

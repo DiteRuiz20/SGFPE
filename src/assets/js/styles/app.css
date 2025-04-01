@@ -1,0 +1,44 @@
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Montserrat', sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+#root, .app-container {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.background-container {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../../imgs/backimg.jpg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+  animation: slideUp 1s ease-in-out forwards;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .hide-on-small {
+      display: none;
+  }
+}
