@@ -29,37 +29,37 @@ function Home() {
 
     const styles = {
         image: {
-          width: '150px',
-          height: '150px',
-          marginBottom: '40px',
+            width: '150px',
+            height: '150px',
+            marginBottom: '40px',
         },
         title: {
-          fontSize: '26px',
-          marginBottom: '30px',
-          textAlign: 'center',
-          maxWidth: '80%',
-          color: 'black',
-          marginHorizontal: '6px',
+            fontSize: '26px',
+            marginBottom: '30px',
+            textAlign: 'center',
+            maxWidth: '80%',
+            color: 'black',
+            marginHorizontal: '6px',
         }
-      };
+    };
 
-      return (
+    return (
         <div className="background-container align-content-center">
             <div className='container d-flex flex-column align-items-center justify-content-center'>
-            <img className='col-4' style={styles.image} src={logo} alt="logo" />
-            <p style={styles.title}>¿Qué tipo de cuenta deseas?</p>
-            <div className='d-flex flex-column col-sm-4'>
-              <button className='primary_button' onClick={() => navigate('/choose-business')}>
-                EMPRESARIAL
-              </button>
-              <button className='secondary_button' onClick={() => navigate('/login-personal')}>
-                PERSONAL
-              </button>
+                <img className='col-4' style={styles.image} src={logo} alt="logo" />
+                <p style={styles.title}>¿Qué tipo de cuenta deseas?</p>
+                <div className='d-flex flex-column col-sm-4'>
+                    <button className='primary_button' onClick={() => navigate('/choose-business')}>
+                        EMPRESARIAL
+                    </button>
+                    <button className='secondary_button' onClick={() => navigate('/login-personal')}>
+                        PERSONAL
+                    </button>
+                </div>
             </div>
-          </div>
         </div>
-       
-      );
+
+    );
 }
 
 function App() {
@@ -81,8 +81,8 @@ function App() {
                     <Route path="/create-personal-account" element={<CreatePersonalAccount />} />
                     <Route path="/verify-account" element={<VerifyAccount />} />
                     <Route path="/business-raw-materials-tracker" element={<RawMaterialsTracker />} />
-                    <Route path="/material-usage-tracker" element={<MaterialUsageTracker/>}/>
-                    <Route path="/raw-material-order" element={<RawMaterialOrder/>}/>
+                    <Route path="/material-usage-tracker" element={<MaterialUsageTracker />} />
+                    <Route path="/raw-material-order" element={<RawMaterialOrder />} />
 
                     {/* Rutas protegidas para usuarios personales */}
                     <Route

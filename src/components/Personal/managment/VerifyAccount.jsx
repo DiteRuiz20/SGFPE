@@ -13,6 +13,7 @@ export default function VerifyAccount() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const email = location.state?.email;
+    const accountType = location.state?.accountType;
 
     useEffect(() => {
         if (!email) {
@@ -36,7 +37,15 @@ export default function VerifyAccount() {
             setSuccess(true);
             setError('');
             setTimeout(() => {
-                navigate('/login-personal');
+                if (accountType === 'personal') {
+                    navigate('/login-personal');
+                } else if (accountType === 'business-raw-material') {
+                    navigate('/business-raw-materials-login');
+                } else if (accountType === 'business-new-product') {
+                    navigate('/business-new-products-expense-login');
+                } else {
+                    navigate('/login'); // fallback en caso de que algo no coincida
+                }
             }, 2500);
         } catch (err) {
             setError(err.response?.data?.error || 'Error al verificar el código');
@@ -60,54 +69,54 @@ export default function VerifyAccount() {
 
     const styles = {
         image: {
-          width: '150px',
-          height: '150px',
-          marginBottom: '40px',
+            width: '150px',
+            height: '150px',
+            marginBottom: '40px',
         },
         subtitle: {
-          marginTop: '20px',
-          fontSize: 16,
-          color: '#444',
+            marginTop: '20px',
+            fontSize: 16,
+            color: '#444',
         },
         title: {
-          fontSize: 34,
-          fontWeight: 'bold',
-          color: '#30437A',
-          marginBottom: 25,
+            fontSize: 34,
+            fontWeight: 'bold',
+            color: '#30437A',
+            marginBottom: 25,
         },
         text: {
-          marginTop: '20px',
-          fontSize: 20,
-          color: '#444',
+            marginTop: '20px',
+            fontSize: 20,
+            color: '#444',
         },
-      };
+    };
 
     return (
-    <div className="background-container align-content-center">
-        <div className='container d-flex flex-column align-items-center justify-content-center'>
-            <p style={styles.title}>VERIFICACIÓN DE CORREO</p>
-            <p style={styles.text}>
-                Hemos enviado un código de 6 dígitos a tu correo. Ingresa el código para completar tu registro.
-            </p>
-            <div className='d-flex flex-column col-sm-6 col-lg-4 mt-3'>
-                <input className='input'
-                    type="text"
-                    placeholder="Código de verificación"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    style={styles.input}
-                />
-                {error && <p style={styles.error}>{error}</p>}
-                {success && <p style={styles.success}>✅ Cuenta verificada correctamente</p>}
-                <button className='primary_button' onClick={handleVerification} disabled={loading}>
-                    {loading ? 'Verificando...' : 'VERIFICAR CUENTA'}
-                </button>
-                <p style={styles.subtitle}>¿No recibiste el correo?</p>
-                <button className='secondary_button' onClick={handleResendCode} disabled={loading}>
-                    Reenviar código
-                </button>
+        <div className="background-container align-content-center">
+            <div className='container d-flex flex-column align-items-center justify-content-center'>
+                <p style={styles.title}>VERIFICACIÓN DE CORREO</p>
+                <p style={styles.text}>
+                    Hemos enviado un código de 6 dígitos a tu correo. Ingresa el código para completar tu registro.
+                </p>
+                <div className='d-flex flex-column col-sm-6 col-lg-4 mt-3'>
+                    <input className='input'
+                        type="text"
+                        placeholder="Código de verificación"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        style={styles.input}
+                    />
+                    {error && <p style={styles.error}>{error}</p>}
+                    {success && <p style={styles.success}>✅ Cuenta verificada correctamente</p>}
+                    <button className='primary_button' onClick={handleVerification} disabled={loading}>
+                        {loading ? 'Verificando...' : 'VERIFICAR CUENTA'}
+                    </button>
+                    <p style={styles.subtitle}>¿No recibiste el correo?</p>
+                    <button className='secondary_button' onClick={handleResendCode} disabled={loading}>
+                        Reenviar código
+                    </button>
+                </div>
             </div>
-          </div>
         </div>
     );
 }

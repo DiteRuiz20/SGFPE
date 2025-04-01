@@ -31,7 +31,7 @@ export default function forgottenPassword() {
     try {
       await resetPassword(email, code, newPassword);
       setSuccess('Contraseña cambiada exitosamente');
-      navigate('/login-personal');
+      navigate('/');
       setError('');
     } catch (err) {
       setError(err.response?.data?.error || 'Error al cambiar la contraseña');

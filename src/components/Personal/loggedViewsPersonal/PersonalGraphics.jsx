@@ -157,29 +157,39 @@ export default function PersonalGraphics() {
 
   // Calcular totales de deudas y ahorros del mes seleccionado
   const calculateTotals = () => {
+    if (!Array.isArray(personalDebts) || !Array.isArray(personalSavings)) return [];
+  
     const selectedMonthStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
     const selectedMonthEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
-
+  
     const totalDebts = personalDebts
       .filter(debt => {
         const debtDate = new Date(debt.date);
-        return debtDate >= selectedMonthStart && debtDate <= selectedMonthEnd;
+        return (
+          debtDate.getTime() >= selectedMonthStart.getTime() &&
+          debtDate.getTime() <= selectedMonthEnd.getTime() + 86400000 // +1 día para incluir todo el día
+        );
       })
-      .reduce((sum, debt) => sum + debt.amount, 0);
-
+      .reduce((sum, debt) => sum + (debt.amount || 0), 0);
+  
     const totalSavings = personalSavings
       .filter(saving => {
         const savingDate = new Date(saving.date);
-        return savingDate >= selectedMonthStart && savingDate <= selectedMonthEnd;
+        return (
+          savingDate.getTime() >= selectedMonthStart.getTime() &&
+          savingDate.getTime() <= selectedMonthEnd.getTime() + 86400000
+        );
       })
-      .reduce((sum, saving) => sum + saving.amount, 0);
-
+      .reduce((sum, saving) => sum + (saving.amount || 0), 0);
+  
+    if (totalDebts === 0 && totalSavings === 0) return [];
+  
     return [
       { name: 'Debts', value: totalDebts, color: 'rgb(177, 177, 177)' },
       { name: 'Savings', value: totalSavings, color: 'rgb(61, 201, 167)' }
     ];
   };
-
+  
   const categoryColors = {
     Food: '#ff6347',
     Clothes: '#4682b4',
