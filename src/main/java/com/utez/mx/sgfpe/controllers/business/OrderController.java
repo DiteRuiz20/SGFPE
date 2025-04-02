@@ -35,20 +35,20 @@ public class OrderController {
         }
     }
 
-    @PostMapping("/from-new-product")
-    public ResponseEntity<?> createOrderFromNewProductExpenses(@RequestBody NewProductOrderRequest request) {
-        try {
-            Order order = orderService.createOrderFromNewProductExpenses(
-                    request.getUserId(),
-                    request.getOrderDescription(),
-                    request.getNewProductExpenseIds(),
-                    request.getIncome()
-            );
-            return ResponseEntity.ok(order);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
-    }
+//    @PostMapping("/from-new-product")
+//    public ResponseEntity<?> createOrderFromNewProductExpenses(@RequestBody NewProductOrderRequest request) {
+//        try {
+//            Order order = orderService.createOrderFromNewProductExpenses(
+//                    request.getUserId(),
+//                    request.getOrderDescription(),
+//                    request.getNewProductExpenseIds(),
+//                    request.getIncome()
+//            );
+//            return ResponseEntity.ok(order);
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+//        }
+//    }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Order>> getOrdersByUserId(@PathVariable String userId) {
