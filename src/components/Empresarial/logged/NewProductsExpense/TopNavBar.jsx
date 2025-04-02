@@ -7,10 +7,10 @@ export default function TopNavBar() {
   const location = useLocation();
 
   const links = [
-    { path: '/new-product-expense-tracker', label: 'MATERIA PRIMA' },
-    { path: '/new-product-order-tracker', label: 'INSUMOS' },
-    { path: '/raw-material-order', label: 'PEDIDOS' },
-    { path: '/raw-material-graph', label: 'GRÁFICOS' },
+    { path: '/new-product-expense-tracker', label: 'NUEVA MERCANCIA' },
+    { path: '/new-product-order-tracker', label: 'ORDENES' },
+    // { path: '/raw-material-order', label: 'PEDIDOS' },
+    { path: '/new-product-expense-graphic', label: 'GRÁFICOS' },
     { path: '/raw-material-profile', label: 'PERFIL' },
   ];
 

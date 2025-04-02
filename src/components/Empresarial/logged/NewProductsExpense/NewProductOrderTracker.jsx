@@ -5,6 +5,7 @@ import DataTable from 'react-data-table-component';
 import { Modal, Box, Divider } from '@mui/material';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { getNewProductExpensesByUser } from '../../../../services/NewProductService';
+import TopNavBar from './TopNavBar';
 
 export default function NewProductOrderTracker() {
     const [orders, setOrders] = useState([]);
@@ -70,6 +71,7 @@ export default function NewProductOrderTracker() {
 
     return (
         <div style={{ padding: '2rem' }}>
+            <TopNavBar />
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <h2>Órdenes Registradas</h2>
                 <button onClick={() => setOpenModal(true)}><MdOutlineAddToPhotos /> Nueva Orden</button>

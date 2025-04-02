@@ -10,7 +10,7 @@ export default function TopNavBar() {
     { path: '/raw-materials-tracker', label: 'MATERIA PRIMA' },
     { path: '/material-usage-tracker', label: 'INSUMOS' },
     { path: '/raw-material-order', label: 'PEDIDOS' },
-    { path: '/raw-material-graph', label: 'GRÁFICOS' },
+    { path: '/raw-material-graphics', label: 'GRÁFICOS' },
     { path: '/raw-material-profile', label: 'PERFIL' },
   ];
 

@@ -126,15 +126,6 @@ export default function PersonalProfile() {
                   />
                 {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
               </div>
-    
-              <div className='d-flex flex-column justify-content-center align-items-center'>
-                <input className='input col-12'
-                  type="text"
-                  {...register('username')}
-                  placeholder="Nombre de usuario"
-                />
-                {errors.username && <p style={{ color: 'red' }}>{errors.username.message}</p>}
-              </div>
 
               <div className='d-flex flex-column justify-content-center align-items-center'>
                 <input className='input col-12'

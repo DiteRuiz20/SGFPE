@@ -28,6 +28,7 @@ import RawMaterialProfile from './components/Empresarial/logged/RawMaterials/Raw
 import RawMaterialGraphic from '../src/components/Empresarial/logged/RawMaterials/RawMaterialGraphics';
 import NewProductExpenseTracker from './components/Empresarial/logged/NewProductsExpense/NewProductsExpenseTracker';
 import NewProductOrderTracker from './components/Empresarial/logged/NewProductsExpense/NewProductOrderTracker';
+import NewProductOrdersGraphics from './components/Empresarial/logged/NewProductsExpense/NewProductOrdersGraphics';
 
 function Home() {
     const navigate = useNavigate();
@@ -91,6 +92,7 @@ function App() {
                     <Route path="/raw-material-graphics" element={<RawMaterialGraphic />} />
                     <Route path="/new-product-order-tracker" element={<NewProductOrderTracker />} />
                     <Route path="/new-product-expense-tracker" element={<NewProductExpenseTracker />} />
+                    <Route path="/new-product-expense-graphic" element={<NewProductOrdersGraphics />} />
 
 
                     {/* Rutas añadidas para materia prima (Graficas y Perfil) */}

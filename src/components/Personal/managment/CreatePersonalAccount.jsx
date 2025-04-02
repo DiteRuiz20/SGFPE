@@ -130,15 +130,6 @@ export default function CreatePersonalAccount() {
               <div className='d-flex flex-column justify-content-center align-items-center'>
                 <input className='input col-8'
                   type="text"
-                  {...register('username')}
-                  placeholder="Nombre de usuario"
-                />
-                {errors.username && <p style={{ color: 'red' }}>{errors.username.message}</p>}
-              </div>
-
-              <div className='d-flex flex-column justify-content-center align-items-center'>
-                <input className='input col-8'
-                  type="text"
                   {...register('phoneNumber')}
                   placeholder="Numero telefónico"
                 />
