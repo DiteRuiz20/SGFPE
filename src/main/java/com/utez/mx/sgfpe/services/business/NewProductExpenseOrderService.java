@@ -63,11 +63,17 @@ public class NewProductExpenseOrderService {
         order.setUserId(request.getUserId());
         order.setOrderDate(Instant.now());
         order.setItems(items);
+        order.setOrderDescription(request.getOrderDescription());
         order.setTotalOrderCost(totalOrderCost);
         order.setIncome(request.getIncome());
         order.setNetProfit(request.getIncome().subtract(totalOrderCost));
 
         return orderRepo.save(order);
     }
+
+    public List<NewProductExpenseOrder> getOrdersByUserId(String userId) {
+        return orderRepo.findByUserId(userId);
+    }
+
 }
 

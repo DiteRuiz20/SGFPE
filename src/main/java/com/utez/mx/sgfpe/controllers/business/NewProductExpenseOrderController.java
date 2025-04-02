@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/new-product-orders")
 public class NewProductExpenseOrderController {
@@ -23,5 +25,10 @@ public class NewProductExpenseOrderController {
     public ResponseEntity<NewProductExpenseOrder> createOrder(@RequestBody NewProductOrderRequest request) {
         NewProductExpenseOrder savedOrder = orderService.createOrder(request);
         return ResponseEntity.ok(savedOrder);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<NewProductExpenseOrder>> getOrdersByUserId(@PathVariable String userId) {
+        return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
     }
 }

@@ -2,12 +2,14 @@ package com.utez.mx.sgfpe.models.business;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
 @Data
+@Document(collection = "new_product_expense_order")
 public class NewProductExpenseOrder {
     @Id
     private String id;
@@ -17,6 +19,7 @@ public class NewProductExpenseOrder {
     private BigDecimal totalOrderCost;
     private BigDecimal netProfit; // ✅ Ganancia neta = income - totalOrderCost
     private BigDecimal income;
+    private String orderDescription;
 
     public String getId() {
         return id;
@@ -72,5 +75,13 @@ public class NewProductExpenseOrder {
 
     public void setIncome(BigDecimal income) {
         this.income = income;
+    }
+
+    public String getOrderDescription() {
+        return orderDescription;
+    }
+
+    public void setOrderDescription(String orderDescription) {
+        this.orderDescription = orderDescription;
     }
 }
