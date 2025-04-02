@@ -4,7 +4,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { Modal, Box, Divider } from '@mui/material';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
-import logo from '../../../../assets/logo.png';
+import TopNavBar from './TopNavBar';
+import MonthSelector from '../../../MonthSelector';
+import { GiTakeMyMoney } from "react-icons/gi";
 
 export default function RawMaterialsTracker() {
     const [rawMaterials, setRawMaterials] = useState([]);
@@ -12,6 +14,15 @@ export default function RawMaterialsTracker() {
     const [file, setFile] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
+    const [selectedMonth, setSelectedMonth] = useState(new Date());
+    const [dateWindow, setDateWindow] = useState({
+        center: new Date(),
+        offset: 3, // Mostrará 5 meses (2 antes, 2 después, y el actual)
+    });
+
+    const isSameMonth = (date1, date2) => {
+        return date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
+    };
 
     const openForm = () => setOpenUploadModal(true);
     const closeForm = () => setOpenUploadModal(false);
@@ -120,10 +131,10 @@ export default function RawMaterialsTracker() {
         }),
         divider: {
             width: '100%',
-            height: 2,
-            backgroundColor: '#EAEAEA',
+            height: '2px',
+            backgroundColor: '#999',
             marginTop: 20,
-        },
+          },
         bodyContainer: {
             display: 'flex',
             flexDirection: 'row',
@@ -138,27 +149,29 @@ export default function RawMaterialsTracker() {
             flexDirection: 'column',
         },
         card: {
-            backgroundColor: '#30437A',
+            backgroundColor: '#B1B1B1',
             color: 'white',
             width: '200px',
             height: '140px',
-            marginBottom: '20px',
+            margin: '20px 30px',
             borderRadius: '8px',
             display: 'flex',
             flexDirection: 'column',
             fontSize: '20px',
-            boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)',
-            padding: '20px',
-            justifyContent: 'space-between',
-        },
-        cardText: {
+            boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)',
+          },
+          cardText: {
             fontSize: '20px',
+            marginTop: '-10px',
+            alignSelf: 'center',
             fontWeight: 'bold',
-        },
-        cardSubtitle: {
+          },
+          cardSubtitle: {
             fontSize: '16px',
-            color: '#B0B0B0',
-        },
+            alignSelf: 'center',
+            marginTop: '10px',
+            color: 'white',
+          },
         addButton: {
             cursor: 'pointer',
             border: '1px solid #30437A',
@@ -205,42 +218,30 @@ export default function RawMaterialsTracker() {
         },
     };
 
-    const paths = {
-        'MATERIA PRIMA': '/raw-materials-tracker',
-        'PEDIDOS': '/raw-material-order',
-        'INSUMOS': '/material-usage-tracker',
-    };
-
-    const handleNavigation = (text) => {
-        navigate(paths[text] || '/raw-material-tracker');
-    };
-
     return (
-        <div style={styles.container}>
-            {/* Header con navegación */}
-            <div style={styles.header}>
-                <div style={styles.menu}>
-                    <img src={logo} alt="Logo" style={{ width: '90px' }} />
-                    {['MATERIA PRIMA', 'INSUMOS', 'PEDIDOS'].map((text, index) => (
-                        <span
-                            key={index}
-                            style={styles.navLink(paths[text])}
-                            onClick={() => handleNavigation(text)}
-                        >
-                            {text}
-                        </span>
-                    ))}
+        <div>
+          <div className="row justify-content-center">
+            <TopNavBar/>
+            <MonthSelector
+              selectedMonth={selectedMonth}
+              onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+              dateWindow={dateWindow}
+              setDateWindow={setDateWindow}
+            />
+            <Divider style={styles.divider} />
+          </div>
+    
+          <div className='row mt-3'>
+            <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
+                <div style={styles.card}>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+                <text>DEUDAS</text>
+                <GiTakeMyMoney style={{ fontSize: '220%'}} />
                 </div>
-                <Divider style={styles.divider} />
-            </div>
-
-            {/* Cuerpo principal */}
-            <div style={styles.bodyContainer}>
-                <div style={styles.cardContainer}>
-                    <div style={styles.card}>
-                        <span style={styles.cardText}>{rawMaterials.length}</span>
-                        <span style={styles.cardSubtitle}>Materiales registrados</span>
-                    </div>
+                    <text style={styles.cardText}>{rawMaterials.length}</text>
+                    <text style={styles.cardSubtitle}>Materiales registrados</text>
+                
+                </div>
 
                     <div style={styles.addButton} onClick={openForm}>
                         <MdOutlineAddToPhotos style={styles.button} />

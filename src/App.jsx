@@ -23,6 +23,8 @@ import logo from './assets/logo.png';
 import MaterialUsageTracker from './components/Empresarial/logged/RawMaterials/MaterialUsageTracker';
 import RawMaterialOrder from './components/Empresarial/logged/RawMaterials/RawMaterialOrder';
 import './assets/js/styles/app.css';
+import RawMaterialGraph from './components/Empresarial/logged/RawMaterials/RawMaterialGraph';
+import RawMaterialProfile from './components/Empresarial/logged/RawMaterials/RawMaterialProfile';
 
 function Home() {
     const navigate = useNavigate();
@@ -83,6 +85,10 @@ function App() {
                     <Route path="/business-raw-materials-tracker" element={<RawMaterialsTracker />} />
                     <Route path="/material-usage-tracker" element={<MaterialUsageTracker />} />
                     <Route path="/raw-material-order" element={<RawMaterialOrder />} />
+
+                    {/* Rutas añadidas para materia prima (Graficas y Perfil) */}
+                    <Route path="/raw-material-graph" element={<RawMaterialGraph />} />
+                    <Route path="/raw-material-profile" element={<RawMaterialProfile />} />
 
                     {/* Rutas protegidas para usuarios personales */}
                     <Route
