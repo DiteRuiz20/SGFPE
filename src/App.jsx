@@ -25,6 +25,9 @@ import RawMaterialOrder from './components/Empresarial/logged/RawMaterials/RawMa
 import './assets/js/styles/app.css';
 import RawMaterialGraph from './components/Empresarial/logged/RawMaterials/RawMaterialGraph';
 import RawMaterialProfile from './components/Empresarial/logged/RawMaterials/RawMaterialProfile';
+import RawMaterialGraphic from '../src/components/Empresarial/logged/RawMaterials/RawMaterialGraphics';
+import NewProductExpenseTracker from './components/Empresarial/logged/NewProductsExpense/NewProductsExpenseTracker';
+import NewProductOrderTracker from './components/Empresarial/logged/NewProductsExpense/NewProductOrderTracker';
 
 function Home() {
     const navigate = useNavigate();
@@ -85,6 +88,10 @@ function App() {
                     <Route path="/business-raw-materials-tracker" element={<RawMaterialsTracker />} />
                     <Route path="/material-usage-tracker" element={<MaterialUsageTracker />} />
                     <Route path="/raw-material-order" element={<RawMaterialOrder />} />
+                    <Route path="/raw-material-graphics" element={<RawMaterialGraphic />} />
+                    <Route path="/new-product-order-tracker" element={<NewProductOrderTracker />} />
+                    <Route path="/new-product-expense-tracker" element={<NewProductExpenseTracker />} />
+
 
                     {/* Rutas añadidas para materia prima (Graficas y Perfil) */}
                     <Route path="/raw-material-graph" element={<RawMaterialGraph />} />

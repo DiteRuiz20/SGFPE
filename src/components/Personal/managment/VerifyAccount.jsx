@@ -36,15 +36,21 @@ export default function VerifyAccount() {
 
             setSuccess(true);
             setError('');
+            console.log("Tipo de cuenta recibido:", accountType);
             setTimeout(() => {
-                if (accountType === 'personal') {
-                    navigate('/login-personal');
-                } else if (accountType === 'business-raw-material') {
-                    navigate('/business-raw-materials-login');
-                } else if (accountType === 'business-new-product') {
-                    navigate('/business-new-products-expense-login');
-                } else {
-                    navigate('/login'); // fallback en caso de que algo no coincida
+                switch (accountType) {
+                    case 'personal':
+                        navigate('/login-personal');
+                        break;
+                    case 'business-raw-material':
+                        navigate('/business-raw-materials-login');
+                        break;
+                    case 'business-new-product-expense':
+                        navigate('/business-new-products-expense-login');
+                        break;
+                    default:
+                        navigate('/');
+                        break;
                 }
             }, 2500);
         } catch (err) {

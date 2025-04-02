@@ -6,6 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../../../context/AuthContext';
 import { getUser, updateUser } from '../../../services/UserService';
+import TopNavBar from './TopNavBar';
 
 // Esquema de validación con Yup
 const schema = yup.object().shape({

@@ -33,7 +33,7 @@ export default function CreateBusinessNewProductExpenseAccount() {
             alert('Cuenta de negocio de nuevos productos creada exitosamente');
             reset();
 
-            navigate('/verify-account', { state: { email: data.email, accountType: newUser.accountType } });
+            navigate('/verify-account', { state: { email: data.email, accountType: 'business-new-product-expense' } });
         } catch (error) {
             console.error('Error al crear la cuenta:', error);
             alert('Hubo un error al crear la cuenta. Intenta de nuevo más tarde.');
