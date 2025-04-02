@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/logo.png';
 import { Divider } from '@mui/material';
+import { FaLock, FaLockOpen } from 'react-icons/fa';
 
 const schema = yup.object().shape({
     email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
@@ -18,6 +19,7 @@ export default function PersonalLogin() {
     const { login } = useAuth();
     const [errorMessage, setErrorMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(schema),
@@ -105,16 +107,28 @@ export default function PersonalLogin() {
                     </div>
 
                     <div className='d-flex flex-column justify-content-center align-items-center'>
-                        <input className='input col-8'
-                            type="password"
-                            {...register('password')}
-                            placeholder="Contraseña"
-                        />
+                            <input className='input col-8'
+                                type={showPassword ? "text" : "password"}
+                                {...register('password')}
+                                placeholder="Contraseña"
+                            />
+                            <span 
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={{
+                                    alignSelf: 'flex-end',
+                                    marginTop: '-53px',
+                                    paddingRight: '120px',
+                                    cursor: 'pointer',
+                                    color: '#555'
+                                }}
+                            >
+                                {showPassword ? <FaLockOpen size={20} /> : <FaLock size={20} />}
+                            </span>
                         {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                     </div>
 
                     <div className="d-flex justify-content-center">
-                        <button className='primary_button col-8 ' type="submit" disabled={isLoading}>
+                        <button className='primary_button col-8 ' type="submit" style={{ marginTop: '53px' }} disabled={isLoading}>
                             {isLoading ? 'PROCESANDO...' : 'INICIAR SESIÓN'}
                         </button>
                     </div>

@@ -250,56 +250,68 @@ export default function PersonalGraphics() {
       <div className='row mt-3'>
         <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center mb-5'>
           <p style={styles.expensesTitle}>DEUDAS VS AHORROS</p>
-          <PieChart width={400} height={400}>
-            <Pie
-              data={calculateTotals()}
-              dataKey="value"
-              nameKey="name"
-              cx={'50%'}
-              cy={'50%'}
-              innerRadius={80}
-              outerRadius={120}
-              label
-            >
-              {calculateTotals().map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Legend 
-              align="center"
-              verticalAlign="bottom"
-              layout="vertical"
-              iconType="plainline"
-              iconSize={15}
-            />    
-          </PieChart>
+          {categoryData().length > 0 ? (
+            <PieChart width={400} height={450}>
+              <Pie
+                data={calculateTotals()}
+                dataKey="value"
+                nameKey="name"
+                cx={'50%'}
+                cy={'50%'}
+                innerRadius={80}
+                outerRadius={120}
+                label
+              >
+                {calculateTotals().map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Legend 
+                align="center"
+                verticalAlign="bottom"
+                layout="vertical"
+                iconType="plainline"
+                iconSize={15}
+              />    
+            </PieChart>
+          ) : (
+            <p style={{ textAlign: "center", fontSize: "16px", color: "gray" }}>
+              No hay información disponible.
+            </p>
+          )}
         </div>
 
-        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center mb-5'>
           <p style={styles.expensesTitle}>GASTOS</p>
-          <PieChart width={350} height={500}>
-            <Pie
-              data={categoryData()}
-              dataKey="value"
-              nameKey="name"
-              cx={'50%'}
-              cy={'50%'}
-              innerRadius={80}
-              outerRadius={120}
-              label
-            >
-              {categoryData().map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Legend 
-              align="center"
-              verticalAlign="bottom"
-              layout="vertical"
-              iconType="plainline"
-              iconSize={15}
-            />    
-          </PieChart>
+          {categoryData().length > 0 ? (
+            <PieChart width={400} height={450}>
+              <Pie
+                data={categoryData()}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={80}
+                outerRadius={120}
+                label
+              >
+                {categoryData().map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Legend 
+                align="center"
+                verticalAlign="bottom"
+                layout="vertical"
+                iconType="plainline"
+                iconSize={15}
+              />    
+            </PieChart>
+          ) : (
+            <p style={{ textAlign: "center", fontSize: "16px", color: "gray" }}>
+              No hay información disponible.
+            </p>
+          )}
         </div>
       </div>
     </div>

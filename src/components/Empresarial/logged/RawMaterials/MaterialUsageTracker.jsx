@@ -3,17 +3,18 @@ import { getRawMaterialsByUser } from '../../../../services/RawMaterialService';
 import { createMaterialUsage, getMaterialUsagesByUserId } from '../../../../services/MaterialUsageService';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { GiPayMoney } from 'react-icons/gi';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box, Divider } from '@mui/material';
-import logo from '../../../../assets/logo.png';
+import TopNavBar from './TopNavBar';
+import MonthSelector from '../../../MonthSelector';
+import { TbCheckupList } from 'react-icons/tb';
 
 export default function MaterialUsageTracker() {
     const [rawMaterials, setRawMaterials] = useState([]);
     const [materialUsages, setMaterialUsages] = useState([]);
     const [filteredUsages, setFilteredUsages] = useState([]);
     const [selectedMonth, setSelectedMonth] = useState(new Date());
-    const [dateWindow, setDateWindow] = useState({ center: new Date(), range: 3 });
+    const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
     const [selectedMaterialId, setSelectedMaterialId] = useState('');
     const [quantityUsed, setQuantityUsed] = useState('');
     const [description, setDescription] = useState('');
@@ -28,53 +29,18 @@ export default function MaterialUsageTracker() {
     const openForm = () => setIsOpen(true);
     const closeForm = () => setIsOpen(false);
 
-    const paths = {
-        'MATERIA PRIMA': '/raw-materials-tracker',
-        'INSUMOS': '/material-usage-tracker',
-        'PEDIDOS': '/raw-material-order',
+    const isCurrentMonth = () => {
+      const currentMonth = new Date();
+      return selectedMonth.getFullYear() === currentMonth.getFullYear() && selectedMonth.getMonth() === currentMonth.getMonth();
     };
 
-    const handleNavigation = (text) => {
-        navigate(paths[text] || '/raw-material-tracker');
-    };
+    const isDisabled = !isCurrentMonth();
 
     const isSameMonth = (date1, date2) => {
         return (
             new Date(date1).getFullYear() === new Date(date2).getFullYear() &&
             new Date(date1).getMonth() === new Date(date2).getMonth()
         );
-    };
-
-    const generateMonths = () => {
-        const { center, range } = dateWindow;
-        const centerDate = new Date(center);
-        const months = [];
-        for (let i = -range; i <= range; i++) {
-            const date = new Date(centerDate);
-            date.setMonth(centerDate.getMonth() + i);
-            months.push({
-                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-                date,
-                isStart: i === -range,
-                isEnd: i === range,
-            });
-        }
-        return months;
-    };
-
-    const months = generateMonths();
-
-    const handleMonthSelect = (monthObj) => {
-        setSelectedMonth(monthObj.date);
-        if (monthObj.isStart) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() - 3);
-            setDateWindow((prev) => ({ ...prev, center: newCenter }));
-        } else if (monthObj.isEnd) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() + 3);
-            setDateWindow((prev) => ({ ...prev, center: newCenter }));
-        }
     };
 
     useEffect(() => {
@@ -204,112 +170,170 @@ export default function MaterialUsageTracker() {
         },
     ];
 
+    const styles = {
+        divider: {
+          width: '100%',
+          height: '2px',
+          backgroundColor: '#999',
+          marginTop: 20,
+        },
+        card: {
+          backgroundColor: '#30437A',
+          color: 'white',
+          width: '200px',
+          height: '140px',
+          margin: '20px 30px',
+          borderRadius: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          fontSize: '20px',
+          boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)'
+        },
+        button: {
+          alignSelf: 'flex-end',
+          margin: '10px',
+          fontSize: '35px',
+          color: '#30437A',
+        },
+        cardText: {
+          fontSize: '20px',
+          alignSelf: 'center',
+          marginTop: '-10px',
+          fontWeight: 'bold',
+        },
+        cardSubtitle: {
+          fontSize: '16px',
+          alignSelf: 'center',
+          marginTop: '10px',
+          color: 'white',
+        },
+        addButton: {
+          border: '1px solid #30437A',
+          backgroundColor: 'white',
+          width: '200px',
+          height: '140px',
+          margin: '20px 30px',
+          padding: '10px',
+          borderRadius: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          fontSize: '20px',
+          color: 'black',
+          boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)',
+          opacity: isDisabled ? 0.6 : 1,
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
+        },
+        modalStyle: {
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: '8px',
+        },
+        title: {
+          fontSize: 28,
+          fontWeight: 'bold',
+          color: '#30437A',
+        },
+    };
 
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'white', width: '100vw', height: '100vh' }}>
-            <div style={{ backgroundColor: 'white', position: 'fixed', top: 30, display: 'flex', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', width: '100vw', zIndex: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '80%', marginBottom: '30px' }}>
-                    <img src={logo} alt="Logo" style={{ width: '90px' }} />
-                    {Object.keys(paths).map((text, index) => (
-                        <span
-                            key={index}
-                            style={{ cursor: 'pointer', padding: '10px 20px', fontSize: '16px', color: location.pathname === paths[text] ? '#000' : '#888', borderBottom: location.pathname === paths[text] ? '4px solid #30437A' : '2px solid transparent', transition: 'border-color 0.3s' }}
-                            onClick={() => handleNavigation(text)}
-                        >
-                            {text}
-                        </span>
-                    ))}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                    {months.map((monthObj, index) => (
-                        <span
-                            key={index}
-                            onClick={() => handleMonthSelect(monthObj)}
-                            style={{
-                                margin: '0 15px',
-                                cursor: 'pointer',
-                                color: isSameMonth(monthObj.date, selectedMonth) ? '#000' : '#B0B0B0',
-                                borderBottom: isSameMonth(monthObj.date, selectedMonth) ? '2px solid #4AD8C2' : 'none',
-                                fontWeight: isSameMonth(monthObj.date, selectedMonth) ? 'bold' : 'normal'
-                            }}
-                        >
-                            {monthObj.label}
-                        </span>
-                    ))}
-                </div>
-                <Divider style={{ width: '100%' }} />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', width: '80%', marginTop: '220px' }}>
-                <div style={{ marginRight: '40px', flexDirection: 'column' }}>
-                    <div style={{ backgroundColor: '#30437A', color: 'white', width: '200px', height: '140px', marginBottom: '20px', borderRadius: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '20px', boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)', padding: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>REGISTROS</span>
-                            <GiPayMoney style={{ fontSize: '40px' }} />
-                        </div>
-                        <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{totalCost}</span>
-                        <span style={{ fontSize: '16px', color: '#B0B0B0' }}>Historial de uso</span>
-                    </div>
-                    <div style={{ cursor: 'pointer', border: '1px solid #30437A', width: '200px', height: '140px', borderRadius: '8px', display: 'flex', flexDirection: 'column', fontSize: '20px', color: 'black', boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)', justifyContent: 'center', alignItems: 'center' }} onClick={openForm}>
-                        <MdOutlineAddToPhotos style={{ fontSize: '35px', color: '#30437A' }} />
-                        <span style={{ fontSize: '20px', marginTop: '10px' }}>REGISTRAR CONSUMO</span>
-                    </div>
-                </div>
-                <div style={{ width: '60vw' }}>
-                    <DataTable
-                        columns={columns}
-                        data={filteredUsages}
-                        pagination
-                        conditionalRowStyles={conditionalRowStyles}
-                        noDataComponent="No hay registros aún."
-                    />
-                </div>
-            </div>
-
-            <Modal open={open} onClose={closeForm}>
-                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: '8px' }}>
-                    <form onSubmit={handleSubmit}>
-                        <h2 style={{ color: '#30437A' }}>Registrar Consumo</h2>
-                        <select
-                            value={selectedMaterialId}
-                            onChange={(e) => setSelectedMaterialId(e.target.value)}
-                            required
-                            style={{ width: '100%', padding: '10px', borderRadius: '6px', marginBottom: '15px', backgroundColor: '#f0f0f0', border: 'none' }}
-                        >
-                            <option value="">Selecciona una materia prima</option>
-                            {rawMaterials.map((material) => (
-                                <option key={material.id} value={material.id}>
-                                    {material.materialDescription} - Cantidad: {material.quantity}
-                                </option>
-                            ))}
-                        </select>
-                        <input
-                            type="number"
-                            placeholder="Cantidad usada"
-                            value={quantityUsed}
-                            onChange={(e) => setQuantityUsed(e.target.value)}
-                            required
-                            style={{ width: '100%', padding: '10px', borderRadius: '6px', marginBottom: '15px', backgroundColor: '#f0f0f0', border: 'none' }}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Descripción"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            required
-                            style={{ width: '100%', padding: '10px', borderRadius: '6px', marginBottom: '15px', backgroundColor: '#f0f0f0', border: 'none' }}
-                        />
-                        <Divider style={{ margin: '20px 0' }} />
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button type="button" onClick={closeForm} style={{ marginRight: '10px' }}>Cancelar</button>
-                            <button type="submit">Registrar</button>
-                        </div>
-                    </form>
-                    {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-                    {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-                </Box>
-            </Modal>
+      <div>
+        <div className="row justify-content-center">
+          <TopNavBar/>
+          <MonthSelector
+            selectedMonth={selectedMonth}
+            onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+            dateWindow={dateWindow}
+            setDateWindow={setDateWindow}
+          />
+          <Divider style={styles.divider} />
         </div>
+      
+        <div className='row mt-3'>
+          <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
+            <div style={styles.card}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+                <text>INSUMOS</text>
+                <TbCheckupList style={{ fontSize: '180%' }} />
+              </div>
+
+              <text style={styles.cardText}>{totalCost}</text>
+              <text style={styles.cardSubtitle}>Historial de uso</text>
+            </div>
+
+            <button
+              style={styles.addButton}
+              onClick={() => !isDisabled && openForm()}
+              disabled={isDisabled}>
+              <MdOutlineAddToPhotos style={styles.button} />
+              <text style={{ alignSelf: 'center' }}>NUEVO INSUMO</text>
+            </button>
+          </div>
+
+          <div className='col-sm-8 flex-column justify-content-center align-items-center'>
+            <DataTable
+              columns={columns}
+              data={filteredUsages}
+              pagination
+              conditionalRowStyles={conditionalRowStyles}
+              noDataComponent="No hay registros aún."
+            />
+          </div>
+        </div>
+
+        <Modal open={open} onClose={closeForm}>
+          <Box sx={styles.modalStyle}>
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '20px' }}>
+                <text style={styles.title}>Registrar Insumo</text>
+              </div>
+              <select className='input col-12'
+                value={selectedMaterialId}
+                onChange={(e) => setSelectedMaterialId(e.target.value)}
+                required
+                >
+                <option
+                    value="">Selecciona una materia prima</option>
+                    {rawMaterials.map((material) => (
+                    <option key={material.id} value={material.id}>
+                    {material.materialDescription} - Cantidad: {material.quantity}
+                </option>
+                ))}
+              </select>
+            
+              <input className='input col-12'
+                type="number"
+                placeholder="Cantidad usada"
+                value={quantityUsed}
+                onChange={(e) => setQuantityUsed(e.target.value)}
+                required
+              />
+            
+              <input className='input col-12'
+                type="text"
+                placeholder="Descripción"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+
+              <Divider style={styles.divider} />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                <button type="button" className='primary_button' styles={{width: '40%'}} onClick={closeForm} style={{ marginRight: '10px' }}>Cancelar</button>
+                <button type="submit" className='secondary_button' styles={{width: '40%'}}>Registrar</button>
+              </div>
+            </form>
+            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+          </Box>
+        </Modal>
+      </div>
     );
 }

@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 const schema = yup.object().shape({
   name: yup.string().required('El nombre es obligatorio'),
   email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
-  username: yup.string().required('El nombre de usuario es obligatorio'),
   phoneNumber: yup.number().positive('Phone number must be positive').min(10, 'The phone number should be 10 digits').required('Phone number is required').transform((value, originalValue) => (originalValue === '' ? undefined : value)),
   password: yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('La contraseña es obligatoria'),
 });

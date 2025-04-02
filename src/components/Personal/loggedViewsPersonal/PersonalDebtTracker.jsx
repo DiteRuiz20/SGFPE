@@ -329,7 +329,7 @@ export default function PersonalDebtTracker() {
           display: 'flex',
           flexDirection: 'column',
           fontSize: '20px',
-          boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)',
+          boxShadow:'0px 8px 5px rgba(136, 136, 136, 0.2)',
         },
         button: {
           alignSelf: 'flex-end',
@@ -449,12 +449,13 @@ export default function PersonalDebtTracker() {
             </button>
           </div>
 
-          <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', padding: '20px', boxSizing: 'border-box' }}>
+          <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', paddingHorizontal: '20px', boxSizing: 'border-box' }}>
             <DataTable
               columns={columns}
               data={filteredDebts}
               customStyles={customStyles}
               pagination
+              noDataComponent="No hay deudas disponibles."
             />
             </div>
           </div>

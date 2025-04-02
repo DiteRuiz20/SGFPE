@@ -15,7 +15,7 @@ const schema = yup.object().shape({
     phoneNumber: yup.number().positive('Phone number must be positive').min(10, 'The phone number should be 10 digits').required('Phone number is required').transform((value, originalValue) => (originalValue === '' ? undefined : value)),
 });
 
-export default function RawMaterialProfile() {
+export default function NewProductProfile() {
   const location = useLocation();
   const navigate = useNavigate();
   const { userId, logout } = useAuth(); // Obtener userId y logout del contexto

@@ -7,14 +7,15 @@ import DataTable from 'react-data-table-component';
 import { Modal, Box, Divider } from '@mui/material';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { GiPayMoney } from 'react-icons/gi';
-import logo from '../../../../assets/logo.png';
+import TopNavBar from './TopNavBar';
+import MonthSelector from '../../../MonthSelector';
 
 export default function RawMaterialOrderTracker() {
     const [orders, setOrders] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [rawMaterials, setRawMaterials] = useState([]);
     const [selectedMonth, setSelectedMonth] = useState(new Date());
-    const [dateWindow, setDateWindow] = useState({ center: new Date(), range: 3 });
+    const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
     const [materialUsageIds, setMaterialUsageIds] = useState([]);
     const [income, setIncome] = useState('');
     const [orderDescription, setOrderDescription] = useState('');
@@ -27,6 +28,14 @@ export default function RawMaterialOrderTracker() {
     const location = useLocation();
     const openForm = () => setIsOpen(true);
     const closeForm = () => setIsOpen(false);
+
+    const isCurrentMonth = () => {
+        const currentMonth = new Date();
+        return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
+               selectedMonth.getMonth() === currentMonth.getMonth();
+      };
+  
+    const isDisabled = !isCurrentMonth();
 
     const isSameMonth = (date1, date2) => {
         return (
@@ -144,16 +153,6 @@ export default function RawMaterialOrderTracker() {
         }
     };
 
-    const paths = {
-        'MATERIA PRIMA': '/raw-materials-tracker',
-        'INSUMOS': '/material-usage-tracker',
-        'PEDIDOS': '/raw-material-order',
-    };
-
-    const handleNavigation = (text) => {
-        navigate(paths[text] || '/raw-material-order');
-    };
-
     const columns = [
         { name: 'Descripción', selector: row => row.orderDescription, grow: 2 },
         { name: 'Ingreso ($)', selector: row => `$${row.income}`, grow: 1 },
@@ -161,73 +160,59 @@ export default function RawMaterialOrderTracker() {
     ];
 
     const styles = {
-        header: {
-            backgroundColor: 'white',
-            position: 'fixed',
-            top: 30,
-            display: 'flex',
-            alignSelf: 'center',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            width: '100vw',
-            zIndex: 10,
+        divider: {
+          width: '100%',
+          height: '2px',
+          backgroundColor: '#999',
+          marginTop: 20,
         },
-        menu: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '80%',
-            marginBottom: '30px',
-        },
-        navLink: (path) => ({
-            cursor: 'pointer',
-            padding: '10px 20px',
-            fontSize: '16px',
-            color: location.pathname === path ? '#000' : '#888',
-            borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-        }),
-        card: {
-            backgroundColor: '#30437A',
+          card: {
+            backgroundColor: '#3DC9A7',
             color: 'white',
             width: '200px',
             height: '140px',
-            marginBottom: '20px',
+            margin: '20px 30px',
             borderRadius: '8px',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '20px',
-            boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)'
-        },
-        addButton: {
-            cursor: 'pointer',
-            border: '1px solid #30437A',
+            fontSize: '20px',
+            boxShadow:'0px 8px 5px rgba(61, 193, 173, 0.2)'
+          },
+          cardText: {
+            fontSize: '20px',
+            alignSelf: 'center',
+            marginTop: '-10px',
+            fontWeight: 'bold',
+          },
+          cardSubtitle: {
+            fontSize: '16px',
+            alignSelf: 'center',
+            marginTop: '10px',
+            color: 'white',
+          },
+          button: {
+            alignSelf: 'flex-end',
+            margin: '10px',
+            fontSize: '35px',
+            color: '#3DC9A7',
+          },
+          addButton: {
+            border: '1px solid #3DC9A7',
+            backgroundColor: 'white', 
             width: '200px',
             height: '140px',
+            margin: '20px 30px',
+            padding: '10px',
             borderRadius: '8px',
             display: 'flex',
             flexDirection: 'column',
             fontSize: '20px',
             color: 'black',
-            boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)',
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        datePicker: {
-            marginTop: 180,
-            display: 'flex',
-            justifyContent: 'center',
-        },
-        cardText: {
-            fontSize: '20px',
-            fontWeight: 'bold',
-        },
-        tableContainer: {
-            width: '70%',
-            margin: '20px auto',
-        },
-        modalStyle: {
+            boxShadow:'0px 8px 5px rgba(61, 193, 173, 0.2)',
+            opacity: isDisabled ? 0.6 : 1,
+            cursor: isDisabled ? 'not-allowed' : 'pointer',
+          },
+          modalStyle: {
             position: 'absolute',
             top: '50%',
             left: '50%',
@@ -237,120 +222,102 @@ export default function RawMaterialOrderTracker() {
             boxShadow: 24,
             p: 4,
             borderRadius: '8px',
-        },
-        input: {
-            width: '100%',
-            padding: '10px',
-            borderRadius: '6px',
-            marginBottom: '15px',
-            backgroundColor: '#f0f0f0',
-            border: 'none',
-        },
-    };
+          },
+          title: {
+            fontSize: 28,
+            fontWeight: 'bold',
+            color: '#3DC9A7',
+          },
+        };
 
     return (
-        <div>
-            <div style={styles.header}>
-                <div style={styles.menu}>
-                    <img src={logo} alt="Logo" style={{ width: '90px' }} />
-                    {Object.keys(paths).map((text, index) => (
-                        <span
-                            key={index}
-                            style={styles.navLink(paths[text])}
-                            onClick={() => handleNavigation(text)}
-                        >
-                            {text}
-                        </span>
-                    ))}
-                </div>
-                <Divider style={{ width: '100%', margin: '0 auto' }} />
-            </div>
-
-            <div style={styles.datePicker}>
-                {months.map((monthObj, index) => (
-                    <span
-                        key={index}
-                        onClick={() => handleMonthSelect(monthObj)}
-                        style={{
-                            margin: '0 15px',
-                            cursor: 'pointer',
-                            color: isSameMonth(monthObj.date, selectedMonth) ? '#000' : '#B0B0B0',
-                            borderBottom: isSameMonth(monthObj.date, selectedMonth) ? '2px solid #4AD8C2' : 'none',
-                            fontWeight: isSameMonth(monthObj.date, selectedMonth) ? 'bold' : 'normal'
-                        }}
-                    >
-                        {monthObj.label}
-                    </span>
-                ))}
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                <div style={styles.card}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>INGRESO</span>
-                        <GiPayMoney style={{ fontSize: '40px' }} />
-                    </div>
-                    <span style={styles.cardText}>${totalNetProfit}</span>
-                    <span style={{ fontSize: '16px', color: '#B0B0B0' }}>Ingreso mensual</span>
-                </div>
-
-                <div style={styles.addButton} onClick={openForm}>
-                    <MdOutlineAddToPhotos style={{ fontSize: '35px' }} />
-                    <span style={{ fontSize: '18px', marginTop: '10px' }}>CREAR PEDIDO</span>
-                </div>
-            </div>
-
-            <div style={styles.tableContainer}>
-                <DataTable
-                    columns={columns}
-                    data={filteredOrders}
-                    pagination
-                    noDataComponent="No hay pedidos registrados."
-                />
-            </div>
-
-            <Modal open={open} onClose={closeForm}>
-                <Box sx={styles.modalStyle}>
-                    <form onSubmit={handleSubmit}>
-                        <h2 style={{ color: '#30437A' }}>Crear Pedido</h2>
-                        <input
-                            style={styles.input}
-                            placeholder="Descripción del pedido"
-                            value={orderDescription}
-                            onChange={(e) => setOrderDescription(e.target.value)}
-                            required
-                        />
-                        <select
-                            style={styles.input}
-                            multiple
-                            value={materialUsageIds}
-                            onChange={handleMultiSelectChange}
-                            required
-                        >
-                            {rawMaterials.map((material) => (
-                                <option key={material.id} value={material.id}>
-                                    {material.usageDescription} - {material.quantityUsed} unidades
-                                </option>
-                            ))}
-                        </select>
-                        <input
-                            type="number"
-                            style={styles.input}
-                            placeholder="Ingreso del pedido ($)"
-                            value={income}
-                            onChange={(e) => setIncome(e.target.value)}
-                            required
-                        />
-                        <Divider style={{ margin: '20px 0' }} />
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button type="button" onClick={closeForm} style={{ marginRight: '10px' }}>Cancelar</button>
-                            <button type="submit">Registrar</button>
-                        </div>
-                        {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-                        {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-                    </form>
-                </Box>
-            </Modal>
+      <div>
+        <div className="row justify-content-center">
+          <TopNavBar/>
+          <MonthSelector
+            selectedMonth={selectedMonth}
+            onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+            dateWindow={dateWindow}
+            setDateWindow={setDateWindow}
+          />
+          <Divider style={styles.divider} />
         </div>
+
+        <div className='row mt-3'>
+          <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
+            <div style={styles.card}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+                <text>INGRESO</text>
+                <GiPayMoney style={{ fontSize: '40px' }} />
+              </div>
+              <text style={styles.cardText}>${totalNetProfit}</text>
+              <text style={styles.cardSubtitle}>Ingreso mensual</text>
+            </div>
+
+            <button
+              style={styles.addButton}
+              onClick={() => !isDisabled && openForm()}
+              disabled={isDisabled}>
+              <MdOutlineAddToPhotos style={styles.button} />
+              <text style={{alignSelf: 'center'}}>NUEVO PEDIDO</text>
+            </button>
+          </div>
+
+          <div className='col-sm-8 flex-column justify-content-center align-items-center'>
+            <DataTable
+              columns={columns}
+              data={filteredOrders}
+              pagination
+              noDataComponent="No hay pedidos registrados."
+            />
+          </div>
+
+          <Modal open={open} onClose={closeForm}>
+            <Box sx={styles.modalStyle}>
+              <form onSubmit={handleSubmit}>
+                <div style={{ marginBottom: '20px' }}>
+                  <text style={styles.title}>Crear Pedido</text>
+                </div>
+                <input className='input col-12'
+                  placeholder="Descripción del pedido"
+                  value={orderDescription}
+                  onChange={(e) => setOrderDescription(e.target.value)}
+                  required
+                />
+                
+                <select className='input col-12'
+                  multiple
+                  value={materialUsageIds}
+                  onChange={handleMultiSelectChange}
+                  required>
+                  {rawMaterials.map((material) => (
+                  <option key={material.id} value={material.id}>
+                    {material.usageDescription} - {material.quantityUsed} unidades
+                  </option>
+                  ))}
+                </select>
+
+                <input className='input col-12'
+                  type="number"
+                  style={styles.input}
+                  placeholder="Ingreso del pedido ($)"
+                  value={income}
+                  onChange={(e) => setIncome(e.target.value)}
+                  required
+                />
+
+                <Divider style={styles.divider} />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                  <button className='primary_button' style={{ width: '40%'}} type="button" onClick={closeForm}>Cancelar</button>
+                  <button className='secondary_button' style={{ width: '40%' }} type="submit">Registrar</button>
+                </div>
+                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+              </form>
+            </Box>
+          </Modal>
+        </div>
+      </div>
     );
 }

@@ -161,28 +161,34 @@ export default function PersonalBudgetPlanner() {
 
         <div className='col-sm-8 d-flex flex-column justify-content-center align-items-center'>
           <h3 style={styles.title}>PRESUPUESTO TOTAL</h3>
-          <PieChart width={400} height={450} margin={{bottom: 50 }}>
-            <Pie
-              data={chartData} 
-              cx={200} 
-              cy={200} 
-              innerRadius={80} 
-              label 
-              outerRadius={120} 
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Legend
-              align="center"
-              verticalAlign="bottom"
-              layout="horizontal"
-              iconType="plainline"
-              iconSize={15}
-            />
-          </PieChart>
+          {chartData.values.length > 0 ? (
+            <PieChart width={400} height={450} margin={{bottom: 50 }}>
+              <Pie
+                data={chartData} 
+                cx={200} 
+                cy={200} 
+                innerRadius={80} 
+                label 
+                outerRadius={120} 
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Legend
+                align="center"
+                verticalAlign="bottom"
+                layout="horizontal"
+                iconType="plainline"
+                iconSize={15}
+              />
+            </PieChart>
+          ) : (
+            <p style={{ textAlign: "center", fontSize: "16px", color: "gray" }}>
+              No hay información disponible.
+            </p>
+          )}
         </div>
       </div>
     </div>

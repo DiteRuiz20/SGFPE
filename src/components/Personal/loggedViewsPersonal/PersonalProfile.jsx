@@ -120,6 +120,7 @@ export default function PersonalProfile() {
               <div className='d-flex flex-column justify-content-center align-items-center'>
                 <input className='input col-12'
                   disabled
+                  style={{ cursor: 'not-allowed', opacity: 0.6 }}
                   type="email"
                   {...register('email')}
                   placeholder="Correo electrónico"
@@ -144,5 +145,5 @@ export default function PersonalProfile() {
           </div>
       </div>
     </div>
-    );
+  );
 }

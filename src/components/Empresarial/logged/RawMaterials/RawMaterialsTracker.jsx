@@ -6,7 +6,7 @@ import { Modal, Box, Divider } from '@mui/material';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
-import { GiTakeMyMoney } from "react-icons/gi";
+import { TbWood } from "react-icons/tb";
 
 export default function RawMaterialsTracker() {
     const [rawMaterials, setRawMaterials] = useState([]);
@@ -24,8 +24,18 @@ export default function RawMaterialsTracker() {
         return date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
     };
 
-    const openForm = () => setOpenUploadModal(true);
-    const closeForm = () => setOpenUploadModal(false);
+    const isCurrentMonth = () => {
+      const currentMonth = new Date();
+      return selectedMonth.getFullYear() === currentMonth.getFullYear() && selectedMonth.getMonth() === currentMonth.getMonth();
+    };
+    
+    const isDisabled = !isCurrentMonth();
+
+    const openFileForm = () => setOpenUploadModal(true);
+    const closeFileForm = () => setOpenUploadModal(false);
+
+    const openManualForm = () => setOpenManualModal(true);
+    const closeManualForm = () => setOpenManualModal(false);
 
     const fetchRawMaterials = async () => {
         const userId = localStorage.getItem('userId');
@@ -67,7 +77,7 @@ export default function RawMaterialsTracker() {
 
         try {
             await uploadRawMaterial(file, userId);
-            closeForm();
+            closeFileForm();
             fetchRawMaterials();
         } catch (error) {
             console.error('Error al subir el archivo:', error);
@@ -93,186 +103,141 @@ export default function RawMaterialsTracker() {
     ];
 
     const styles = {
-        container: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            width: '100vw',
-            height: '100vh',
-        },
-        header: {
-            backgroundColor: 'white',
-            position: 'fixed',
-            top: 30,
-            display: 'flex',
-            alignSelf: 'center',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            width: '100vw',
-            zIndex: 10,
-        },
-        menu: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '80%',
-            marginBottom: '30px',
-        },
-        navLink: (path) => ({
-            cursor: 'pointer',
-            padding: '10px 20px',
-            fontSize: '16px',
-            color: location.pathname === path ? '#000' : '#888',
-            borderBottom: location.pathname === path ? '4px solid #30437A' : '2px solid transparent',
-            transition: 'border-color 0.3s',
-        }),
         divider: {
-            width: '100%',
-            height: '2px',
-            backgroundColor: '#999',
-            marginTop: 20,
-          },
-        bodyContainer: {
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            width: '80%',
-            marginTop: '180px',
-        },
-        cardContainer: {
-            marginRight: '40px',
-            flexDirection: 'column',
+          width: '100%',
+          height: '2px',
+          backgroundColor: '#999',
+          marginTop: 20,
         },
         card: {
-            backgroundColor: '#B1B1B1',
-            color: 'white',
-            width: '200px',
-            height: '140px',
-            margin: '20px 30px',
-            borderRadius: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            fontSize: '20px',
-            boxShadow:'0px 8px 5px rgba(48, 67, 122, 0.2)',
-          },
-          cardText: {
-            fontSize: '20px',
-            marginTop: '-10px',
-            alignSelf: 'center',
-            fontWeight: 'bold',
-          },
-          cardSubtitle: {
-            fontSize: '16px',
-            alignSelf: 'center',
-            marginTop: '10px',
-            color: 'white',
-          },
-        addButton: {
-            cursor: 'pointer',
-            border: '1px solid #30437A',
-            width: '200px',
-            height: '140px',
-            borderRadius: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            fontSize: '20px',
-            color: 'black',
-            boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)',
-            justifyContent: 'center',
-            alignItems: 'center',
+          backgroundColor: '#B1B1B1',
+          color: 'white',
+          width: '200px',
+          height: '140px',
+          margin: '20px 30px',
+          borderRadius: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          fontSize: '20px',
+          boxShadow:'0px 8px 5px rgba(136, 136, 136, 0.2)',
         },
         button: {
-            fontSize: '35px',
-            color: '#30437A',
+          alignSelf: 'flex-end',
+          margin: '15px',
+          fontSize: '35px',
+          color: '#B1B1B1',
         },
-        buttonText: {
-            fontSize: '20px',
-            marginTop: '10px',
+        cardText: {
+          fontSize: '20px',
+          alignSelf: 'center',
+          marginTop: '-10px',
+          fontWeight: 'bold',
         },
-        tableContainer: {
-            width: '60vw',
+        cardSubtitle: {
+          fontSize: '16px',
+          alignSelf: 'center',
+          marginTop: '10px',
+          color: 'white',
+        },
+        addButton: {
+          border: '1px solid #B1B1B1',
+          backgroundColor: 'white',
+          width: '200px',
+          height: '140px',
+          margin: '20px 30px',
+          borderRadius: '8px',
+          display: 'flex',
+          padding: '10px',
+          flexDirection: 'column',
+          fontSize: '20px',
+          color: 'black',
+          boxShadow:'0px 8px 5px rgba(136, 136, 136, 0.2)',
+          opacity: isDisabled ? 0.6 : 1,
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
         },
         modalStyle: {
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            borderRadius: '8px',
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: '8px',
         },
-        input: {
-            width: '100%',
-            padding: '10px',
-            borderRadius: '6px',
-            marginBottom: '15px',
-            backgroundColor: '#f0f0f0',
-            border: 'none',
+        title: {
+          fontSize: 28,
+          fontWeight: 'bold',
+          color: '#B1B1B1',
         },
-    };
+      };
 
     return (
-        <div>
-          <div className="row justify-content-center">
-            <TopNavBar/>
-            <MonthSelector
-              selectedMonth={selectedMonth}
-              onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
-              dateWindow={dateWindow}
-              setDateWindow={setDateWindow}
-            />
-            <Divider style={styles.divider} />
-          </div>
+      <div>
+        <div className="row justify-content-center">
+          <TopNavBar/>
+          <MonthSelector
+            selectedMonth={selectedMonth}
+            onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+            dateWindow={dateWindow}
+            setDateWindow={setDateWindow}
+          />
+          <Divider style={styles.divider} />
+        </div>
     
-          <div className='row mt-3'>
-            <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
-                <div style={styles.card}>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-                <text>DEUDAS</text>
-                <GiTakeMyMoney style={{ fontSize: '220%'}} />
-                </div>
-                    <text style={styles.cardText}>{rawMaterials.length}</text>
-                    <text style={styles.cardSubtitle}>Materiales registrados</text>
-                
-                </div>
-
-                    <div style={styles.addButton} onClick={openForm}>
-                        <MdOutlineAddToPhotos style={styles.button} />
-                        <span style={styles.buttonText}>SUBIR MATERIAL</span>
-                    </div>
-                </div>
-
-                <div style={styles.tableContainer}>
-                    <DataTable
-                        columns={columns}
-                        data={rawMaterials}
-                        pagination
-                        noDataComponent="No hay materiales disponibles."
-                    />
-                </div>
+        <div className='row mt-3'>
+          <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
+            <div style={styles.card}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+                <text>MATERIA</text>
+                <TbWood style={{ fontSize: '180%'}} />
+              </div>
+              <text style={styles.cardText}>{rawMaterials.length}</text>
+              <text style={styles.cardSubtitle}>Materiales registrados</text>
             </div>
 
-            {/* Modal de subida */}
-            <Modal open={openUploadModal} onClose={closeForm}>
-                <Box sx={styles.modalStyle}>
-                    <form onSubmit={handleUpload}>
-                        <div style={{ marginBottom: '20px' }}>
-                            <span style={{ fontSize: 28, fontWeight: 'bold', color: '#30437A' }}>Subir archivo Excel</span>
-                        </div>
-                        <input type="file" accept=".xlsx" onChange={handleFileChange} required style={styles.input} />
-                        <Divider style={{ margin: '20px 0' }} />
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button type="button" onClick={closeForm} style={{ marginRight: '10px' }}>Cancelar</button>
-                            <button type="submit">Subir</button>
-                        </div>
-                    </form>
+            <div
+              style={styles.addButton}
+              onClick={() => !isDisabled && openFileForm()}
+              disabled={isDisabled}>
+              <MdOutlineAddToPhotos style={styles.button} />
+              <text style={{alignSelf: 'center'}}>SUBIR ARCHIVO</text>
+            </div>
+
+            <div
+              style={styles.addButton}
+              onClick={() => !isDisabled && openManualForm()}
+              disabled={isDisabled}>
+              <MdOutlineAddToPhotos style={styles.button} />
+              <text style={{alignSelf: 'center'}}>NUEVA MATERIA</text>
+            </div>
+          </div>
+
+          <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', padding: '20px', boxSizing: 'border-box' }}>
+            <DataTable
+              columns={columns}
+              data={rawMaterials}
+              pagination
+              noDataComponent="No hay materiales disponibles."
+            />
+          </div>
+        </div>
+
+        {/* Modal de subida de archivo */}
+        <Modal open={openUploadModal} onClose={closeFileForm}>
+          <Box sx={styles.modalStyle}>
+            <form onSubmit={handleUpload}>
+              <div style={{ marginBottom: '20px' }}>
+                <text style={styles.title}>Subir archivo Excel</text>
+              </div>
+              <input type="file" accept=".xlsx" onChange={handleFileChange} required className='input col-12' />
+                <Divider style={styles.divider} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                  <button type="button" className='primary_button' style={{ width: '40%'}} onClick={closeFileForm}>Cancelar</button>
+                  <button type="submit" className='secondary_button' style={{ width: '40%' }}>Subir</button>
+                </div>
+            </form>
                 </Box>
             </Modal>
         </div>

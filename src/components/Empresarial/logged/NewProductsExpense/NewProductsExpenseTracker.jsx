@@ -6,7 +6,7 @@ import { Modal, Box, Divider } from '@mui/material';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
-import { GiTakeMyMoney } from "react-icons/gi";
+import { BiStore } from "react-icons/bi";
 
 export default function NewProductExpenseTracker() {
     const [products, setProducts] = useState([]);
@@ -19,6 +19,16 @@ export default function NewProductExpenseTracker() {
 
     const openForm = () => setOpenUploadModal(true);
     const closeForm = () => setOpenUploadModal(false);
+
+    const openManualForm = () => setOpenManualModal(true);
+    const closeManualForm = () => setOpenManualModal(false);
+
+    const isCurrentMonth = () => {
+        const currentMonth = new Date();
+        return selectedMonth.getFullYear() === currentMonth.getFullYear() && selectedMonth.getMonth() === currentMonth.getMonth();
+    };
+      
+    const isDisabled = !isCurrentMonth();
 
     const fetchProducts = async () => {
         const userId = localStorage.getItem('userId');
@@ -82,56 +92,137 @@ export default function NewProductExpenseTracker() {
     ];
 
     const styles = {
-        /* mismos estilos que ya tienes en RawMaterialsTracker... */
-    };
+        divider: {
+          width: '100%',
+          height: '2px',
+          backgroundColor: '#999',
+          marginTop: 20,
+        },
+        card: {
+          backgroundColor: '#30437A',
+          color: 'white',
+          width: '200px',
+          height: '140px',
+          margin: '20px 30px',
+          borderRadius: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          fontSize: '20px',
+          boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)',
+        },
+        button: {
+          alignSelf: 'flex-end',
+          margin: '15px',
+          fontSize: '35px',
+          color: '#30437A',
+        },
+        cardText: {
+          fontSize: '20px',
+          alignSelf: 'center',
+          marginTop: '-10px',
+          fontWeight: 'bold',
+        },
+        cardSubtitle: {
+          fontSize: '16px',
+          alignSelf: 'center',
+          marginTop: '10px',
+          color: 'white',
+        },
+        addButton: {
+          border: '1px solid #30437A',
+          backgroundColor: 'white',
+          width: '200px',
+          height: '140px',
+          margin: '20px 30px',
+          borderRadius: '8px',
+          display: 'flex',
+          padding: '10px',
+          flexDirection: 'column',
+          fontSize: '20px',
+          color: 'black',
+          boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)',
+          opacity: isDisabled ? 0.6 : 1,
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
+        },
+        modalStyle: {
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: '8px',
+        },
+        title: {
+          fontSize: 28,
+          fontWeight: 'bold',
+          color: '#30437A',
+        },
+      };
 
     return (
-        <div>
-            <TopNavBar />
-            <MonthSelector
-                selectedMonth={selectedMonth}
-                onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
-                dateWindow={dateWindow}
-                setDateWindow={setDateWindow}
-            />
-            <Divider style={styles.divider} />
-            <div className='row mt-3'>
-                <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
-                    <div style={styles.card}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '15px' }}>
-                            <text>MERCANCÍA</text>
-                            <GiTakeMyMoney style={{ fontSize: '220%' }} />
-                        </div>
-                        <text style={styles.cardText}>{products.length}</text>
-                        <text style={styles.cardSubtitle}>Productos cargados</text>
-                    </div>
-                    <div style={styles.addButton} onClick={openForm}>
-                        <MdOutlineAddToPhotos style={styles.button} />
-                        <span style={styles.buttonText}>SUBIR EXCEL</span>
-                    </div>
-                </div>
+      <div>
+        <div className="row justify-content-center">
+          <TopNavBar />
 
-                <div style={styles.tableContainer}>
-                    <DataTable
-                        columns={columns}
-                        data={products}
-                        pagination
-                        noDataComponent="No hay productos disponibles."
-                    />
-                </div>
+          <MonthSelector
+            selectedMonth={selectedMonth}
+            onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+            dateWindow={dateWindow}
+            setDateWindow={setDateWindow}
+          />
+          <Divider style={styles.divider} />
+        </div>
+
+        <div className='row mt-3'>
+          <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
+            <div style={styles.card}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', margin: '15px' }}>
+                <text>MERCANCÍA</text>
+                <BiStore style={{ fontSize: '160%' }} />
+              </div>
+
+              <text style={styles.cardText}>{products.length}</text>
+              <text style={styles.cardSubtitle}>Productos cargados</text>
             </div>
+
+            <div style={styles.addButton} onClick={openForm}>
+                <MdOutlineAddToPhotos style={styles.button} />
+                <text style={{ alignSelf: 'center' }}>SUBIR ARCHIVO</text>
+            </div>
+
+            <div
+              style={styles.addButton}
+              onClick={() => !isDisabled && openManualForm()}
+              disabled={isDisabled}>
+              <MdOutlineAddToPhotos style={styles.button} />
+              <text style={{alignSelf: 'center', textAlign: 'center', marginTop: '-10px'}}>NUEVA MERCANCÍA</text>
+            </div>
+          </div>
+
+          <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', padding: '20px', boxSizing: 'border-box' }}>
+            <DataTable
+              columns={columns}
+              data={products}
+              pagination
+              noDataComponent="No hay productos disponibles."
+            />
+          </div>
+        </div>
 
             <Modal open={openUploadModal} onClose={closeForm}>
                 <Box sx={styles.modalStyle}>
                     <form onSubmit={handleUpload}>
                         <div style={{ marginBottom: '20px' }}>
-                            <span style={{ fontSize: 28, fontWeight: 'bold', color: '#30437A' }}>Subir archivo Excel</span>
+                            <text style={styles.title}>Subir archivo Excel</text>
                         </div>
-                        <input type="file" accept=".xlsx" onChange={handleFileChange} required style={styles.input} />
-                        <Divider style={{ margin: '20px 0' }} />
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button type="button" onClick={closeForm} style={{ marginRight: '10px' }}>Cancelar</button>
-                            <button type="submit">Subir</button>
+                        <input className='input col-12' type="file" accept=".xlsx" onChange={handleFileChange} required style={styles.input} />
+                        <Divider style={styles.divider} />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                            <button type="button" className='primary_button' onClick={closeForm} style={{ width: '40%' }}>Cancelar</button>
+                            <button type="submit" className='secondary_button' style={{ width: '40%' }}>Subir</button>
                         </div>
                     </form>
                 </Box>

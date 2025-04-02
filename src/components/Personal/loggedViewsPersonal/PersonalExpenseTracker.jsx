@@ -417,38 +417,38 @@ export default function PersonalExpensesTracker() {
   };
 
   return (
-  <div>
-    <div className="row justify-content-center">
-      <TopNavBar/>
-      <MonthSelector
-        selectedMonth={selectedMonth}
-        onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
-        dateWindow={dateWindow}
-        setDateWindow={setDateWindow}
-      />
-      <Divider style={styles.divider} />
-    </div>
-  
-    <div className='row mt-3'>
-      <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
-        <div style={styles.card}>
-          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-            <text>GASTOS</text>
-            <GiPayMoney style={{ fontSize: '220%'}} />
+    <div>
+      <div className="row justify-content-center">
+        <TopNavBar/>
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+          dateWindow={dateWindow}
+          setDateWindow={setDateWindow}
+        />
+        <Divider style={styles.divider} />
+      </div>
+    
+      <div className='row mt-3'>
+        <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
+          <div style={styles.card}>
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+              <text>GASTOS</text>
+              <GiPayMoney style={{ fontSize: '220%'}} />
+            </div>
+
+            <text style={styles.cardText}>-${totalExpenses.toFixed(2)}</text>
+            <text style={styles.cardSubtitle}>Gastos del mes</text>
           </div>
 
-          <text style={styles.cardText}>-${totalExpenses.toFixed(2)}</text>
-          <text style={styles.cardSubtitle}>Gastos del mes</text>
+          <button
+            style={styles.addButton}
+            onClick={() => !isDisabled && openForm()}
+            disabled={isDisabled}>
+            <MdOutlineAddToPhotos style={styles.button} />
+            <text style={{ alignSelf: 'center' }}>NUEVO GASTO</text>
+          </button>
         </div>
-
-        <button
-          style={styles.addButton}
-          onClick={() => !isDisabled && openForm()}
-          disabled={isDisabled}>
-          <MdOutlineAddToPhotos style={styles.button} />
-          <text style={{ alignSelf: 'center' }}>NUEVO GASTO</text>
-        </button>
-      </div>
 
         <div className='col-sm-8 flex-column justify-content-center align-items-center'>
           <DataTable
@@ -456,6 +456,7 @@ export default function PersonalExpensesTracker() {
             data={filteredExpenses}
             customStyles={customStyles}
             pagination
+            noDataComponent="No hay gastos disponibles."
           />
         </div>
       </div>

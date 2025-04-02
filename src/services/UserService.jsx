@@ -23,7 +23,7 @@ export const createUser = async (user) => {
 
 export const updateUser = async (user) => {
     try {
-        const response = await api.put(`/api/personal/users/${user.id}`, user); // Asegúrate de incluir el ID en la URL
+        const response = await api.put(`/api/personal/users/${user.id}`, user);
         return response.data;
     } catch (error) {
         console.error('Error en updateUser:', error);

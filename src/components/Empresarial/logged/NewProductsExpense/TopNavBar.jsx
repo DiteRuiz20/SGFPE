@@ -9,9 +9,8 @@ export default function TopNavBar() {
   const links = [
     { path: '/new-product-expense-tracker', label: 'NUEVA MERCANCIA' },
     { path: '/new-product-order-tracker', label: 'ORDENES' },
-    // { path: '/raw-material-order', label: 'PEDIDOS' },
     { path: '/new-product-expense-graphic', label: 'GRÁFICOS' },
-    { path: '/raw-material-profile', label: 'PERFIL' },
+    { path: '/new-product-profile', label: 'PERFIL' },
   ];
 
   const styles = {

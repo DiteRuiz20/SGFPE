@@ -352,7 +352,7 @@ export default function PersonalSavingTracker() {
         </div>
         
         <div className='row mt-3'>
-          <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
+          <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
             <div style={styles.card}>
                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
                     <text>AHORROS</text>
@@ -361,6 +361,7 @@ export default function PersonalSavingTracker() {
                 <text style={styles.cardText}>${totalSavings.toFixed(2)}</text>
                 <text style={styles.cardSubtitle}>Ahorros del mes</text>
             </div>
+            
             <button
               style={styles.addButton}
               onClick={() => !isDisabled && openForm()}
@@ -376,6 +377,7 @@ export default function PersonalSavingTracker() {
             data={filteredSavings}
             customStyles={customStyles}
             pagination
+            noDataComponent="No hay ahorros disponibles."
           />
           </div>
         </div>

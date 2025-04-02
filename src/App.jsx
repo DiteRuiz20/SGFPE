@@ -23,12 +23,12 @@ import logo from './assets/logo.png';
 import MaterialUsageTracker from './components/Empresarial/logged/RawMaterials/MaterialUsageTracker';
 import RawMaterialOrder from './components/Empresarial/logged/RawMaterials/RawMaterialOrder';
 import './assets/js/styles/app.css';
-import RawMaterialGraph from './components/Empresarial/logged/RawMaterials/RawMaterialGraph';
 import RawMaterialProfile from './components/Empresarial/logged/RawMaterials/RawMaterialProfile';
 import RawMaterialGraphic from '../src/components/Empresarial/logged/RawMaterials/RawMaterialGraphics';
 import NewProductExpenseTracker from './components/Empresarial/logged/NewProductsExpense/NewProductsExpenseTracker';
 import NewProductOrderTracker from './components/Empresarial/logged/NewProductsExpense/NewProductOrderTracker';
 import NewProductOrdersGraphics from './components/Empresarial/logged/NewProductsExpense/NewProductOrdersGraphics';
+import NewProductProfile from './components/Empresarial/logged/NewProductsExpense/NewProductProfile';
 
 function Home() {
     const navigate = useNavigate();
@@ -93,11 +93,8 @@ function App() {
                     <Route path="/new-product-order-tracker" element={<NewProductOrderTracker />} />
                     <Route path="/new-product-expense-tracker" element={<NewProductExpenseTracker />} />
                     <Route path="/new-product-expense-graphic" element={<NewProductOrdersGraphics />} />
-
-
-                    {/* Rutas añadidas para materia prima (Graficas y Perfil) */}
-                    <Route path="/raw-material-graph" element={<RawMaterialGraph />} />
                     <Route path="/raw-material-profile" element={<RawMaterialProfile />} />
+                    <Route path="/new-product-profile" element={<NewProductProfile />} />
 
                     {/* Rutas protegidas para usuarios personales */}
                     <Route

@@ -4,11 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Legend } from 'recharts';
 import { Divider } from '@mui/material';
 import TopNavBar from './TopNavBar';
+import MonthSelector from '../../../MonthSelector';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function NewProductOrdersGraphics() {
     const [orders, setOrders] = useState([]);
     const [selectedMonth, setSelectedMonth] = useState(new Date());
-    const [dateWindow, setDateWindow] = useState({ center: new Date(), range: 3 });
+    const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
     const navigate = useNavigate();
 
     const isSameMonth = (date1, date2) => {
@@ -17,34 +20,30 @@ export default function NewProductOrdersGraphics() {
         return d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
     };
 
-    const generateMonths = () => {
-        const { center, range } = dateWindow;
-        const months = [];
-        for (let i = -range; i <= range; i++) {
-            const date = new Date(center);
-            date.setMonth(center.getMonth() + i);
-            months.push({
-                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-                date,
-                isStart: i === -range,
-                isEnd: i === range,
-            });
+    const generatePDF = async () => {
+        const input = document.getElementById('chart-container');
+        if (!input) {
+            console.error("No se encontró el contenedor del gráfico.");
+            return;
         }
-        return months;
-    };
-
-    const months = generateMonths();
-
-    const handleMonthSelect = (monthObj) => {
-        setSelectedMonth(monthObj.date);
-        if (monthObj.isStart) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() - 3);
-            setDateWindow({ ...dateWindow, center: newCenter });
-        } else if (monthObj.isEnd) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() + 3);
-            setDateWindow({ ...dateWindow, center: newCenter });
+    
+        try {
+            const canvas = await html2canvas(input, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(18);
+            pdf.text('Reporte de Ganancias vs Gastos', 20, 20);
+            
+            pdf.addImage(imgData, 'PNG', 20, 40, 160, 100);
+            
+            pdf.setFontSize(12);
+            pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 150);
+            
+            pdf.save('reporte.pdf');
+        } catch (error) {
+            console.error('Error al generar el PDF:', error);
         }
     };
 
@@ -72,76 +71,68 @@ export default function NewProductOrdersGraphics() {
 
     const styles = {
         divider: {
-            width: '100%',
-            height: '2px',
-            backgroundColor: '#999',
-            marginTop: 20,
+          width: '100%',
+          height: '2px',
+          backgroundColor: '#999',
+          marginTop: 20,
         },
         title: {
-            fontSize: 28,
-            fontWeight: 'bold',
-            color: '#30437A',
-            textAlign: 'center',
-            marginTop: '100px'
-        },
-        monthSelector: {
-            display: 'flex',
-            justifyContent: 'center',
-            marginTop: '20px',
-        },
-        monthItem: (selected) => ({
-            margin: '0 15px',
-            cursor: 'pointer',
-            color: selected ? '#000' : '#B0B0B0',
-            borderBottom: selected ? '2px solid #4AD8C2' : 'none',
-            fontWeight: selected ? 'bold' : 'normal'
-        })
-    };
+          fontSize: 28,
+          fontWeight: 'bold',
+          color: '#30437A',
+          textAlign: 'center',
+        }
+      };
 
     return (
-        <div>
-            <TopNavBar />
-            <p style={styles.title}>GANANCIAS VS COSTO DE NUEVA MERCANCÍA</p>
-
-            <div style={styles.monthSelector}>
-                {months.map((monthObj, index) => (
-                    <span
-                        key={index}
-                        onClick={() => handleMonthSelect(monthObj)}
-                        style={styles.monthItem(isSameMonth(monthObj.date, selectedMonth))}
-                    >
-                        {monthObj.label}
-                    </span>
-                ))}
-            </div>
-
-            <Divider style={styles.divider} />
-
-            <div className='d-flex justify-content-center align-items-center mt-5'>
-                <PieChart width={400} height={400}>
-                    <Pie
-                        data={chartData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={80}
-                        outerRadius={120}
-                        label
-                    >
-                        {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                    </Pie>
-                    <Legend
-                        align="center"
-                        verticalAlign="bottom"
-                        layout="vertical"
-                        iconType="plainline"
-                        iconSize={15}
-                    />
-                </PieChart>
-            </div>
+      <div>
+        <div className="row justify-content-center">
+          <TopNavBar/>
+      
+          <MonthSelector
+            selectedMonth={selectedMonth}
+            onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+            dateWindow={dateWindow}
+            setDateWindow={setDateWindow}
+          />
+                
+          <Divider style={styles.divider} />
         </div>
+            
+        <div className='row mt-3 d-flex justify-content-center align-items-center' id="chart-container">
+          <p style={styles.title}>GANANCIAS VS GASTOS DE MERCANCÍA</p>
+          {chartData.values.length > 0 ? (
+            <PieChart width={400} height={400}>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={80}
+                outerRadius={120}
+                label>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Legend
+                align="center"
+                verticalAlign="bottom"
+                layout="vertical"
+                iconType="plainline"
+                iconSize={15}
+              />
+            </PieChart>
+            ) : (
+                <p style={{ textAlign: "center", fontSize: "16px", color: "gray" }}>
+                No hay información disponible.</p>
+              )}
+          </div>
+
+          <div className='d-flex justify-content-end align-items-center mt-5 mx-5'>
+            <button className='primary_button' onClick={generatePDF}>GENERAR REPORTE</button>
+          </div>
+      </div>
     );
 }
