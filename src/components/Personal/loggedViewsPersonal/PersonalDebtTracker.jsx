@@ -445,7 +445,7 @@ export default function PersonalDebtTracker() {
               onClick={() => !isDisabled && openForm()}
               disabled={isDisabled}>
               <MdOutlineAddToPhotos style={styles.button} />
-            <text style={{alignSelf: 'center'}}>NUEVA DEUDA</text>
+              <text style={{alignSelf: 'center'}}>NUEVA DEUDA</text>
             </button>
           </div>
 

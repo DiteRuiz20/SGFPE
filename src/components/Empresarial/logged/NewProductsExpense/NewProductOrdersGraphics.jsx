@@ -101,8 +101,8 @@ export default function NewProductOrdersGraphics() {
             
         <div className='row mt-3 d-flex justify-content-center align-items-center' id="chart-container">
           <p style={styles.title}>GANANCIAS VS GASTOS DE MERCANCÍA</p>
-          {chartData.values.length > 0 ? (
-            <PieChart width={400} height={400}>
+          {chartData.length > 0 ? (
+            <PieChart width={400} height={450}>
               <Pie
                 data={chartData}
                 dataKey="value"

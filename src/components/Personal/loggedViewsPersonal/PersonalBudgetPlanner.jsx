@@ -161,7 +161,7 @@ export default function PersonalBudgetPlanner() {
 
         <div className='col-sm-8 d-flex flex-column justify-content-center align-items-center'>
           <h3 style={styles.title}>PRESUPUESTO TOTAL</h3>
-          {chartData.values.length > 0 ? (
+          {chartData.length > 0 ? (
             <PieChart width={400} height={450} margin={{bottom: 50 }}>
               <Pie
                 data={chartData} 

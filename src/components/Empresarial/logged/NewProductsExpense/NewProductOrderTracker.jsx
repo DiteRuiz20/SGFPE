@@ -8,10 +8,11 @@ import { getNewProductExpensesByUser } from '../../../../services/NewProductServ
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
 import { BsBoxSeam } from "react-icons/bs";
+import { BsTrash } from "react-icons/bs";
 
 export default function NewProductOrderTracker() {
     const [orders, setOrders] = useState([]);
-    const [openModal, setOpenModal] = useState(false);
+    const [open, setIsOpen] = useState(false);
     const [form, setForm] = useState({ orderDescription: '', income: 0, items: [] });
     const navigate = useNavigate();
     const [availableProducts, setAvailableProducts] = useState([]);
@@ -145,6 +146,14 @@ export default function NewProductOrderTracker() {
             fontWeight: 'bold',
             color: '#3DC9A7',
           },
+          deleteButton: {
+            fontSize: '20px',
+            color: '#f00',
+          },
+          buttonCell: {
+            width: '100px',
+            textAlign: 'center',
+          },
         };
 
     const columns = [
@@ -155,7 +164,7 @@ export default function NewProductOrderTracker() {
         { name: 'Ganancia Neta', selector: row => `$${row.netProfit}`, grow: 1 },
     ];
 
-    return (
+  return (
     <div>
       <div className="row justify-content-center">
         <TopNavBar/>
@@ -199,102 +208,114 @@ export default function NewProductOrderTracker() {
           />
         </div>
 
-            <Modal open={openModal} onClose={() => closeForm()}>
-                <Box sx={styles.modalStyle}>
-                    <form onSubmit={handleCreateOrder}>
-                        <div style={{ marginBottom: '20px' }}>
-                            <text style={styles.title}>Crear nueva orden</text>
-                        </div>
-                        <input className='input col-12'
-                            type="text"
-                            placeholder="Descripción del pedido"
-                            value={form.orderDescription}
-                            onChange={(e) => setForm({ ...form, orderDescription: e.target.value })}
-                            required
+        <Modal open={open} onClose={() => closeForm()}>
+          <Box sx={styles.modalStyle}>
+            <form>
+              <div style={{ marginBottom: '20px' }}>
+                <text style={styles.title}>Nueva orden</text>
+              </div>
+              
+              <input className='input col-12'
+                type="text"
+                placeholder="Descripción del pedido"
+                value={form.orderDescription}
+                onChange={(e) => setForm({ ...form, orderDescription: e.target.value })}
+                required
+              />
+              
+              <input className='input col-12'
+                type="number"
+                step="0.01"
+                placeholder="Ingreso"
+                value={form.income}
+                onChange={(e) => setForm({ ...form, income: e.target.value })}
+                required
+              />
+                    
+              <select className='input col-12'
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  const selected = availableProducts.find(p => p.id === selectedId);
+                  if (selected) {
+                    setForm(prev => ({
+                      ...prev, items: [...prev.items, {
+                        productId: selected.id,
+                        productDescription: selected.productDescription,
+                        quantity: 1,
+                        unitCost: selected.unitCost
+                      }]
+                    }));
+                    }
+                  }}
+              >
+              
+              <option value="">Selecciona un producto</option>
+
+              {availableProducts.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.productDescription} - {p.quantity} disponibles
+                </option>
+              ))}
+              </select>
+              
+              <table>
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th style={{ textAlign: 'center' }}>Eliminar</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {form.items.map((item, index) => (
+                    <tr key={index}>
+                      <td>{item.productDescription}</td>
+
+                      <td>
+                        <input className='input col-10'
+                          type="number"
+                          min="1"
+                          max={availableProducts.find(p => p.id === item.productId)?.quantity || 1}
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value);
+                            setForm(prev => {
+                              const updatedItems = [...prev.items];
+                              updatedItems[index].quantity = value;
+                              return { ...prev, items: updatedItems };
+                            });
+                          }}
                         />
-                        <input className='input col-12'
-                            type="number"
-                            step="0.01"
-                            placeholder="Ingreso"
-                            value={form.income}
-                            onChange={(e) => setForm({ ...form, income: e.target.value })}
-                            required
-                        />
-                        {/* Aquí puedes integrar un selector de productos y cantidades */}
-                        <button type="submit">Crear</button>
-                    </form>
-                    <select
-                        onChange={(e) => {
-                            const selectedId = e.target.value;
-                            const selected = availableProducts.find(p => p.id === selectedId);
-                            if (selected) {
-                                setForm(prev => ({
-                                    ...prev,
-                                    items: [...prev.items, {
-                                        productId: selected.id,
-                                        productDescription: selected.productDescription,
-                                        quantity: 1,
-                                        unitCost: selected.unitCost
-                                    }]
-                                }));
-                            }
-                        }}
-                    >
-                        <option value="">Selecciona un producto</option>
-                        {availableProducts.map(p => (
-                            <option key={p.id} value={p.id}>
-                                {p.productDescription} - {p.quantity} disponibles
-                            </option>
-                        ))}
-                    </select>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
-                                <th>Eliminar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {form.items.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.productDescription}</td>
-                                    <td>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max={availableProducts.find(p => p.id === item.productId)?.quantity || 1}
-                                            value={item.quantity}
-                                            onChange={(e) => {
-                                                const value = parseFloat(e.target.value);
-                                                setForm(prev => {
-                                                    const updatedItems = [...prev.items];
-                                                    updatedItems[index].quantity = value;
-                                                    return { ...prev, items: updatedItems };
-                                                });
-                                            }}
-                                        />
-                                    </td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setForm(prev => ({
-                                                    ...prev,
-                                                    items: prev.items.filter((_, i) => i !== index)
-                                                }));
-                                            }}
-                                        >
-                                            X
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </Box>
-            </Modal>
-        </div>
-        </div>
-    );
+                      </td>
+                    
+                      <td style={styles.buttonCell}>
+                        <button
+                          type="button"
+                          style={{backgroundColor: 'white'}}
+                          onClick={() => {
+                            setForm(prev => ({
+                              ...prev, items: prev.items.filter((_, i) => i !== index)
+                            }));
+                          }}>
+                          <BsTrash style={styles.deleteButton} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <Divider style={styles.divider} />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                <button className='primary_button' style={{ width: '40%'}} type="button" onClick={closeForm}>Cancelar</button>
+                <button className='secondary_button' style={{ width: '40%' }} type="submit">Registrar</button>
+              </div>
+            </form>
+          </Box>
+        </Modal>
+      </div>
+    </div>
+  );
 }

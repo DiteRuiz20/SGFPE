@@ -11,6 +11,7 @@ import { BiStore } from "react-icons/bi";
 export default function NewProductExpenseTracker() {
     const [products, setProducts] = useState([]);
     const [openUploadModal, setOpenUploadModal] = useState(false);
+    const [openManualModal, setOpenManualModal] = useState(false);
     const [file, setFile] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
@@ -47,6 +48,10 @@ export default function NewProductExpenseTracker() {
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
     };
 
     const handleUpload = async (e) => {
@@ -188,18 +193,21 @@ export default function NewProductExpenseTracker() {
               <text style={styles.cardSubtitle}>Productos cargados</text>
             </div>
 
-            <div style={styles.addButton} onClick={openForm}>
-                <MdOutlineAddToPhotos style={styles.button} />
-                <text style={{ alignSelf: 'center' }}>SUBIR ARCHIVO</text>
-            </div>
+            <button
+              style={styles.addButton}
+              onClick={() => !isDisabled && openForm()}
+              disabled={isDisabled}>
+              <MdOutlineAddToPhotos style={styles.button} />
+              <text style={{ alignSelf: 'center' }}>SUBIR ARCHIVO</text>
+            </button>
 
-            <div
+            <button
               style={styles.addButton}
               onClick={() => !isDisabled && openManualForm()}
               disabled={isDisabled}>
               <MdOutlineAddToPhotos style={styles.button} />
               <text style={{alignSelf: 'center', textAlign: 'center', marginTop: '-10px'}}>NUEVA MERCANCÍA</text>
-            </div>
+            </button>
           </div>
 
           <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', padding: '20px', boxSizing: 'border-box' }}>
@@ -212,21 +220,107 @@ export default function NewProductExpenseTracker() {
           </div>
         </div>
 
-            <Modal open={openUploadModal} onClose={closeForm}>
-                <Box sx={styles.modalStyle}>
-                    <form onSubmit={handleUpload}>
-                        <div style={{ marginBottom: '20px' }}>
-                            <text style={styles.title}>Subir archivo Excel</text>
-                        </div>
-                        <input className='input col-12' type="file" accept=".xlsx" onChange={handleFileChange} required style={styles.input} />
-                        <Divider style={styles.divider} />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                            <button type="button" className='primary_button' onClick={closeForm} style={{ width: '40%' }}>Cancelar</button>
-                            <button type="submit" className='secondary_button' style={{ width: '40%' }}>Subir</button>
-                        </div>
-                    </form>
-                </Box>
-            </Modal>
-        </div>
+        <Modal open={openUploadModal} onClose={closeForm}>
+          <Box sx={styles.modalStyle}>
+            <form onSubmit={handleUpload}>
+              <div style={{ marginBottom: '20px' }}>
+                <text style={styles.title}>Subir archivo Excel</text>
+              </div>
+
+              <input className='input col-12' type="file" accept=".xlsx" onChange={handleFileChange} required style={styles.input} />
+              
+              <Divider style={styles.divider} />
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                <button type="button" className='primary_button' onClick={closeForm} style={{ width: '40%' }}>Cancelar</button>
+                <button type="submit" className='secondary_button' style={{ width: '40%' }}>Subir</button>
+              </div>
+            </form>
+          </Box>
+        </Modal>
+
+        <Modal open={openManualModal} onClose={closeManualForm}>
+          <Box sx={styles.modalStyle}>
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '20px' }}>
+                <text style={styles.title}>Nueva mercancía</text>
+              </div>
+
+              <div>
+                <input className='input col-12'
+                  placeholder='Descripción'
+                  type="text"
+                  name="productDescription"
+                  required
+                />
+              </div>
+
+              <div>
+                <input className='input col-12'
+                  placeholder='Cantidad adquirida'
+                  type="number"
+                  name="quantity"
+                  required
+                />
+              </div>
+
+              <div>
+                <input className='input col-12'
+                  placeholder='Costo unitario'
+                  type="number"
+                  name="unitCost"
+                  required
+                />
+              </div>
+
+              <div>
+                <input className='input col-12'
+                  placeholder='Costo total'
+                  type="number"
+                  name="totalCost"
+                  required
+                />
+              </div>
+
+              <div>
+                <input className='input col-12'
+                  placeholder='Categoría'
+                  type="text"
+                  name="category"
+                />
+              </div>
+
+              <div> {/* INPUT PARA EL METODO DE PAGO */}
+                <select className='input col-12'
+                  name="paymentMethodId"
+                  required
+                >
+                  {/*<option value="">Choose a category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}*/}
+                </select>
+              </div>
+
+              <div>
+                <input className='input col-12'
+                  placeholder='Observaciones'
+                  type="text"
+                  name="productObservations"
+                />
+              </div>
+              
+              <Divider style={styles.divider} />
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                <button type="button" className='primary_button' onClick={closeManualForm} style={{ width: '40%' }}>Cancelar</button>
+                <button type="submit" className='secondary_button' style={{ width: '40%' }}>Subir</button>
+              </div>
+            </form>
+          </Box>
+        </Modal>
+      </div>
     );
 }
