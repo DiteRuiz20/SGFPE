@@ -20,8 +20,6 @@ public class Debt {
     private BigDecimal amount; // Amount of the debt
     @CreatedDate
     private Instant date; // Date when the debt was created
-    
-    private Instant dueDate; // Date by which the debt should be repaid
     private DebtStatus status; // Status of the debt: PENDING, PAID, OVERDUE, CANCELLED
 
     // Default constructor required by MongoDB
@@ -29,12 +27,11 @@ public class Debt {
     }
 
     // Constructor with all attributes for easy instantiation
-    public Debt(String userId, String creditor, BigDecimal amount, Instant date, Instant dueDate, DebtStatus status) {
+    public Debt(String userId, String creditor, BigDecimal amount, Instant date, DebtStatus status) {
         this.userId = userId;
         this.creditor = creditor;
         this.amount = amount;
         this.date = date;
-        this.dueDate = dueDate;
         this.status = status;
     }
 
@@ -68,14 +65,6 @@ public class Debt {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
-    }
-
-    public Instant getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(Instant dueDate) {
-        this.dueDate = dueDate;
     }
 
     public DebtStatus getStatus() {
