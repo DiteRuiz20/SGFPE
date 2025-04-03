@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../../../assets/logo.png';
 import { PieChart, Pie, Cell, Legend } from 'recharts';
 import { Divider, Tooltip } from '@mui/material';
-import { GiReceiveMoney } from 'react-icons/gi';
+import { GiReceiveMoney, GiTakeMyMoney } from 'react-icons/gi';
 import { GiPayMoney } from 'react-icons/gi';
 import { GiMoneyStack } from 'react-icons/gi';
 import { getPersonalExpensesByUserId } from '../../../services/PersonalExpensesService';
@@ -74,6 +74,7 @@ export default function PersonalBudgetPlanner() {
   const totalExpenses = (filteredExpenses || []).reduce((sum, expense) => sum + expense.amount, 0);
   const totalSavings = (filteredSavings || []).reduce((sum, saving) => sum + saving.amount, 0);
   const totalDebts = (filteredDebts || []).reduce((sum, debt) => sum + debt.amount, 0);
+  const totalBalance = totalSavings - totalExpenses;
 
   const chartData = [
     { name: 'AHORROS', value: totalSavings, color: '#3DC9A7' },
@@ -136,30 +137,41 @@ export default function PersonalBudgetPlanner() {
       </div>
 
       <div className='row mt-3'>
-        <div className='col-sm-4 d-flex flex-column justify-content-center align-items-center'>
-          <Tooltip title="Total de ahorros" arrow placement="left">
-            <div style={styles.card('#3DC9A7')}>
-              <GiReceiveMoney style={{ fontSize: '220%', marginRight: '15px'}} />
-              ${totalSavings.toFixed(2)}
-            </div>
-          </Tooltip>
+        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
+          <div className="d-flex flex-row">
+            <Tooltip title="Total de ahorros" arrow placement="top">
+              <div style={styles.card('#3DC9A7')}>
+                <GiReceiveMoney style={{ fontSize: '220%', marginRight: '15px'}} />
+                ${totalSavings.toFixed(2)}
+              </div>
+            </Tooltip>
 
-          <Tooltip title="Total de gastos" arrow placement="left">
-            <div style={styles.card('#30437A')}>
-              <GiPayMoney style={{ fontSize: '220%', marginRight: '15px'}} />
-              -${totalExpenses.toFixed(2)}
-            </div>
-          </Tooltip>
+            <Tooltip title="Total de gastos" arrow placement="top">
+              <div style={styles.card('#30437A')}>
+                <GiPayMoney style={{ fontSize: '220%', marginRight: '15px'}} />
+                ${totalExpenses.toFixed(2)}
+              </div>
+            </Tooltip>
+          </div>
 
-          <Tooltip title="Total de deudas" arrow placement="left">
-            <div style={styles.card('#B1B1B1')}>
-              <GiMoneyStack style={{ fontSize: '220%', marginRight: '15px'}} />
-              -${totalDebts.toFixed(2)}
-            </div>
-          </Tooltip>
+          <div className="d-flex flex-row">
+            <Tooltip title="Fondos restantes" arrow placement="bottom">
+              <div style={styles.card('#3DC9A7')}>
+                <GiMoneyStack style={{ fontSize: '220%', marginRight: '15px'}} />
+                {totalBalance.toFixed(2)}
+              </div>
+            </Tooltip>
+
+            <Tooltip title="Total de deudas" arrow placement="bottom">
+              <div style={styles.card('#B1B1B1')}>
+                <GiTakeMyMoney style={{ fontSize: '220%', marginRight: '15px'}} />
+                ${totalDebts.toFixed(2)}
+              </div>
+            </Tooltip>
+          </div>
         </div>
 
-        <div className='col-sm-8 d-flex flex-column justify-content-center align-items-center'>
+        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
           <h3 style={styles.title}>PRESUPUESTO TOTAL</h3>
           {chartData.length > 0 ? (
             <PieChart width={400} height={450} margin={{bottom: 50 }}>

@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/logo.png';
 import { Divider } from '@mui/material';
-import { FaLock, FaLockOpen } from 'react-icons/fa';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const schema = yup.object().shape({
     email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
@@ -122,7 +122,7 @@ export default function PersonalLogin() {
                                     color: '#555'
                                 }}
                             >
-                                {showPassword ? <FaLockOpen size={20} /> : <FaLock size={20} />}
+                                {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
                             </span>
                         {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
                     </div>

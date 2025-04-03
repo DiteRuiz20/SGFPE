@@ -1,10 +1,18 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../../../assets/logo.png';
+import { BsDoorOpen } from 'react-icons/bs';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function TopNavBar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { userId, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const links = [
     { path: '/personal-budget-planner', label: 'PRESUPUESTOS' },
@@ -28,7 +36,7 @@ export default function TopNavBar() {
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white px-5">
-      <a className="navbar-brand" href="#">
+      <a className="navbar-brand">
         <img src={logo} alt="Logo" style={{ width: '90px' }} />
       </a>
       <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -46,6 +54,9 @@ export default function TopNavBar() {
           </span>
         ))}
       </div>
+      <button className="btn btn-outline-danger" type="button" onClick={handleLogout}>
+        <BsDoorOpen style={{ fontSize: '150%' }} />
+      </button>
     </nav>
   );
 }
