@@ -11,16 +11,16 @@ api.interceptors.request.use(
     async config => {
         // Rutas que no requieren token
         const noAuthRoutes = ['/auth/login', '/auth/validate-account', '/register', '/forgot-password'];
-        
+
         if (!noAuthRoutes.includes(config.url)) {
             try {
                 const token = await AsyncStorage.getItem('token');
                 const userId = await AsyncStorage.getItem('userId');
-                
+
                 console.log('Token recuperado:', token ? 'Presente' : 'No encontrado');
                 console.log('UserId recuperado:', userId ? 'Presente' : 'No encontrado');
                 console.log('URL de la petición:', config.url);
-                
+
                 if (!token) {
                     console.error('No se encontró token para la ruta:', config.url);
                     throw new Error('No hay token de autenticación');
@@ -34,7 +34,7 @@ api.interceptors.request.use(
                     'Content-Type': 'application/json',
                     'User-ID': userId // Agregar el userId en el header
                 };
-                
+
                 console.log('Headers completos de la petición:', JSON.stringify(config.headers, null, 2));
                 console.log('Datos de la petición:', JSON.stringify(config.data, null, 2));
             } catch (error) {
@@ -64,7 +64,7 @@ api.interceptors.response.use(
                 headers: error.config?.headers
             }
         });
-        
+
         if (error.response?.status === 403) {
             console.error('Error de autorización. Token posiblemente expirado o inválido.');
             // Intentar refrescar el token si es necesario
@@ -171,6 +171,59 @@ export const createSaving = async (savingData) => {
         return response.data;
     } catch (error) {
         console.error('Error creating saving:', error);
+        throw error;
+    }
+};
+
+export const createNewProductExpense = async (productData) => {
+    try {
+        const response = await api.post('/api/new-product-expenses', productData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating new product expense:', error);
+        throw error;
+    }
+};
+
+export const getNewProductExpensesByUser = async (userId) => {
+    try {
+        const response = await api.get(`/api/new-product-expenses/user/${userId}`);
+        return response;
+    } catch (error) {
+        console.error('Error fetching new product expenses:', error);
+        throw error;
+    }
+};
+
+// Crear nueva materia prima manualmente
+export const createRawMaterial = async (data) => {
+    try {
+        const response = await api.post('/api/raw-materials', data);
+        return response.data;
+    } catch (error) {
+        console.error('Error al crear materia prima:', error);
+        throw error;
+    }
+};
+
+// Obtener materias primas por usuario
+export const getRawMaterialsByUser = async (userId) => {
+    try {
+        const response = await api.get(`/api/raw-materials/user/${userId}`);
+        return response;
+    } catch (error) {
+        console.error('Error al obtener materias primas del usuario:', error);
+        throw error;
+    }
+};
+
+// Eliminar materia prima
+export const deleteRawMaterial = async (id) => {
+    try {
+        const response = await api.delete(`/api/raw-materials/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error al eliminar materia prima:', error);
         throw error;
     }
 };

@@ -22,7 +22,7 @@ export default function BusinessLogin({ navigation, route }) {
     switch(accountType) {
       case 'business-raw-material':
         return 'Raw Material Business Login';
-      case 'business-new-products-expenses':
+      case 'business-new-product-expense':
         return 'New Products Expenses Business Login';
       default:
         return 'Business Login';

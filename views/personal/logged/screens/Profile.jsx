@@ -11,8 +11,8 @@ export default function Profile() {
       "Log Out",
       "Are you sure you want to log out?",
       [
-        { 
-          text: "Yes", 
+        {
+          text: "Yes",
           onPress: async () => {
             try {
               await logout();
@@ -20,8 +20,8 @@ export default function Profile() {
               Alert.alert('Error', 'Failed to log out. Please try again.');
             }
           }
-        }, 
-        { 
+        },
+        {
           text: "No"
         }
       ]

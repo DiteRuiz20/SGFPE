@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
                     errorMessage = 'This email is registered as a business account. Please use the business login.';
                 } else if (accountType === 'business-raw-material') {
                     errorMessage = 'This email is registered as a raw material business. Please use the raw material business login.';
-                } else if (accountType === 'business-new-products-expenses') {
+                } else if (accountType === 'business-new-product-expense') {
                     errorMessage = 'This email is registered as a new products expenses business. Please use the new products expenses business login.';
                 }
                 throw new Error(errorMessage);
@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }) => {
                 logout,
                 isPersonalUser: authState.accountType === 'personal',
                 isRawMaterialBusiness: authState.accountType === 'business-raw-material',
-                isNewProductsBusiness: authState.accountType === 'business-new-products-expenses'
+                isNewProductsBusiness: authState.accountType === 'business-new-product-expense'
             }}
         >
             {children}

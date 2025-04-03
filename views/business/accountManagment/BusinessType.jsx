@@ -12,7 +12,7 @@ export default function BusinessType({ navigation }) {
         <Text style={styles.buttonText}>RAW MATERIAL</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('Business Login', { accountType: 'business-new-products-expenses' })}>
+      <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('Business Login', { accountType: 'business-new-product-expense' })}>
         <Text style={styles.buttonText}>NEW PRODUCTS EXPENSES</Text>
       </TouchableOpacity>
     </View>
