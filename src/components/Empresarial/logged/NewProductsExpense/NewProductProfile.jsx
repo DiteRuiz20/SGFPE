@@ -108,7 +108,7 @@ export default function NewProductProfile() {
 
   const handleLogout = () => {
       logout();
-      navigate('/login-personal');
+      navigate('/');
     };
   
     return (

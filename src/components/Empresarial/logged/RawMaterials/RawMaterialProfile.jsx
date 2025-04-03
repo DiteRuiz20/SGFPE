@@ -93,7 +93,7 @@ export default function RawMaterialProfile() {
 
   const handleLogout = () => {
       logout();
-      navigate('/login-personal');
+      navigate('/');
     };
   
     return (

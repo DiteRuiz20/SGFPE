@@ -9,7 +9,8 @@ export const AuthProvider = ({ children }) => {
         token: null,
         userId: null,
         accountType: null,
-        isVerified: false
+        isVerified: false,
+        isLoading: true
     });
 
     useEffect(() => {
@@ -25,8 +26,11 @@ export const AuthProvider = ({ children }) => {
                         token,
                         userId,
                         accountType,
-                        isVerified: true // Asumimos verificación si ya inició sesión
+                        isVerified: true,
+                        isLoading: false
                     });
+                } else {
+                    setAuthState(prev => ({ ...prev, isLoading: false }));
                 }
             } catch (error) {
                 console.error('Error initializing auth:', error);
@@ -81,7 +85,8 @@ export const AuthProvider = ({ children }) => {
                 token,
                 userId,
                 accountType,
-                isVerified: true
+                isVerified: true,
+                isLoading: false
             });
 
             return true;
@@ -130,7 +135,8 @@ export const AuthProvider = ({ children }) => {
                 token: null,
                 userId: null,
                 accountType: null,
-                isVerified: false
+                isVerified: false,
+                isLoading: false
             });
         } catch (error) {
             console.error('Error en logout:', error);

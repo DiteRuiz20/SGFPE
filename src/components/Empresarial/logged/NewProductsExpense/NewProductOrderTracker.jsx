@@ -11,173 +11,188 @@ import { BsBoxSeam } from "react-icons/bs";
 import { BsTrash } from "react-icons/bs";
 
 export default function NewProductOrderTracker() {
-    const [orders, setOrders] = useState([]);
-    const [open, setIsOpen] = useState(false);
-    const [form, setForm] = useState({ orderDescription: '', income: 0, items: [] });
-    const navigate = useNavigate();
-    const [availableProducts, setAvailableProducts] = useState([]);
-    const [selectedMonth, setSelectedMonth] = useState(new Date());
-    const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
+  const [orders, setOrders] = useState([]);
+  const [open, setIsOpen] = useState(false);
+  const [form, setForm] = useState({ orderDescription: '', income: 0, items: [] });
+  const navigate = useNavigate();
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
 
-    const openForm = () => setIsOpen(true);
-    const closeForm = () => setIsOpen(false);
+  const isSameMonth = (date1, date2) => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+  };
 
-    const isCurrentMonth = () => {
-        const currentMonth = new Date();
-        return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
-               selectedMonth.getMonth() === currentMonth.getMonth();
+  const openForm = () => setIsOpen(true);
+  const closeForm = () => setIsOpen(false);
+
+  const isCurrentMonth = () => {
+    const currentMonth = new Date();
+    return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
+      selectedMonth.getMonth() === currentMonth.getMonth();
+  };
+
+  const isDisabled = !isCurrentMonth();
+
+  const fetchAvailableProducts = async () => {
+    try {
+      const response = await getNewProductExpensesByUser(userId);
+      setAvailableProducts(response.data || []);
+    } catch (error) {
+      console.error('Error al obtener productos disponibles:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+    fetchAvailableProducts();
+  }, []);
+
+
+  const userId = localStorage.getItem('userId');
+
+  const fetchOrders = async () => {
+    if (!userId) return navigate('/login-personal');
+    try {
+      const response = await getNewProductOrdersByUser(userId);
+      setOrders(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      console.error('Error al obtener órdenes:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleCreateOrder = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...form,
+        userId,
+        income: parseFloat(form.income),
       };
-  
-    const isDisabled = !isCurrentMonth();
+      await createNewProductOrder(payload);
+      closeForm();
+      fetchOrders();
+    } catch (err) {
+      console.error('Error al crear orden:', err);
+    }
+  };
 
-    const fetchAvailableProducts = async () => {
-        try {
-            const response = await getNewProductExpensesByUser(userId);
-            setAvailableProducts(response.data || []);
-        } catch (error) {
-            console.error('Error al obtener productos disponibles:', error);
-        }
-    };
+  const styles = {
+    divider: {
+      width: '100%',
+      height: '2px',
+      backgroundColor: '#999',
+      marginTop: 20,
+    },
+    card: {
+      backgroundColor: '#3DC9A7',
+      color: 'white',
+      width: '200px',
+      height: '140px',
+      margin: '20px 30px',
+      borderRadius: '8px',
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: '20px',
+      boxShadow: '0px 8px 5px rgba(61, 193, 173, 0.2)'
+    },
+    cardText: {
+      fontSize: '20px',
+      alignSelf: 'center',
+      marginTop: '-10px',
+      fontWeight: 'bold',
+    },
+    cardSubtitle: {
+      fontSize: '16px',
+      alignSelf: 'center',
+      marginTop: '10px',
+      color: 'white',
+    },
+    button: {
+      alignSelf: 'flex-end',
+      margin: '10px',
+      fontSize: '35px',
+      color: '#3DC9A7',
+    },
+    addButton: {
+      border: '1px solid #3DC9A7',
+      backgroundColor: 'white',
+      width: '200px',
+      height: '140px',
+      margin: '20px 30px',
+      padding: '10px',
+      borderRadius: '8px',
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: '20px',
+      color: 'black',
+      boxShadow: '0px 8px 5px rgba(61, 193, 173, 0.2)',
+      opacity: isDisabled ? 0.6 : 1,
+      cursor: isDisabled ? 'not-allowed' : 'pointer',
+    },
+    modalStyle: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 400,
+      bgcolor: 'background.paper',
+      boxShadow: 24,
+      p: 4,
+      borderRadius: '8px',
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: '#3DC9A7',
+    },
+    deleteButton: {
+      fontSize: '20px',
+      color: '#f00',
+    },
+    buttonCell: {
+      width: '100px',
+      textAlign: 'center',
+    },
+  };
 
-    useEffect(() => {
-        fetchOrders();
-        fetchAvailableProducts();
-    }, []);
+  const columns = [
+    { name: 'Descripción', selector: row => row.orderDescription, grow: 1 },
+    { name: 'Fecha', selector: row => new Date(row.orderDate).toLocaleDateString(), grow: 1 },
+    { name: 'Ingreso', selector: row => `$${row.income}`, grow: 1 },
+    { name: 'Costo Total', selector: row => `$${row.totalOrderCost}`, grow: 1 },
+    { name: 'Ganancia Neta', selector: row => `$${row.netProfit}`, grow: 1 },
+  ];
 
+  const filteredOrders = orders.filter(order =>
+    isSameMonth(order.orderDate, selectedMonth)
+  );
 
-    const userId = localStorage.getItem('userId');
-
-    const fetchOrders = async () => {
-        if (!userId) return navigate('/login-personal');
-        try {
-            const response = await getNewProductOrdersByUser(userId);
-            setOrders(Array.isArray(response.data) ? response.data : []);
-        } catch (err) {
-            console.error('Error al obtener órdenes:', err);
-        }
-    };
-
-    useEffect(() => {
-        fetchOrders();
-    }, []);
-
-    const handleCreateOrder = async (e) => {
-        e.preventDefault();
-        try {
-            const payload = {
-                ...form,
-                userId,
-                income: parseFloat(form.income),
-            };
-            await createNewProductOrder(payload);
-            setOpenModal(false);
-            fetchOrders();
-        } catch (err) {
-            console.error('Error al crear orden:', err);
-        }
-    };
-
-    const styles = {
-        divider: {
-          width: '100%',
-          height: '2px',
-          backgroundColor: '#999',
-          marginTop: 20,
-        },
-          card: {
-            backgroundColor: '#3DC9A7',
-            color: 'white',
-            width: '200px',
-            height: '140px',
-            margin: '20px 30px',
-            borderRadius: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            fontSize: '20px',
-            boxShadow:'0px 8px 5px rgba(61, 193, 173, 0.2)'
-          },
-          cardText: {
-            fontSize: '20px',
-            alignSelf: 'center',
-            marginTop: '-10px',
-            fontWeight: 'bold',
-          },
-          cardSubtitle: {
-            fontSize: '16px',
-            alignSelf: 'center',
-            marginTop: '10px',
-            color: 'white',
-          },
-          button: {
-            alignSelf: 'flex-end',
-            margin: '10px',
-            fontSize: '35px',
-            color: '#3DC9A7',
-          },
-          addButton: {
-            border: '1px solid #3DC9A7',
-            backgroundColor: 'white', 
-            width: '200px',
-            height: '140px',
-            margin: '20px 30px',
-            padding: '10px',
-            borderRadius: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            fontSize: '20px',
-            color: 'black',
-            boxShadow:'0px 8px 5px rgba(61, 193, 173, 0.2)',
-            opacity: isDisabled ? 0.6 : 1,
-            cursor: isDisabled ? 'not-allowed' : 'pointer',
-          },
-          modalStyle: {
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            borderRadius: '8px',
-          },
-          title: {
-            fontSize: 28,
-            fontWeight: 'bold',
-            color: '#3DC9A7',
-          },
-          deleteButton: {
-            fontSize: '20px',
-            color: '#f00',
-          },
-          buttonCell: {
-            width: '100px',
-            textAlign: 'center',
-          },
-        };
-
-    const columns = [
-        { name: 'Descripción', selector: row => row.orderDescription, grow: 1 },
-        { name: 'Fecha', selector: row => new Date(row.orderDate).toLocaleDateString(), grow: 1 },
-        { name: 'Ingreso', selector: row => `$${row.income}`, grow: 1 },
-        { name: 'Costo Total', selector: row => `$${row.totalOrderCost}`, grow: 1 },
-        { name: 'Ganancia Neta', selector: row => `$${row.netProfit}`, grow: 1 },
-    ];
+  const totalNetProfit = filteredOrders.reduce(
+    (sum, order) => sum + (order.netProfit || 0),
+    0
+  );
 
   return (
     <div>
       <div className="row justify-content-center">
-        <TopNavBar/>
+        <TopNavBar />
 
         <MonthSelector
           selectedMonth={selectedMonth}
           onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
           dateWindow={dateWindow}
-          setDateWindow={setDateWindow}/>
+          setDateWindow={setDateWindow} />
 
         <Divider style={styles.divider} />
       </div>
-    
+
       <div className='row mt-3'>
         <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
           <div style={styles.card}>
@@ -186,7 +201,7 @@ export default function NewProductOrderTracker() {
               <BsBoxSeam style={{ fontSize: '190%' }} />
             </div>
 
-            <text style={styles.cardText}>$100</text>
+            <text style={styles.cardText}>${totalNetProfit.toFixed(2)}</text>
             <text style={styles.cardSubtitle}>Órdenes hechas</text>
           </div>
 
@@ -195,26 +210,26 @@ export default function NewProductOrderTracker() {
             onClick={() => !isDisabled && openForm()}
             disabled={isDisabled}>
             <MdOutlineAddToPhotos style={styles.button} />
-            <text style={{alignSelf: 'center'}}>NUEVA ORDEN</text>
+            <text style={{ alignSelf: 'center' }}>NUEVA ORDEN</text>
           </button>
         </div>
 
         <div className='col-sm-8 flex-column justify-content-center align-items-center'>
           <DataTable
             columns={columns}
-            data={orders}
+            data={filteredOrders}
             pagination
-            noDataComponent="No hay órdenes registradas."
+            noDataComponent="No hay órdenes registradas en este mes."
           />
         </div>
 
         <Modal open={open} onClose={() => closeForm()}>
           <Box sx={styles.modalStyle}>
-            <form>
+            <form onSubmit={handleCreateOrder}>
               <div style={{ marginBottom: '20px' }}>
                 <text style={styles.title}>Nueva orden</text>
               </div>
-              
+
               <input className='input col-12'
                 type="text"
                 placeholder="Descripción del pedido"
@@ -222,7 +237,7 @@ export default function NewProductOrderTracker() {
                 onChange={(e) => setForm({ ...form, orderDescription: e.target.value })}
                 required
               />
-              
+
               <input className='input col-12'
                 type="number"
                 step="0.01"
@@ -231,7 +246,7 @@ export default function NewProductOrderTracker() {
                 onChange={(e) => setForm({ ...form, income: e.target.value })}
                 required
               />
-                    
+
               <select className='input col-12'
                 onChange={(e) => {
                   const selectedId = e.target.value;
@@ -245,19 +260,19 @@ export default function NewProductOrderTracker() {
                         unitCost: selected.unitCost
                       }]
                     }));
-                    }
-                  }}
+                  }
+                }}
               >
-              
-              <option value="">Selecciona un producto</option>
 
-              {availableProducts.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.productDescription} - {p.quantity} disponibles
-                </option>
-              ))}
+                <option value="">Selecciona un producto</option>
+
+                {availableProducts.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.productDescription} - {p.quantity} disponibles
+                  </option>
+                ))}
               </select>
-              
+
               <table>
                 <thead>
                   <tr>
@@ -288,11 +303,11 @@ export default function NewProductOrderTracker() {
                           }}
                         />
                       </td>
-                    
+
                       <td style={styles.buttonCell}>
                         <button
                           type="button"
-                          style={{backgroundColor: 'white'}}
+                          style={{ backgroundColor: 'white' }}
                           onClick={() => {
                             setForm(prev => ({
                               ...prev, items: prev.items.filter((_, i) => i !== index)
@@ -309,7 +324,7 @@ export default function NewProductOrderTracker() {
               <Divider style={styles.divider} />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                <button className='primary_button' style={{ width: '40%'}} type="button" onClick={closeForm}>Cancelar</button>
+                <button className='primary_button' style={{ width: '40%' }} type="button" onClick={closeForm}>Cancelar</button>
                 <button className='secondary_button' style={{ width: '40%' }} type="submit">Registrar</button>
               </div>
             </form>

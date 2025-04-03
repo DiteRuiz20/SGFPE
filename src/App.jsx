@@ -79,28 +79,93 @@ function App() {
                     <Route path="/business-raw-materials-login" element={<BusinessRawMaterialsLogin />} />
                     <Route path="/business-new-products-expense-login" element={<BusinessNewProductsExpenseLogin />} />
                     <Route path="/forgotten-password" element={<ForgottenPassword />} />
-                    {/* <Route path="/create-business-account" element={<CreateBusinessAccount />} /> */}
                     <Route path="/create-business-raw-material-account" element={<CreateBusinessRawMaterialAccount />} />
                     <Route path="/create-business-new-product-expense-account" element={<CreateBusinessNewProductExpenseAccount />} />
                     <Route path="/choose-business" element={<ChooseBusiness />} />
-                    <Route path="/raw-materials-tracker" element={<RawMaterialsTracker />} />
                     <Route path="/create-personal-account" element={<CreatePersonalAccount />} />
                     <Route path="/verify-account" element={<VerifyAccount />} />
-                    <Route path="/business-raw-materials-tracker" element={<RawMaterialsTracker />} />
-                    <Route path="/material-usage-tracker" element={<MaterialUsageTracker />} />
-                    <Route path="/raw-material-order" element={<RawMaterialOrder />} />
-                    <Route path="/raw-material-graphics" element={<RawMaterialGraphic />} />
-                    <Route path="/new-product-order-tracker" element={<NewProductOrderTracker />} />
-                    <Route path="/new-product-expense-tracker" element={<NewProductExpenseTracker />} />
-                    <Route path="/new-product-expense-graphic" element={<NewProductOrdersGraphics />} />
-                    <Route path="/raw-material-profile" element={<RawMaterialProfile />} />
-                    <Route path="/new-product-profile" element={<NewProductProfile />} />
 
-                    {/* Rutas protegidas para usuarios personales */}
+                    {/* Rutas protegidas - BUSINESS NEW PRODUCT EXPENSE */}
+                    <Route
+                        path="/new-product-expense-tracker"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-new-product-expense']}>
+                                <NewProductExpenseTracker />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/new-product-order-tracker"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-new-product-expense']}>
+                                <NewProductOrderTracker />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/new-product-expense-graphic"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-new-product-expense']}>
+                                <NewProductOrdersGraphics />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/new-product-profile"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-new-product-expense']}>
+                                <NewProductProfile />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* Rutas protegidas - BUSINESS RAW MATERIAL */}
+                    <Route
+                        path="/raw-materials-tracker"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-raw-material']}>
+                                <RawMaterialsTracker />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/material-usage-tracker"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-raw-material']}>
+                                <MaterialUsageTracker />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/raw-material-order"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-raw-material']}>
+                                <RawMaterialOrder />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/raw-material-graphics"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-raw-material']}>
+                                <RawMaterialGraphic />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/raw-material-profile"
+                        element={
+                            <ProtectedRoute allowedAccountTypes={['business-raw-material']}>
+                                <RawMaterialProfile />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* Rutas protegidas - PERSONAL */}
                     <Route
                         path="/personal-budget-planner"
                         element={
-                            <ProtectedRoute requiredAccountType="personal">
+                            <ProtectedRoute allowedAccountTypes={['personal']}>
                                 <PersonalBudgetPlanner />
                             </ProtectedRoute>
                         }
@@ -108,7 +173,7 @@ function App() {
                     <Route
                         path="/personal-expenses"
                         element={
-                            <ProtectedRoute requiredAccountType="personal">
+                            <ProtectedRoute allowedAccountTypes={['personal']}>
                                 <PersonalExpensesTracker />
                             </ProtectedRoute>
                         }
@@ -116,7 +181,7 @@ function App() {
                     <Route
                         path="/personal-debt-tracker"
                         element={
-                            <ProtectedRoute requiredAccountType="personal">
+                            <ProtectedRoute allowedAccountTypes={['personal']}>
                                 <PersonalDebtTracker />
                             </ProtectedRoute>
                         }
@@ -124,7 +189,7 @@ function App() {
                     <Route
                         path="/personal-saving-tracker"
                         element={
-                            <ProtectedRoute requiredAccountType="personal">
+                            <ProtectedRoute allowedAccountTypes={['personal']}>
                                 <PersonalSavingTracker />
                             </ProtectedRoute>
                         }
@@ -132,7 +197,7 @@ function App() {
                     <Route
                         path="/personal-graphics"
                         element={
-                            <ProtectedRoute requiredAccountType="personal">
+                            <ProtectedRoute allowedAccountTypes={['personal']}>
                                 <PersonalGraphics />
                             </ProtectedRoute>
                         }
@@ -140,7 +205,7 @@ function App() {
                     <Route
                         path="/personal-profile"
                         element={
-                            <ProtectedRoute requiredAccountType="personal">
+                            <ProtectedRoute allowedAccountTypes={['personal']}>
                                 <PersonalProfile />
                             </ProtectedRoute>
                         }

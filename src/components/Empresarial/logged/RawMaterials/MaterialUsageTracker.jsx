@@ -263,8 +263,8 @@ export default function MaterialUsageTracker() {
                 <TbCheckupList style={{ fontSize: '180%' }} />
               </div>
 
-              <text style={styles.cardText}>{totalCost}</text>
-              <text style={styles.cardSubtitle}>Historial de uso</text>
+              <text style={styles.cardText}>${totalCost}</text>
+              <text style={styles.cardSubtitle}>Gasto en materiales</text>
             </div>
 
             <button

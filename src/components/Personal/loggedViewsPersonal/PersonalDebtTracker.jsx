@@ -18,7 +18,6 @@ export default function PersonalDebtTracker() {
   const [newDebt, setNewDebt] = useState({
     creditor: '',
     amount: '',
-    dueDate: '',
     status: 'PENDING'
   });
   const [open, setIsOpen] = React.useState(false);
@@ -132,7 +131,6 @@ export default function PersonalDebtTracker() {
       setNewDebt({
         creditor: '',
         amount: '',
-        dueDate: '',
         status: 'PENDING'
       });
       closeForm();
@@ -202,11 +200,6 @@ export default function PersonalDebtTracker() {
     },
     {
       selector: row => new Date(row.date).toLocaleDateString(),
-      grow: 0.3,
-      minWidth: '120px',
-    },
-    {
-      selector: row => new Date(row.dueDate).toLocaleDateString(),
       grow: 0.3,
       minWidth: '120px',
     },
@@ -482,15 +475,6 @@ export default function PersonalDebtTracker() {
                 type="number"
                 name="amount"
                 value={newDebt.amount}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div>
-                <input className='input col-12'
-                type="date"
-                name="dueDate"
-                value={newDebt.dueDate}
                 onChange={handleInputChange}
                 required
               />

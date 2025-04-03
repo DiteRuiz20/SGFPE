@@ -116,8 +116,9 @@ export default function PersonalExpensesTracker() {
   useEffect(() => {
     const fetchPersonalExpenses = async () => {
       const userId = localStorage.getItem('userId');
-
+      console.log("ddatos del usuario", userId)
       if (!userId) {
+        console.log('usuario null')
         navigate('/login-personal'); // Redirige si no hay userId
         return;
       }

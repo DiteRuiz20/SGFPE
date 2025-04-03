@@ -13,7 +13,6 @@ export const getDebtsByUserId = async (userId) => {
 export const createDebt = async (debt) => {
     const formattedDebt = {
         ...debt,
-        dueDate: new Date(debt.dueDate).toISOString(),
         userId: localStorage.getItem('userId')
     };
     
@@ -23,8 +22,7 @@ export const createDebt = async (debt) => {
 
 export const updateDebt = async (id, debt) => {
     const formattedDebt = {
-        ...debt,
-        dueDate: new Date(debt.dueDate).toISOString()
+        ...debt
     };
     
     const response = await api.put(`/api/personal/debts/${id}`, formattedDebt);

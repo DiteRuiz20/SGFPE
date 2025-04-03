@@ -11,313 +11,315 @@ import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
 
 export default function RawMaterialOrderTracker() {
-    const [orders, setOrders] = useState([]);
-    const [filteredOrders, setFilteredOrders] = useState([]);
-    const [rawMaterials, setRawMaterials] = useState([]);
-    const [selectedMonth, setSelectedMonth] = useState(new Date());
-    const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
-    const [materialUsageIds, setMaterialUsageIds] = useState([]);
-    const [income, setIncome] = useState('');
-    const [orderDescription, setOrderDescription] = useState('');
-    const [open, setIsOpen] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
-    const [totalNetProfit, setTotalNetProfit] = useState(0);
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [rawMaterials, setRawMaterials] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
+  const [materialUsageIds, setMaterialUsageIds] = useState([]);
+  const [income, setIncome] = useState('');
+  const [orderDescription, setOrderDescription] = useState('');
+  const [open, setIsOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [totalNetProfit, setTotalNetProfit] = useState(0);
 
-    const navigate = useNavigate();
-    const location = useLocation();
-    const openForm = () => setIsOpen(true);
-    const closeForm = () => setIsOpen(false);
+  const navigate = useNavigate();
 
-    const isCurrentMonth = () => {
-        const currentMonth = new Date();
-        return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
-               selectedMonth.getMonth() === currentMonth.getMonth();
-      };
-  
-    const isDisabled = !isCurrentMonth();
+  const fetchOrders = async () => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return navigate('/login-personal');
 
-    const isSameMonth = (date1, date2) => {
-        return (
-            new Date(date1).getFullYear() === new Date(date2).getFullYear() &&
-            new Date(date1).getMonth() === new Date(date2).getMonth()
-        );
-    };
+    try {
+      const response = await getOrdersByUserId(userId);
+      if (Array.isArray(response.data)) {
+        setOrders(response.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener pedidos:', error);
+    }
+  };
 
-    const generateMonths = () => {
-        const { center, range } = dateWindow;
-        const centerDate = new Date(center);
-        const months = [];
-        for (let i = -range; i <= range; i++) {
-            const date = new Date(centerDate);
-            date.setMonth(centerDate.getMonth() + i);
-            months.push({
-                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-                date,
-                isStart: i === -range,
-                isEnd: i === range,
-            });
-        }
-        return months;
-    };
+  const location = useLocation();
+  const openForm = () => setIsOpen(true);
+  const closeForm = () => setIsOpen(false);
 
-    const months = generateMonths();
+  const isCurrentMonth = () => {
+    const currentMonth = new Date();
+    return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
+      selectedMonth.getMonth() === currentMonth.getMonth();
+  };
 
-    const handleMonthSelect = (monthObj) => {
-        setSelectedMonth(monthObj.date);
-        if (monthObj.isStart) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() - 3);
-            setDateWindow((prev) => ({ ...prev, center: newCenter }));
-        } else if (monthObj.isEnd) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() + 3);
-            setDateWindow((prev) => ({ ...prev, center: newCenter }));
-        }
-    };
+  const isDisabled = !isCurrentMonth();
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            const userId = localStorage.getItem('userId');
-            if (!userId) return navigate('/login-personal');
-
-            try {
-                const response = await getOrdersByUserId(userId);
-                if (Array.isArray(response.data)) {
-                    setOrders(response.data);
-                }
-            } catch (error) {
-                console.error('Error al obtener pedidos:', error);
-            }
-        };
-
-        fetchOrders();
-    }, [navigate]);
-
-    useEffect(() => {
-        const filtered = orders.filter((order) => isSameMonth(order.createdAt, selectedMonth));
-        setFilteredOrders(filtered);
-        const total = filtered.reduce((sum, order) => sum + (order.netProfit || 0), 0);
-        setTotalNetProfit(total);
-    }, [orders, selectedMonth]);
-
-    useEffect(() => {
-        const fetchMaterials = async () => {
-            const userId = localStorage.getItem('userId');
-            if (!userId) return navigate('/login-personal');
-
-            try {
-                const response = await getAvailableMaterialsByUserId(userId);
-                if (Array.isArray(response.data)) {
-                    setRawMaterials(response.data);
-                }
-            } catch (error) {
-                console.error('Error al obtener materiales disponibles:', error);
-            }
-        };
-
-        fetchMaterials();
-    }, [navigate]);
-
-    const handleMultiSelectChange = (e) => {
-        const selected = Array.from(e.target.selectedOptions, (option) => option.value);
-        setMaterialUsageIds(selected);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const userId = localStorage.getItem('userId');
-
-        if (!userId || materialUsageIds.length === 0 || !income || !orderDescription) {
-            setErrorMessage('Por favor, completa todos los campos.');
-            return;
-        }
-
-        const orderData = {
-            userId,
-            materialUsageIds,
-            income: parseFloat(income),
-            orderDescription,
-        };
-
-        try {
-            await createRawMaterialOrder(orderData);
-            setSuccessMessage('Pedido creado exitosamente ✅');
-            setIncome('');
-            setOrderDescription('');
-            setMaterialUsageIds([]);
-            closeForm();
-        } catch (error) {
-            console.error('Error al crear el pedido:', error);
-            setErrorMessage('Error al crear el pedido');
-        }
-    };
-
-    const columns = [
-        { name: 'Descripción', selector: row => row.orderDescription, grow: 2 },
-        { name: 'Ingreso ($)', selector: row => `$${row.income}`, grow: 1 },
-        { name: 'Fecha', selector: row => row.createdAt ? new Date(row.createdAt).toLocaleString() : 'Sin fecha', grow: 2 },
-    ];
-
-    const styles = {
-        divider: {
-          width: '100%',
-          height: '2px',
-          backgroundColor: '#999',
-          marginTop: 20,
-        },
-          card: {
-            backgroundColor: '#3DC9A7',
-            color: 'white',
-            width: '200px',
-            height: '140px',
-            margin: '20px 30px',
-            borderRadius: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            fontSize: '20px',
-            boxShadow:'0px 8px 5px rgba(61, 193, 173, 0.2)'
-          },
-          cardText: {
-            fontSize: '20px',
-            alignSelf: 'center',
-            marginTop: '-10px',
-            fontWeight: 'bold',
-          },
-          cardSubtitle: {
-            fontSize: '16px',
-            alignSelf: 'center',
-            marginTop: '10px',
-            color: 'white',
-          },
-          button: {
-            alignSelf: 'flex-end',
-            margin: '10px',
-            fontSize: '35px',
-            color: '#3DC9A7',
-          },
-          addButton: {
-            border: '1px solid #3DC9A7',
-            backgroundColor: 'white', 
-            width: '200px',
-            height: '140px',
-            margin: '20px 30px',
-            padding: '10px',
-            borderRadius: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            fontSize: '20px',
-            color: 'black',
-            boxShadow:'0px 8px 5px rgba(61, 193, 173, 0.2)',
-            opacity: isDisabled ? 0.6 : 1,
-            cursor: isDisabled ? 'not-allowed' : 'pointer',
-          },
-          modalStyle: {
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            borderRadius: '8px',
-          },
-          title: {
-            fontSize: 28,
-            fontWeight: 'bold',
-            color: '#3DC9A7',
-          },
-        };
-
+  const isSameMonth = (date1, date2) => {
     return (
-      <div>
-        <div className="row justify-content-center">
-          <TopNavBar/>
-          <MonthSelector
-            selectedMonth={selectedMonth}
-            onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
-            dateWindow={dateWindow}
-            setDateWindow={setDateWindow}
-          />
-          <Divider style={styles.divider} />
+      new Date(date1).getFullYear() === new Date(date2).getFullYear() &&
+      new Date(date1).getMonth() === new Date(date2).getMonth()
+    );
+  };
+
+  const generateMonths = () => {
+    const { center, range } = dateWindow;
+    const centerDate = new Date(center);
+    const months = [];
+    for (let i = -range; i <= range; i++) {
+      const date = new Date(centerDate);
+      date.setMonth(centerDate.getMonth() + i);
+      months.push({
+        label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+        date,
+        isStart: i === -range,
+        isEnd: i === range,
+      });
+    }
+    return months;
+  };
+
+  const months = generateMonths();
+
+  const handleMonthSelect = (monthObj) => {
+    setSelectedMonth(monthObj.date);
+    if (monthObj.isStart) {
+      const newCenter = new Date(dateWindow.center);
+      newCenter.setMonth(newCenter.getMonth() - 3);
+      setDateWindow((prev) => ({ ...prev, center: newCenter }));
+    } else if (monthObj.isEnd) {
+      const newCenter = new Date(dateWindow.center);
+      newCenter.setMonth(newCenter.getMonth() + 3);
+      setDateWindow((prev) => ({ ...prev, center: newCenter }));
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [navigate]);
+
+
+  useEffect(() => {
+    const filtered = orders.filter((order) => isSameMonth(order.createdAt, selectedMonth));
+    setFilteredOrders(filtered);
+    const total = filtered.reduce((sum, order) => sum + (order.netProfit || 0), 0);
+    setTotalNetProfit(total);
+  }, [orders, selectedMonth]);
+
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return navigate('/login-personal');
+
+      try {
+        const response = await getAvailableMaterialsByUserId(userId);
+        if (Array.isArray(response.data)) {
+          setRawMaterials(response.data);
+        }
+      } catch (error) {
+        console.error('Error al obtener materiales disponibles:', error);
+      }
+    };
+
+    fetchMaterials();
+  }, [navigate]);
+
+  const handleMultiSelectChange = (e) => {
+    const selected = Array.from(e.target.selectedOptions, (option) => option.value);
+    setMaterialUsageIds(selected);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const userId = localStorage.getItem('userId');
+
+    if (!userId || materialUsageIds.length === 0 || !income || !orderDescription) {
+      setErrorMessage('Por favor, completa todos los campos.');
+      return;
+    }
+
+    const orderData = {
+      userId,
+      materialUsageIds,
+      income: parseFloat(income),
+      orderDescription,
+    };
+
+    try {
+      await createRawMaterialOrder(orderData);
+      setSuccessMessage('Pedido creado exitosamente ✅');
+      setIncome('');
+      setOrderDescription('');
+      setMaterialUsageIds([]);
+      closeForm();
+    } catch (error) {
+      console.error('Error al crear el pedido:', error);
+      setErrorMessage('Error al crear el pedido');
+    }
+  };
+
+  const columns = [
+    { name: 'Descripción', selector: row => row.orderDescription, grow: 2 },
+    { name: 'Ingreso ($)', selector: row => `$${row.income}`, grow: 1 },
+    { name: 'Fecha', selector: row => row.createdAt ? new Date(row.createdAt).toLocaleString() : 'Sin fecha', grow: 2 },
+  ];
+
+  const styles = {
+    divider: {
+      width: '100%',
+      height: '2px',
+      backgroundColor: '#999',
+      marginTop: 20,
+    },
+    card: {
+      backgroundColor: '#3DC9A7',
+      color: 'white',
+      width: '200px',
+      height: '140px',
+      margin: '20px 30px',
+      borderRadius: '8px',
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: '20px',
+      boxShadow: '0px 8px 5px rgba(61, 193, 173, 0.2)'
+    },
+    cardText: {
+      fontSize: '20px',
+      alignSelf: 'center',
+      marginTop: '-10px',
+      fontWeight: 'bold',
+    },
+    cardSubtitle: {
+      fontSize: '16px',
+      alignSelf: 'center',
+      marginTop: '10px',
+      color: 'white',
+    },
+    button: {
+      alignSelf: 'flex-end',
+      margin: '10px',
+      fontSize: '35px',
+      color: '#3DC9A7',
+    },
+    addButton: {
+      border: '1px solid #3DC9A7',
+      backgroundColor: 'white',
+      width: '200px',
+      height: '140px',
+      margin: '20px 30px',
+      padding: '10px',
+      borderRadius: '8px',
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: '20px',
+      color: 'black',
+      boxShadow: '0px 8px 5px rgba(61, 193, 173, 0.2)',
+      opacity: isDisabled ? 0.6 : 1,
+      cursor: isDisabled ? 'not-allowed' : 'pointer',
+    },
+    modalStyle: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 400,
+      bgcolor: 'background.paper',
+      boxShadow: 24,
+      p: 4,
+      borderRadius: '8px',
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: '#3DC9A7',
+    },
+  };
+
+  return (
+    <div>
+      <div className="row justify-content-center">
+        <TopNavBar />
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+          dateWindow={dateWindow}
+          setDateWindow={setDateWindow}
+        />
+        <Divider style={styles.divider} />
+      </div>
+
+      <div className='row mt-3'>
+        <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
+          <div style={styles.card}>
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+              <text>INGRESO</text>
+              <GiPayMoney style={{ fontSize: '40px' }} />
+            </div>
+            <text style={styles.cardText}>${totalNetProfit}</text>
+            <text style={styles.cardSubtitle}>Ingreso mensual</text>
+          </div>
+
+          <button
+            style={styles.addButton}
+            onClick={() => !isDisabled && openForm()}
+            disabled={isDisabled}>
+            <MdOutlineAddToPhotos style={styles.button} />
+            <text style={{ alignSelf: 'center' }}>NUEVO PEDIDO</text>
+          </button>
         </div>
 
-        <div className='row mt-3'>
-          <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
-            <div style={styles.card}>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-                <text>INGRESO</text>
-                <GiPayMoney style={{ fontSize: '40px' }} />
+        <div className='col-sm-8 flex-column justify-content-center align-items-center'>
+          <DataTable
+            columns={columns}
+            data={filteredOrders}
+            pagination
+            noDataComponent="No hay pedidos registrados."
+          />
+        </div>
+
+        <Modal open={open} onClose={closeForm}>
+          <Box sx={styles.modalStyle}>
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '20px' }}>
+                <text style={styles.title}>Crear Pedido</text>
               </div>
-              <text style={styles.cardText}>${totalNetProfit}</text>
-              <text style={styles.cardSubtitle}>Ingreso mensual</text>
-            </div>
+              <input className='input col-12'
+                placeholder="Descripción del pedido"
+                value={orderDescription}
+                onChange={(e) => setOrderDescription(e.target.value)}
+                required
+              />
 
-            <button
-              style={styles.addButton}
-              onClick={() => !isDisabled && openForm()}
-              disabled={isDisabled}>
-              <MdOutlineAddToPhotos style={styles.button} />
-              <text style={{alignSelf: 'center'}}>NUEVO PEDIDO</text>
-            </button>
-          </div>
-
-          <div className='col-sm-8 flex-column justify-content-center align-items-center'>
-            <DataTable
-              columns={columns}
-              data={filteredOrders}
-              pagination
-              noDataComponent="No hay pedidos registrados."
-            />
-          </div>
-
-          <Modal open={open} onClose={closeForm}>
-            <Box sx={styles.modalStyle}>
-              <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '20px' }}>
-                  <text style={styles.title}>Crear Pedido</text>
-                </div>
-                <input className='input col-12'
-                  placeholder="Descripción del pedido"
-                  value={orderDescription}
-                  onChange={(e) => setOrderDescription(e.target.value)}
-                  required
-                />
-                
-                <select className='input col-12'
-                  multiple
-                  value={materialUsageIds}
-                  onChange={handleMultiSelectChange}
-                  required>
-                  {rawMaterials.map((material) => (
+              <select className='input col-12'
+                multiple
+                value={materialUsageIds}
+                onChange={handleMultiSelectChange}
+                required>
+                {rawMaterials.map((material) => (
                   <option key={material.id} value={material.id}>
                     {material.usageDescription} - {material.quantityUsed} unidades
                   </option>
-                  ))}
-                </select>
+                ))}
+              </select>
 
-                <input className='input col-12'
-                  type="number"
-                  style={styles.input}
-                  placeholder="Ingreso del pedido ($)"
-                  value={income}
-                  onChange={(e) => setIncome(e.target.value)}
-                  required
-                />
+              <input className='input col-12'
+                type="number"
+                style={styles.input}
+                placeholder="Ingreso del pedido ($)"
+                value={income}
+                onChange={(e) => setIncome(e.target.value)}
+                required
+              />
 
-                <Divider style={styles.divider} />
+              <Divider style={styles.divider} />
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                  <button className='primary_button' style={{ width: '40%'}} type="button" onClick={closeForm}>Cancelar</button>
-                  <button className='secondary_button' style={{ width: '40%' }} type="submit">Registrar</button>
-                </div>
-                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-                {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-              </form>
-            </Box>
-          </Modal>
-        </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                <button className='primary_button' style={{ width: '40%' }} type="button" onClick={closeForm}>Cancelar</button>
+                <button className='secondary_button' style={{ width: '40%' }} type="submit">Registrar</button>
+              </div>
+              {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+              {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+            </form>
+          </Box>
+        </Modal>
       </div>
-    );
+    </div>
+  );
 }
