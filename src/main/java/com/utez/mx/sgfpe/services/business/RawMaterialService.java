@@ -72,27 +72,14 @@ public class RawMaterialService {
             material.setUserId(userId);
 
             // ✅ Fecha con soporte para formato de fecha o string ISO
-            Cell entryDateCell = row.getCell(0);
-            if (entryDateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(entryDateCell)) {
-                Date date = entryDateCell.getDateCellValue();
-                material.setEntryDate(date.toInstant().atZone(ZoneId.systemDefault()).toInstant());
-            } else if (entryDateCell.getCellType() == CellType.STRING) {
-                String dateStr = entryDateCell.getStringCellValue();
-                try {
-                    material.setEntryDate(Instant.parse(dateStr));
-                } catch (Exception e) {
-                    throw new IllegalArgumentException("Formato de fecha inválido en fila " + (i + 1) + ": " + dateStr);
-                }
-            } else {
-                throw new IllegalStateException("Tipo de celda de fecha no soportado en fila " + (i + 1));
-            }
+            material.setEntryDate(Instant.now());
 
-            material.setMaterialDescription(row.getCell(1).getStringCellValue());
-            material.setSupplier(row.getCell(2).getStringCellValue());
-            material.setQuantity(row.getCell(3).getNumericCellValue());
-            material.setMeasurementUnit(row.getCell(4).getStringCellValue());
-            material.setUnitPrice(BigDecimal.valueOf(row.getCell(5).getNumericCellValue()));
-            material.setNotes(row.getCell(6) != null ? row.getCell(6).getStringCellValue() : "");
+            material.setMaterialDescription(row.getCell(0).getStringCellValue());
+            material.setSupplier(row.getCell(1).getStringCellValue());
+            material.setQuantity(row.getCell(2).getNumericCellValue());
+            material.setMeasurementUnit(row.getCell(3).getStringCellValue());
+            material.setUnitPrice(BigDecimal.valueOf(row.getCell(4).getNumericCellValue()));
+            material.setNotes(row.getCell(5) != null ? row.getCell(5).getStringCellValue() : "");
 
             materials.add(material);
         }

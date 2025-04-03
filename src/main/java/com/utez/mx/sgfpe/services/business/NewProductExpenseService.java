@@ -33,25 +33,22 @@ public class NewProductExpenseService {
 
             NewProductExpense expense = new NewProductExpense();
             expense.setUserId(userId);
+            expense.setPurchaseDate(Instant.now());
 
-            // Fecha de compra
-            Cell dateCell = row.getCell(0);
-            if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
-                LocalDate localDate = dateCell.getDateCellValue().toInstant()
-                        .atZone(ZoneId.systemDefault()).toLocalDate();
-                expense.setPurchaseDate(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            } else {
-                throw new IllegalArgumentException("Formato de fecha inválido en fila " + (i + 1));
-            }
+            expense.setProductDescription(row.getCell(0).getStringCellValue());
 
-            expense.setProductDescription(row.getCell(1).getStringCellValue());
-            expense.setQuantity((int) row.getCell(2).getNumericCellValue());
-            expense.setUnitCost(BigDecimal.valueOf(row.getCell(3).getNumericCellValue()));
-            expense.setTotalCost(BigDecimal.valueOf(row.getCell(4).getNumericCellValue()));
-            expense.setCategory(row.getCell(5).getStringCellValue());
-            expense.setPaymentMethod(row.getCell(6).getStringCellValue());
+            int quantity = (int) row.getCell(1).getNumericCellValue();
+            BigDecimal unitCost = BigDecimal.valueOf(row.getCell(2).getNumericCellValue()); // ← Cambiado a índice 2
+            BigDecimal totalCost = unitCost.multiply(BigDecimal.valueOf(quantity));
 
-            Cell notesCell = row.getCell(7);
+            expense.setQuantity(quantity);
+            expense.setUnitCost(unitCost);
+            expense.setTotalCost(totalCost);
+
+            expense.setCategory(row.getCell(3).getStringCellValue()); // ← Índice 3
+            expense.setPaymentMethod(row.getCell(4).getStringCellValue()); // ← Índice 4
+
+            Cell notesCell = row.getCell(5); // ← Índice 5
             expense.setNotes(notesCell != null ? notesCell.getStringCellValue() : "");
 
             expenses.add(expense);
