@@ -19,7 +19,7 @@ export default function RawMaterialsTracker() {
     quantity: '',
     unitPrice: '',
     supplier: '',
-    measurementUnit: '',
+    measurementUnit: '',  // Unidad de medida
     notes: ''
   });
   const navigate = useNavigate();
@@ -29,6 +29,13 @@ export default function RawMaterialsTracker() {
     center: new Date(),
     offset: 3,
   });
+
+  // Unidades de medida posibles
+  const measurementUnits = [
+    'cm', 'mm', 'm', 'mg', 'g', 'kg', 'ml', 'L',
+    'Pieza', 'Caja', 'Rollo', 'Paquete', 'Bolsa',
+    'Docena', 'Unidad', 'Par', 'Set'
+  ];
 
   const isSameMonth = (date1, date2) => {
     return date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
@@ -102,7 +109,7 @@ export default function RawMaterialsTracker() {
         userId
       });
       closeManualForm();
-      setManualForm({ materialDescription: '', quantity: '', unitPrice: '' });
+      setManualForm({ materialDescription: '', quantity: '', unitPrice: '', supplier: '', measurementUnit: '', notes: '' });
       fetchRawMaterials();
     } catch (error) {
       console.error('Error al crear materia prima:', error);
@@ -184,7 +191,7 @@ export default function RawMaterialsTracker() {
       <div className='row mt-3'>
         <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
           <div style={styles.card}>
-            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }} >
               <text>MATERIA</text>
               <TbWood style={{ fontSize: '180%' }} />
             </div>
@@ -261,8 +268,20 @@ export default function RawMaterialsTracker() {
             <input type="number" placeholder='Precio Unitario' value={manualForm.unitPrice} onChange={(e) => setManualForm({ ...manualForm, unitPrice: e.target.value })} required className='input col-12 mb-2' />
             <input type="text" placeholder='Proveedor' value={manualForm.supplier}
               onChange={(e) => setManualForm({ ...manualForm, supplier: e.target.value })} required className='input col-12 mb-2' />
-            <input type="text" placeholder='Unidad de medida' value={manualForm.measurementUnit}
-              onChange={(e) => setManualForm({ ...manualForm, measurementUnit: e.target.value })} required className='input col-12 mb-2' />
+
+            {/* Agregado select para la unidad de medida */}
+            <select
+              value={manualForm.measurementUnit}
+              onChange={(e) => setManualForm({ ...manualForm, measurementUnit: e.target.value })}
+              className='input col-12 mb-2'
+              required
+            >
+              <option value="">Seleccione unidad de medida</option>
+              {measurementUnits.map((unit) => (
+                <option key={unit} value={unit}>{unit}</option>
+              ))}
+            </select>
+
             <textarea placeholder='Notas' value={manualForm.notes}
               onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })} className='input col-12 mb-2' />
             <Divider style={styles.divider} />

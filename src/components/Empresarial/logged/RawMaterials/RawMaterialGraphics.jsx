@@ -8,6 +8,7 @@ import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import autoTable from 'jspdf-autotable';
 
 export default function RawMaterialsGraphics() {
   const [materialUsages, setMaterialUsages] = useState([]);
@@ -24,6 +25,21 @@ export default function RawMaterialsGraphics() {
     );
   };
 
+  const totalMaterialCost = materialUsages
+    .filter(u => isSameMonth(u.createdAt, selectedMonth))
+    .reduce((sum, u) => sum + (u.totalCost || 0), 0);
+
+  const totalNetProfit = orders
+    .filter(o => isSameMonth(o.createdAt, selectedMonth))
+    .reduce((sum, o) => sum + (o.netProfit || 0), 0);
+
+  const balance = totalNetProfit - totalMaterialCost;
+
+  const chartData = [
+    { name: 'Ganancia neta', value: totalNetProfit, color: '#4AD8C2' },
+    { name: 'Gasto en materiales', value: totalMaterialCost, color: '#FF8C69' },
+  ];
+
   const generatePDF = async () => {
     const input = document.getElementById('chart-container');
     if (!input) {
@@ -34,22 +50,92 @@ export default function RawMaterialsGraphics() {
     try {
       const canvas = await html2canvas(input, { scale: 2 });
       const imgData = canvas.toDataURL('image/png');
-
       const pdf = new jsPDF('p', 'mm', 'a4');
-      pdf.setFont('helvetica', 'bold');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+
+      // TÍTULO PRINCIPAL
+      const title = 'Reporte de Ganancias vs Gastos';
       pdf.setFontSize(18);
-      pdf.text('Reporte de Ganancias vs Gastos', 20, 20);
+      const titleWidth = pdf.getTextWidth(title);
+      pdf.text(title, (pageWidth - titleWidth) / 2, 20);
 
-      pdf.addImage(imgData, 'PNG', 20, 40, 160, 100);
+      // GRÁFICO DE PASTEL
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = 160;
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const x = (pageWidth - pdfWidth) / 2;
+      pdf.addImage(imgData, 'PNG', x, 30, pdfWidth, pdfHeight);
 
-      pdf.setFontSize(12);
-      pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 150);
+      let currentY = 40 + pdfHeight + 10;
 
-      pdf.save('reporte.pdf');
+      // RESUMEN GENERAL
+      const resumenTable = [
+        ["Ganancia neta", `$${totalNetProfit.toFixed(2)}`],
+        ["Gasto en materiales", `$${totalMaterialCost.toFixed(2)}`],
+        ["Balance final", `$${(totalNetProfit - totalMaterialCost).toFixed(2)}`],
+      ];
+
+      autoTable(pdf, {
+        head: [["Concepto", "Monto"]],
+        body: resumenTable,
+        startY: currentY,
+        theme: 'grid',
+        styles: { halign: 'center', fontSize: 12 },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+      });
+
+      currentY = pdf.lastAutoTable.finalY + 10;
+
+      // TABLA DETALLADA DE PEDIDOS (Ganancia Neta)
+      const filteredOrders = orders.filter(o => isSameMonth(o.createdAt, selectedMonth));
+      const ordersTable = filteredOrders.map(o => [
+        new Date(o.createdAt).toLocaleDateString(),
+        o.orderDescription || 'Sin descripción',
+        `$${(o.netProfit || 0).toFixed(2)}`
+      ]);
+
+      if (ordersTable.length > 0) {
+        autoTable(pdf, {
+          startY: currentY,
+          head: [["Fecha", "Producto",  "Ganancia"]],
+          body: ordersTable,
+          theme: 'grid',
+          styles: { fontSize: 11 },
+          headStyles: { fillColor: [23, 162, 184], textColor: 255 }
+        });
+        currentY = pdf.lastAutoTable.finalY + 10;
+      }
+
+      // TABLA DETALLADA DE INSUMOS (Gasto en materiales)
+      const filteredUsages = materialUsages.filter(u => isSameMonth(u.createdAt, selectedMonth));
+      const usagesTable = filteredUsages.map(u => [
+        new Date(u.createdAt).toLocaleDateString(),
+        u.usageDescription || 'Material',
+        u.quantityUsed || 0,
+        `$${(u.totalCost || 0).toFixed(2)}`
+      ]);
+
+      if (usagesTable.length > 0) {
+        autoTable(pdf, {
+          startY: currentY,
+          head: [["Fecha", "Material", "Cantidad", "Costo"]],
+          body: usagesTable,
+          theme: 'grid',
+          styles: { fontSize: 11 },
+          headStyles: { fillColor: [255, 140, 105], textColor: 255 }
+        });
+      }
+
+      // FECHA DEL REPORTE
+      pdf.setFontSize(10);
+      pdf.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, pdf.internal.pageSize.getHeight() - 10);
+
+      pdf.save('reporte_ganancias_gastos.pdf');
     } catch (error) {
       console.error('Error al generar el PDF:', error);
     }
   };
+
 
   useEffect(() => {
     const userId = localStorage.getItem('userId');
@@ -71,19 +157,6 @@ export default function RawMaterialsGraphics() {
     fetchData();
   }, [navigate]);
 
-  const totalMaterialCost = materialUsages
-    .filter(u => isSameMonth(u.createdAt, selectedMonth))
-    .reduce((sum, u) => sum + (u.totalCost || 0), 0);
-
-  const totalNetProfit = orders
-    .filter(o => isSameMonth(o.createdAt, selectedMonth))
-    .reduce((sum, o) => sum + (o.netProfit || 0), 0);
-
-  const chartData = [
-    { name: 'Ganancia neta', value: totalNetProfit, color: '#4AD8C2' },
-    { name: 'Gasto en materiales', value: totalMaterialCost, color: '#FF8C69' },
-  ];
-
   const styles = {
     divider: {
       width: '100%',
@@ -96,13 +169,6 @@ export default function RawMaterialsGraphics() {
       fontWeight: 'bold',
       color: '#30437A',
       textAlign: 'center',
-    },
-    hidden: {
-      position: 'absolute',
-      left: '-9999px',
-      top: '-9999px',
-      visibility: 'hidden',
-      width: '1000px'
     }
   };
 

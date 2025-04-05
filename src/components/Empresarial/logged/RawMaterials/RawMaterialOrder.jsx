@@ -149,6 +149,10 @@ export default function RawMaterialOrderTracker() {
       setOrderDescription('');
       setMaterialUsageIds([]);
       closeForm();
+
+      // Llamada a fetchOrders para actualizar la lista de órdenes
+      fetchOrders();  // Actualiza los pedidos inmediatamente después de crear uno nuevo
+
     } catch (error) {
       console.error('Error al crear el pedido:', error);
       setErrorMessage('Error al crear el pedido');
