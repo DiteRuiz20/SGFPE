@@ -6,12 +6,13 @@ import { getUsers, createUser } from '../../../services/UserService';
 import logo from '../../../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Snackbar } from '@mui/material';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 // Esquema de validación con Yup
 const schema = yup.object().shape({
-  name: yup.string().required('El nombre es obligatorio'),
-  email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio'),
-  phoneNumber: yup.number().positive('El número debe ser positivo').min(10, 'Debe tener al menos 10 dígitos').required('El número es obligatorio').transform((value, originalValue) => (originalValue === '' ? undefined : value)),
+  name: yup.string().required('El nombre es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio').matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Ingresa un correo válido'),
+  phoneNumber: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').min(10, 'El número debe tener 10 dígitos').required('El número es obligatorio').max(10, 'El número debe tener 10 dígitos'),
   password: yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('La contraseña es obligatoria'),
 });
 
@@ -19,9 +20,12 @@ export default function CreatePersonalAccount() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [alert, setAlert] = useState({ open: false, message: '', severity: '' });
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange'
   });
 
   // Obtener usuarios al cargar el componente
@@ -37,6 +41,20 @@ export default function CreatePersonalAccount() {
     };
 
     fetchUsers();
+
+    // Listen for Enter key press and trigger button click
+    const handleKeyDown = (event) => {
+      if (event.key === 'Enter') {
+        handleSubmit(onSubmit)(); // Trigger the form submission manually
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Cleanup the event listener when component unmounts
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Crear usuario
@@ -64,9 +82,6 @@ export default function CreatePersonalAccount() {
             errorMessage = 'Error de permisos: No tienes permisos para registrar una cuenta.';
             break;
           case 400:
-            errorMessage = 'Datos inválidos: Verifica la información ingresada.';
-            break;
-          case 409:
             errorMessage = 'El email ya está registrado.';
             break;
           default:
@@ -82,11 +97,10 @@ export default function CreatePersonalAccount() {
 
   const styles = {
     alert: {
-      width: '50%',
       position: 'fixed',
       top: 20,
       left: '50%',
-      transform: 'translate(-50%, 0)',
+      transform: 'translate(-50%, 0)'
     }
   };
 
@@ -95,7 +109,6 @@ export default function CreatePersonalAccount() {
       <div className='container'>
         <div className='d-flex flex-column justify-content-center align-items-center mb-md-5'>
           <p style={{ fontSize: '18px', color: '#444' }}>¡Gracias por unirte a nosotros!</p>
-          <p style={{ fontSize: '18px', color: '#444' }}>Por favor, llena los campos solicitados.</p>
         </div>
 
         <div className='row justify-content-center align-items-center col-12'>
@@ -104,10 +117,10 @@ export default function CreatePersonalAccount() {
               <img className='img-fluid' style={{ width: '70%', height: '70%' }} src={logo} alt="logo" />
             </div>
             <p style={{ fontSize: '18px', color: '#444' }}>Nota:</p>
-            <p style={{ fontSize: '18px', color: '#444' }}>
-              Se te enviará un código de confirmación por correo electrónico, que se utilizará para autenticar tu cuenta.
+            <p style={{ fontSize: '18px', color: '#444' }} >
+              Se te enviará un código de confirmación por correo electrónico, para autenticar tu cuenta.
             </p>
-            <button className='secondary_button col-8' type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading}>
+            <button className='secondary_button col-md-8' type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading}>
               {isLoading ? 'PROCESANDO...' : 'CREAR CUENTA'}
             </button>
           </div>
@@ -120,7 +133,7 @@ export default function CreatePersonalAccount() {
               </div>
 
               <div className='d-flex flex-column justify-content-center align-items-center'>
-                <input className='input col-8' type="email" {...register('email')} placeholder="Correo electrónico" />
+                <input className='input col-8' type="text" {...register('email')} placeholder="Correo electrónico" />
                 {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}
               </div>
 
@@ -130,8 +143,24 @@ export default function CreatePersonalAccount() {
               </div>
 
               <div className='d-flex flex-column justify-content-center align-items-center'>
-                <input className='input col-8' type="password" {...register('password')} placeholder="Contraseña" />
-                {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
+                <input className='input col-8'
+                  type={showPassword ? "text" : "password"}
+                  {...register('password')}
+                  placeholder="Contraseña"
+                />
+                <span 
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    alignSelf: 'flex-end',
+                    marginTop: '-53px',
+                    paddingRight: '120px',
+                    cursor: 'pointer',
+                    color: '#555'
+                  }}
+                >
+                  {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
+                </span>
+                {errors.password && <p style={{ color: 'red', marginTop: '30px', marginBottom: '-30px' }}>{errors.password.message}</p>}
               </div>
             </form>
           </div>
@@ -139,7 +168,7 @@ export default function CreatePersonalAccount() {
       </div>
 
       <Snackbar open={alert.open} autoHideDuration={3000} onClose={() => setAlert({ ...alert, open: false })}>
-        <Alert onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} style={styles.alert}>
+        <Alert className='col-md-6 col-12' onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} style={styles.alert}>
           {alert.message}
         </Alert>
       </Snackbar>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import logo from '../../../assets/logo.png';
+import { Divider } from '@mui/material';
 import axios from 'axios';
 
 export default function VerifyAccount() {
@@ -95,6 +95,12 @@ export default function VerifyAccount() {
             fontSize: 20,
             color: '#444',
         },
+        divider: {
+            width: '100%',
+            height: '2px',
+            backgroundColor: '#999',
+            marginTop: 20,
+        },
     };
 
     return (
@@ -117,9 +123,10 @@ export default function VerifyAccount() {
                     <button className='primary_button' onClick={handleVerification} disabled={loading}>
                         {loading ? 'Verificando...' : 'VERIFICAR CUENTA'}
                     </button>
+                    <Divider style={styles.divider} />
                     <p style={styles.subtitle}>¿No recibiste el correo?</p>
                     <button className='secondary_button' onClick={handleResendCode} disabled={loading}>
-                        Reenviar código
+                        REENVIAR CÓDIGO
                     </button>
                 </div>
             </div>

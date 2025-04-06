@@ -85,69 +85,87 @@ const MonthSelector = ({ selectedMonth, onMonthSelect, dateWindow, setDateWindow
     return (
         <>
             {isMobile ? (
-                <select
-                    value={validIndex}
-                    onChange={(e) => handleSelect(months[e.target.value])}
-                    className="input col-10"
-                    aria-label="Selector de mes móvil"
-                >
-                    {months.map((monthObj, index) => (
-                        <option key={index} value={index}>{monthObj.label}</option>
-                    ))}
-                </select>
-            ) : (
-                <div style={{
+                <div className='col-12' style={{
                     display: 'flex',
                     justifyContent: 'center',
-                    gap: '30px',
-                    marginBottom: '10px',
-                    flexWrap: 'wrap',
+                    gap: '10px',
                 }}>
-                    {months.map((monthObj, index) => (
-                        <span
-                            key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
-                            onClick={() => handleSelect(monthObj)}
-                            style={{
-                                cursor: 'pointer',
-                                color: isSameMonth(monthObj.date, selectedMonth) ? '#000' : '#B0B0B0',
-                                borderBottom: isSameMonth(monthObj.date, selectedMonth) ? '2px solid #4AD8C2' : 'none',
-                                padding: '5px',
-                            }}
+                    <select
+                        value={selectedMonth?.getMonth?.() ?? 0}
+                        onChange={(e) => handleDirectSelect(selectedMonth.getFullYear(), parseInt(e.target.value))}
+                        className="input"
+                        aria-label="Seleccionar mes"
+                    >
+                        {monthOptions.map((m) => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
+                    </select>
+    
+                    <select
+                        value={selectedMonth?.getFullYear?.() ?? currentDate.getFullYear()}
+                        onChange={(e) => handleDirectSelect(parseInt(e.target.value), selectedMonth.getMonth())}
+                        className="input"
+                        aria-label="Seleccionar año"
+                    >
+                        {yearOptions.map((y) => (
+                            <option key={y} value={y}>{y}</option>
+                        ))}
+                    </select>
+                </div>
+            ) : (
+                <div className='row'>
+                    <div className='col-9' style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '30px',
+                        marginBottom: '10px',
+                        flexWrap: 'wrap',
+                    }}>
+                        {months.map((monthObj, index) => (
+                            <span
+                                key={`${monthObj.date.getMonth()}-${monthObj.date.getFullYear()}-${index}`}
+                                onClick={() => handleSelect(monthObj)}
+                                style={{
+                                    cursor: 'pointer',
+                                    color: isSameMonth(monthObj.date, selectedMonth) ? '#000' : '#B0B0B0',
+                                    borderBottom: isSameMonth(monthObj.date, selectedMonth) ? '2px solid #4AD8C2' : 'none',
+                                    padding: '5px',
+                                }}
+                            >
+                                {monthObj.label}
+                            </span>
+                        ))}
+                    </div>
+
+                    <div className='col-3' style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '10px',
+                    }}>
+                        <select
+                            value={selectedMonth?.getMonth?.() ?? 0}
+                            onChange={(e) => handleDirectSelect(selectedMonth.getFullYear(), parseInt(e.target.value))}
+                            className="input"
+                            aria-label="Seleccionar mes"
                         >
-                            {monthObj.label}
-                        </span>
-                    ))}
+                            {monthOptions.map((m) => (
+                                <option key={m.value} value={m.value}>{m.label}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={selectedMonth?.getFullYear?.() ?? currentDate.getFullYear()}
+                            onChange={(e) => handleDirectSelect(parseInt(e.target.value), selectedMonth.getMonth())}
+                            className="input"
+                            aria-label="Seleccionar año"
+                        >
+                            {yearOptions.map((y) => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             )}
-
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '10px',
-                marginTop: '10px'
-            }}>
-                <select
-                    value={selectedMonth?.getMonth?.() ?? 0}
-                    onChange={(e) => handleDirectSelect(selectedMonth.getFullYear(), parseInt(e.target.value))}
-                    className="input"
-                    aria-label="Seleccionar mes"
-                >
-                    {monthOptions.map((m) => (
-                        <option key={m.value} value={m.value}>{m.label}</option>
-                    ))}
-                </select>
-
-                <select
-                    value={selectedMonth?.getFullYear?.() ?? currentDate.getFullYear()}
-                    onChange={(e) => handleDirectSelect(parseInt(e.target.value), selectedMonth.getMonth())}
-                    className="input"
-                    aria-label="Seleccionar año"
-                >
-                    {yearOptions.map((y) => (
-                        <option key={y} value={y}>{y}</option>
-                    ))}
-                </select>
-            </div>
         </>
     );
 };
