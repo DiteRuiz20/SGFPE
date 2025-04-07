@@ -10,7 +10,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const schema = yup.object().shape({
     email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio')
-        .matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,'Solo se permiten letras y números antes del @'),
+        .matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,'Ingresa un correo válido'),
     password: yup.string().required('La contraseña es obligatoria'),
 });
 

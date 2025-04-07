@@ -42,16 +42,14 @@ export default function CreatePersonalAccount() {
 
     fetchUsers();
 
-    // Listen for Enter key press and trigger button click
     const handleKeyDown = (event) => {
       if (event.key === 'Enter') {
-        handleSubmit(onSubmit)(); // Trigger the form submission manually
+        handleSubmit(onSubmit)();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     
-    // Cleanup the event listener when component unmounts
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
@@ -109,6 +107,7 @@ export default function CreatePersonalAccount() {
       <div className='container'>
         <div className='d-flex flex-column justify-content-center align-items-center mb-md-5'>
           <p style={{ fontSize: '18px', color: '#444' }}>¡Gracias por unirte a nosotros!</p>
+          <p style={{ fontSize: '18px', color: '#444' }}>Por favor, llena los campos solicitados.</p>
         </div>
 
         <div className='row justify-content-center align-items-center col-12'>
@@ -117,7 +116,7 @@ export default function CreatePersonalAccount() {
               <img className='img-fluid' style={{ width: '70%', height: '70%' }} src={logo} alt="logo" />
             </div>
             <p style={{ fontSize: '18px', color: '#444' }}>Nota:</p>
-            <p style={{ fontSize: '18px', color: '#444' }} >
+            <p style={{ fontSize: '18px', color: '#444' }}>
               Se te enviará un código de confirmación por correo electrónico, para autenticar tu cuenta.
             </p>
             <button className='secondary_button col-md-8' type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading}>
@@ -168,7 +167,7 @@ export default function CreatePersonalAccount() {
       </div>
 
       <Snackbar open={alert.open} autoHideDuration={3000} onClose={() => setAlert({ ...alert, open: false })}>
-        <Alert className='col-md-6 col-12' onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} style={styles.alert}>
+        <Alert className='col-md-4 col-12' onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} style={styles.alert}>
           {alert.message}
         </Alert>
       </Snackbar>

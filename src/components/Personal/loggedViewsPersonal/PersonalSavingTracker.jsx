@@ -10,6 +10,14 @@ import { Modal, Box } from '@mui/material';
 import { TbPigMoney } from "react-icons/tb";
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../MonthSelector';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useForm } from 'react-hook-form';
+
+const schema = yup.object().shape({
+  description: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  amount: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria')
+});
 
 export default function PersonalSavingTracker() {
     const [personalSavings, setPersonalSavings] = useState([]);
@@ -66,30 +74,6 @@ export default function PersonalSavingTracker() {
       return months;
     };
 
-    // Generar los meses visibles
-    const months = generateMonths();
-
-    // Manejar la selección de un mes
-    const handleMonthSelect = (monthObj) => {
-        setSelectedMonth(monthObj.date);
-        
-        if (monthObj.isStart) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() - 3);
-            setDateWindow(prev => ({
-                ...prev,
-                center: newCenter
-            }));
-        } else if (monthObj.isEnd) {
-            const newCenter = new Date(dateWindow.center);
-            newCenter.setMonth(newCenter.getMonth() + 3);
-            setDateWindow(prev => ({
-                ...prev,
-                center: newCenter
-            }));
-        }
-    };
-
     // Filtrar los ahorros por el mes seleccionado
     useEffect(() => {
         if (personalSavings.length > 0) {
@@ -135,50 +119,44 @@ export default function PersonalSavingTracker() {
     const openForm = () => setIsOpen(true);
     const closeForm = () => setIsOpen(false);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setNewSaving(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+      resolver: yupResolver(schema),
+      mode: 'onChange',
+      reValidateMode: 'onChange',
+    });
+  
+    const onSubmit = async (data) => {
+      try {
         const userId = localStorage.getItem('userId');
+        if (!userId) throw new Error('No hay usuario autenticado');
         
-        if (!userId) {
-            console.error('No hay usuario autenticado');
-            return;
-        }
+        const savingData = {
+          ...newSaving,
+          userId: userId,
+          description: data.description,
+          amount: parseFloat(data.amount),
+          date: new Date().toISOString(),
+        };
 
-        try {
-            const savingData = {
-                ...newSaving,
-                userId: userId,
-                amount: parseFloat(newSaving.amount)
-            };
-
-            await createSaving(savingData);
-            console.log('Ahorro creado exitosamente');
-            
-            // Recargar los ahorros
-            const response = await getSavingsByUserId(userId);
-            setPersonalSavings(response);
-            setFilteredSavings(response.filter(saving => 
-                isSameMonth(saving.date, selectedMonth)
-            ));
-            
-            // Limpiar el formulario y cerrar el modal
-            setNewSaving({
-                description: '',
-                amount: '',
-            });
-            closeForm();
-        } catch (error) {
-            console.error('Error al crear el ahorro:', error);
-        }
+        await createSaving(savingData);
+  
+        // Recargar los ahorros después de crear uno nuevo
+        const response = await getSavingsByUserId(userId);
+        setPersonalSavings(response);
+        setFilteredSavings(response);
+  
+        // Limpiar el formulario y cerrar el modal
+        setNewSaving({
+          description: '',
+          amount: '',
+        });
+        closeForm();
+      } catch (error) {
+        console.error('Error al crear el ahorro:', error);
+      }
     };
+
+    filteredSavings.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     // Calcular el total de ahorros del mes
     const totalSavings = filteredSavings.reduce((sum, saving) => sum + saving.amount, 0);
@@ -195,16 +173,19 @@ export default function PersonalSavingTracker() {
             maxWidth: '80px',
         },
         {
+          name : 'Descripción',
             selector: row => row.description,
             grow: 0.4,
             minWidth: '100px',
         },
         {
+          name : 'Cantidad',
             selector: row => `$${row.amount.toFixed(2)}`,
             grow: 0.3,
             minWidth: '100px',
         },
         {
+          name : 'Fecha de registro',
             selector: row => new Date(row.date).toLocaleDateString(),
             grow: 0.3,
             minWidth: '100px',
@@ -303,40 +284,7 @@ export default function PersonalSavingTracker() {
           fontWeight: 'bold',
           color: '#3DC9A7',
         },
-      };
-
-      const customStyles = {
-        headCells: {
-            style: {
-              height: '0px',
-              padding: '0px',
-              border: 'none',
-              visibility: 'hidden',
-            },
-          },
-        cells: {
-          style: {
-            fontSize: '14px',
-            padding: '10px',
-            display: 'flex',
-            whiteSpace: 'nowrap',
-          },
-        },
-        rows: {
-          style: {
-            '&:hover': {
-              backgroundColor: '#e3e3e3',
-            },
-          },
-        },
-        table: {
-          style: {
-            width: '100%',
-            maxWidth: '100%',
-            overflowX: 'auto',
-          },
-        },
-      };      
+      };   
 
     return (        
       <div>
@@ -375,7 +323,6 @@ export default function PersonalSavingTracker() {
           <DataTable
             columns={columns}
             data={filteredSavings}
-            customStyles={customStyles}
             pagination
             noDataComponent="No hay ahorros disponibles."
           />
@@ -385,7 +332,7 @@ export default function PersonalSavingTracker() {
         {/* Modal */}
         <Modal open={open} onClose={closeForm}>
         <Box sx={styles.modalStyle}>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
             <div style={{marginBottom: '20px'}}>
                 <text style={styles.title}>Nuevo ahorro</text>
             </div>
@@ -393,21 +340,17 @@ export default function PersonalSavingTracker() {
                 <input className='input col-12'
                 placeholder='Descripción'
                 type="text"
-                name="description"
-                value={newSaving.description}
-                onChange={handleInputChange}
-                required
+                {...register('description')}
                 />
+                {errors.description && <p style={{ color: 'red' }}>{errors.description.message}</p>}
             </div>
             <div>
                 <input className='input col-12'
                 placeholder='Cantidad'
                 type="number"
-                name="amount"
-                value={newSaving.amount}
-                onChange={handleInputChange}
-                required
+                {...register('amount')}
                 />
+                {errors.amount && <p style={{ color: 'red' }}>{errors.amount.message}</p>}
             </div>
             <Divider style={styles.divider} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>

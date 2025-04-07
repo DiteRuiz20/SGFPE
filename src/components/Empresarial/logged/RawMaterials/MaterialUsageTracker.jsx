@@ -8,6 +8,15 @@ import { Modal, Box, Divider } from '@mui/material';
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
 import { TbCheckupList } from 'react-icons/tb';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useForm } from 'react-hook-form';
+
+const schema = yup.object().shape({
+  description: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  quantityUsed: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
+  selectedMaterialId: yup.string().required('La materia prima es obligatoria'),
+});
 
 export default function MaterialUsageTracker() {
     const [rawMaterials, setRawMaterials] = useState([]);
@@ -22,6 +31,11 @@ export default function MaterialUsageTracker() {
     const [successMessage, setSuccessMessage] = useState('');
     const [open, setIsOpen] = useState(false);
     const [totalCost, setTotalCost] = useState(0);
+    const [newInsumo, setNewInsumo] = useState({
+        description: '',
+        quantity: '',
+        materialId: '',
+      });
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -92,40 +106,41 @@ export default function MaterialUsageTracker() {
         return material ? material.materialDescription : 'Materia desconocida';
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+      resolver: yupResolver(schema),
+      mode: 'onChange',
+      reValidateMode: 'onChange',
+    });
+
+    const onSubmit = async (data) => {
+      try {
         const userId = localStorage.getItem('userId');
 
-        if (!userId || !selectedMaterialId || !quantityUsed || !description) {
-            setErrorMessage('Por favor, completa todos los campos.');
-            return;
+        if (!userId) {
+          navigate('/login-personal');
+          return;
         }
 
         const usageData = {
-            materialId: selectedMaterialId,
-            userId,
-            description,
-            quantity: parseFloat(quantityUsed),
+            ...newInsumo,
+            userId:userId,
+            description: data.description,
+            materialId: data.selectedMaterialId,
+            quantity: parseFloat(data.quantityUsed),
+            date: new Date().toISOString()
         };
+        
+        const response = await createMaterialUsage(usageData);
 
-        try {
-            const data = await createMaterialUsage(usageData);
-            if (data.usage) {
-                setSuccessMessage(data.message);
-                setErrorMessage('');
-                setSelectedMaterialId('');
-                setQuantityUsed('');
-                setDescription('');
-                closeForm();
-                await fetchMaterialUsages();
-            } else {
-                setErrorMessage(data.error || 'Error al registrar el consumo.');
-                setSuccessMessage('');
-            }
+        await fetchMaterialUsages();
+        
+        setSelectedMaterialId('');
+        setQuantityUsed('');
+        setDescription('');
+        closeForm();
+
         } catch (error) {
-            console.error('Error al registrar el consumo:', error);
-            setErrorMessage('Error al registrar el consumo.');
-            setSuccessMessage('');
+          setErrorMessage('Error al registrar el insumo.');
         }
     };
 
@@ -158,6 +173,8 @@ export default function MaterialUsageTracker() {
             grow: 2,
         },
     ];
+
+    filteredUsages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const conditionalRowStyles = [
         {
@@ -289,14 +306,12 @@ export default function MaterialUsageTracker() {
 
         <Modal open={open} onClose={closeForm}>
           <Box sx={styles.modalStyle}>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div style={{ marginBottom: '20px' }}>
                 <text style={styles.title}>Registrar Insumo</text>
               </div>
               <select className='input col-12'
-                value={selectedMaterialId}
-                onChange={(e) => setSelectedMaterialId(e.target.value)}
-                required
+                {...register('selectedMaterialId')}
                 >
                 <option
                     value="">Selecciona una materia prima</option>
@@ -306,22 +321,21 @@ export default function MaterialUsageTracker() {
                 </option>
                 ))}
               </select>
+              {errors.selectedMaterialId && <p style={{ color: 'red' }}>{errors.selectedMaterialId.message}</p>}
             
               <input className='input col-12'
                 type="number"
                 placeholder="Cantidad usada"
-                value={quantityUsed}
-                onChange={(e) => setQuantityUsed(e.target.value)}
-                required
+                {...register('quantityUsed')}	
               />
+              {errors.quantityUsed && <p style={{ color: 'red' }}>{errors.quantityUsed.message}</p>}
             
               <input className='input col-12'
                 type="text"
                 placeholder="Descripción"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
+                {...register('description')}
               />
+              {errors.description && <p style={{ color: 'red' }}>{errors.description.message}</p>}
 
               <Divider style={styles.divider} />
 
@@ -330,8 +344,6 @@ export default function MaterialUsageTracker() {
                 <button type="submit" className='secondary_button' styles={{width: '40%'}}>Registrar</button>
               </div>
             </form>
-            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
           </Box>
         </Modal>
       </div>

@@ -14,6 +14,15 @@ import { RiHome2Line } from 'react-icons/ri';
 import { FaTheaterMasks, FaRegHospital } from 'react-icons/fa';
 import MonthSelector from '../../MonthSelector';
 import TopNavBar from './TopNavBar';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useForm } from 'react-hook-form';
+
+const schema = yup.object().shape({
+  description: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  amount: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria'),
+  category: yup.string().required('La categoría es obligatoria'),
+});
 
 export default function PersonalExpensesTracker() {
   const [personalExpenses, setPersonalExpenses] = useState([]);
@@ -73,33 +82,6 @@ export default function PersonalExpensesTracker() {
     }
 
     return months;
-  };
-
-  // Generar los meses visibles
-  const months = generateMonths();
-
-  // Manejar la selección de un mes
-  const handleMonthSelect = (monthObj) => {
-    setSelectedMonth(monthObj.date);
-
-    // Si selecciona un mes en los extremos, desplazar la ventana
-    if (monthObj.isStart) {
-      // Desplazar ventana hacia atrás (3 meses más hacia el pasado)
-      const newCenter = new Date(dateWindow.center);
-      newCenter.setMonth(newCenter.getMonth() - 3);
-      setDateWindow(prev => ({
-        ...prev,
-        center: newCenter
-      }));
-    } else if (monthObj.isEnd) {
-      // Desplazar ventana hacia adelante (3 meses más hacia el futuro)
-      const newCenter = new Date(dateWindow.center);
-      newCenter.setMonth(newCenter.getMonth() + 3);
-      setDateWindow(prev => ({
-        ...prev,
-        center: newCenter
-      }));
-    }
   };
 
   useEffect(() => {
@@ -163,31 +145,31 @@ export default function PersonalExpensesTracker() {
     fetchCategories();
   }, []);
 
-  // Manejar cambio en los campos del formulario
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewExpense({
-      ...newExpense,
-      [name]: value,
-    });
-  };
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
 
   // Enviar el formulario para crear un nuevo gasto
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const userId = localStorage.getItem('userId');
-
-    if (!userId) {
-      navigate('/login-personal');
-      return;
-    }
-
-    const expenseData = {
-      ...newExpense,
-      userId,
-    };
-
+  const onSubmit = async (data) => {
     try {
+      const userId = localStorage.getItem('userId');
+
+      if (!userId) {
+        navigate('/login-personal');
+        return;
+      }
+
+      const expenseData = {
+        ...newExpense,
+        userId:userId,
+        description: data.description,
+        amount: parseFloat(data.amount),
+        categoryId: data.category,
+        date: new Date().toISOString()
+      };
+
       const createdExpense = await createPersonalExpense(expenseData);
       console.log('Gasto creado:', createdExpense);
 
@@ -208,6 +190,8 @@ export default function PersonalExpensesTracker() {
       console.error('Error al crear el gasto:', error);
     }
   };
+
+  filteredExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   // Preparar los datos para el gráfico de pastel
   const categoryData = () => {
@@ -253,16 +237,19 @@ export default function PersonalExpensesTracker() {
       maxWidth: '80px',
     },
     {
+      name: 'Descripción',
       selector: row => row.description,
       grow: 0.4,
       minWidth: '100px',
     },
     {
-      selector: row => '-$' + row.amount,
+      name: 'Cantidad',
+      selector: row => '$' + row.amount,
       grow: 0.3,
       minWidth: '100px',
     },
     {
+      name: 'Fecha de registro',
       selector: row => new Date(row.date).toLocaleString(),
       grow: 0.3,
       minWidth: '100px',
@@ -271,23 +258,23 @@ export default function PersonalExpensesTracker() {
 
   const CategoryIcon = ({ category }) => {
     const iconMap = {
-      Food: <MdOutlineFastfood />,
-      Clothes: <IoShirtOutline />,
-      Transport: <IoCarSportOutline />,
-      Home: <RiHome2Line />,
-      Entertainment: <FaTheaterMasks />,
-      Health: <FaRegHospital />,
-      Education: <MdOutlineSchool />,
+      Comida: <MdOutlineFastfood />,
+      Vestimenta: <IoShirtOutline />,
+      Transporte: <IoCarSportOutline />,
+      Hogar: <RiHome2Line />,
+      Entretenimiento: <FaTheaterMasks />,
+      Salud: <FaRegHospital />,
+      Educación: <MdOutlineSchool />,
     };
 
     const categoryColors = {
-      Food: '#ff6347',
-      Clothes: '#4682b4',
-      Transport: '#32cd32',
-      Home: '#ff8c00',
-      Entertainment: '#8a2be2',
-      Health: '#3cb371',
-      Education: '#f4a300',
+      Comida: '#ff6347',
+      Vestimenta: '#4682b4',
+      Transporte: '#32cd32',
+      Hogar: '#ff8c00',
+      Entretenimiento: '#8a2be2',
+      Salud: '#3cb371',
+      Educación: '#f4a300',
     };
 
     const icon = iconMap[category] || '❓';
@@ -384,39 +371,6 @@ export default function PersonalExpensesTracker() {
     },
   };
 
-  const customStyles = {
-    headCells: {
-      style: {
-        height: '0px',
-        padding: '0px',
-        border: 'none',
-        visibility: 'hidden',
-      },
-    },
-    cells: {
-      style: {
-        fontSize: '14px',
-        padding: '10px',
-        display: 'flex',
-        whiteSpace: 'nowrap',
-      },
-    },
-    rows: {
-      style: {
-        '&:hover': {
-          backgroundColor: '#e3e3e3',
-        },
-      },
-    },
-    table: {
-      style: {
-        width: '100%',
-        maxWidth: '100%',
-        overflowX: 'auto',
-      },
-    },
-  };
-
   return (
     <div>
       <div className="row justify-content-center">
@@ -437,8 +391,8 @@ export default function PersonalExpensesTracker() {
               <text>GASTOS</text>
               <GiPayMoney style={{ fontSize: '220%'}} />
             </div>
-
-            <text style={styles.cardText}>-${totalExpenses.toFixed(2)}</text>
+            
+            <text style={styles.cardText}>${totalExpenses.toFixed(2)}</text>
             <text style={styles.cardSubtitle}>Gastos del mes</text>
           </div>
 
@@ -455,7 +409,6 @@ export default function PersonalExpensesTracker() {
           <DataTable
             columns={columns}
             data={filteredExpenses}
-            customStyles={customStyles}
             pagination
             noDataComponent="No hay gastos disponibles."
           />
@@ -465,7 +418,7 @@ export default function PersonalExpensesTracker() {
       {/* Modal */}
       <Modal open={open} onClose={closeForm}>
         <Box sx={styles.modalStyle}>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div style={{ marginBottom: '20px' }}>
               <text style={styles.title}>Nuevo gasto</text>
             </div>
@@ -473,36 +426,31 @@ export default function PersonalExpensesTracker() {
               <input className='input col-12'
                 placeholder='Description'
                 type="text"
-                name="description"
-                value={newExpense.description}
-                onChange={handleInputChange}
-                required
+                {...register('description')}
               />
+              {errors.description && <p style={{ color: 'red' }}>{errors.description.message}</p>}
             </div>
             <div>
               <input className='input col-12'
                 placeholder='Amount'
                 type="number"
-                name="amount"
-                value={newExpense.amount}
-                onChange={handleInputChange}
-                required
+                {...register('amount')}
               />
+              {errors.amount && <p style={{ color: 'red' }}>{errors.amount.message}</p>}
             </div>
             <div>
               <select className='input col-12'
                 name="categoryId"
-                value={newExpense.categoryId}
-                onChange={handleInputChange}
-                required
+                {...register('category')}
               >
-                <option value="">Choose a category</option>
+                <option value="">Escoge una categoría</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
               </select>
+              {errors.category && <p style={{ color: 'red' }}>{errors.category.message}</p>}
             </div>
             <Divider style={styles.divider} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>

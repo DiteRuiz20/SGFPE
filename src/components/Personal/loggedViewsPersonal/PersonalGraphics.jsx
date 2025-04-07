@@ -191,13 +191,13 @@ export default function PersonalGraphics() {
   };
   
   const categoryColors = {
-    Food: '#ff6347',
-    Clothes: '#4682b4',
-    Transport: '#32cd32',
-    Home: '#ff8c00',
-    Entertainment: '#8a2be2',
-    Health: '#3cb371',
-    Education: '#f4a300',
+    Comida: '#ff6347',
+    Vestimenta: '#4682b4',
+    Transporte: '#32cd32',
+    Hogar: '#ff8c00',
+    Entretenimiento: '#8a2be2',
+    Salud: '#3cb371',
+    Educación: '#f4a300',
     'Sin categoría': '#808080',
   };  
 

@@ -73,13 +73,20 @@ export default function PersonalBudgetPlanner() {
 
   const totalExpenses = (filteredExpenses || []).reduce((sum, expense) => sum + expense.amount, 0);
   const totalSavings = (filteredSavings || []).reduce((sum, saving) => sum + saving.amount, 0);
-  const totalDebts = (filteredDebts || []).reduce((sum, debt) => sum + debt.amount, 0);
+  const calculateTotal = () => {
+    return personalDebts
+      .filter(debt => debt.status !== 'PAID')
+      .reduce((sum, debt) => sum + debt.amount, 0);
+  };
   const totalBalance = totalSavings - totalExpenses;
 
-  const chartData = [
-    { name: 'AHORROS', value: totalSavings, color: '#3DC9A7' },
-    { name: 'GASTOS', value: totalExpenses, color: '#30437A' }
-  ];
+  const chartData = () => {
+    if (totalSavings === 0 && totalExpenses === 0) return [];
+    return [
+      { name: 'AHORROS', value: totalSavings, color: '#3DC9A7' },
+      { name: 'GASTOS', value: totalExpenses, color: '#30437A' }
+    ];
+  };
 
   const styles = {
     divider: {
@@ -101,6 +108,7 @@ export default function PersonalBudgetPlanner() {
       fontSize: 28,
       fontWeight: 'bold',
       color: '#30437A',
+      textAlign: 'center',
     },
     card: (color) => ({
       backgroundColor: color,
@@ -137,35 +145,39 @@ export default function PersonalBudgetPlanner() {
       </div>
 
       <div className='row mt-3'>
-        <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
-          <div className="d-flex flex-row">
-            <Tooltip title="Total de ahorros" arrow placement="top">
+        <div className="row col-sm-6 row-cols-1 row-cols-md-1 row-cols-lg-2 g-2">
+          <div className="col d-flex justify-content-center">
+            <Tooltip title="Total de ahorros" arrow placement="bottom">
               <div style={styles.card('#3DC9A7')}>
-                <GiReceiveMoney style={{ fontSize: '220%', marginRight: '15px'}} />
+                <GiReceiveMoney style={{ fontSize: '220%', marginRight: '15px' }} />
                 ${totalSavings.toFixed(2)}
               </div>
             </Tooltip>
+          </div>
 
-            <Tooltip title="Total de gastos" arrow placement="top">
+          <div className="col d-flex justify-content-center">
+            <Tooltip title="Total de gastos" arrow placement="bottom">
               <div style={styles.card('#30437A')}>
-                <GiPayMoney style={{ fontSize: '220%', marginRight: '15px'}} />
+                <GiPayMoney style={{ fontSize: '220%', marginRight: '15px' }} />
                 ${totalExpenses.toFixed(2)}
               </div>
             </Tooltip>
           </div>
 
-          <div className="d-flex flex-row">
+          <div className="col d-flex justify-content-center">
             <Tooltip title="Fondos restantes" arrow placement="bottom">
               <div style={styles.card('#3DC9A7')}>
-                <GiMoneyStack style={{ fontSize: '220%', marginRight: '15px'}} />
+                <GiMoneyStack style={{ fontSize: '220%', marginRight: '15px' }} />
                 {totalBalance.toFixed(2)}
               </div>
             </Tooltip>
+          </div>
 
+          <div className="col d-flex justify-content-center">
             <Tooltip title="Total de deudas" arrow placement="bottom">
               <div style={styles.card('#B1B1B1')}>
-                <GiTakeMyMoney style={{ fontSize: '220%', marginRight: '15px'}} />
-                ${totalDebts.toFixed(2)}
+                <GiTakeMyMoney style={{ fontSize: '220%', marginRight: '15px' }} />
+                ${calculateTotal().toFixed(2)}
               </div>
             </Tooltip>
           </div>
@@ -173,10 +185,10 @@ export default function PersonalBudgetPlanner() {
 
         <div className='col-sm-6 d-flex flex-column justify-content-center align-items-center'>
           <h3 style={styles.title}>PRESUPUESTO TOTAL</h3>
-          {chartData.length > 0 ? (
+          {chartData().length > 0 ? (
             <PieChart width={400} height={450} margin={{bottom: 50 }}>
               <Pie
-                data={chartData} 
+                data={chartData()} 
                 cx={200} 
                 cy={200} 
                 innerRadius={80} 
@@ -184,7 +196,7 @@ export default function PersonalBudgetPlanner() {
                 outerRadius={120} 
                 dataKey="value"
               >
-                {chartData.map((entry, index) => (
+                {chartData().map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>

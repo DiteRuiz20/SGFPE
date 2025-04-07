@@ -9,6 +9,16 @@ import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { GiPayMoney } from 'react-icons/gi';
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
+import Select from 'react-select';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useForm, Controller } from 'react-hook-form';
+
+const schema = yup.object().shape({
+  orderDescription: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  income: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
+  materialUsageIds: yup.array().min(1, 'Debes seleccionar al menos un material').required('La materia prima es obligatoria'),
+});
 
 export default function RawMaterialOrderTracker() {
   const [orders, setOrders] = useState([]);
@@ -43,6 +53,11 @@ export default function RawMaterialOrderTracker() {
   const location = useLocation();
   const openForm = () => setIsOpen(true);
   const closeForm = () => setIsOpen(false);
+
+  const materialOptions = rawMaterials.map((material) => ({
+    value: material.id,
+    label: `${material.usageDescription} - ${material.quantityUsed} unidades`,
+  }));  
 
   const isCurrentMonth = () => {
     const currentMonth = new Date();
@@ -121,28 +136,27 @@ export default function RawMaterialOrderTracker() {
     fetchMaterials();
   }, [navigate]);
 
-  const handleMultiSelectChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions, (option) => option.value);
-    setMaterialUsageIds(selected);
-  };
+  const { control, register, handleSubmit, formState: { errors }, setValue } = useForm({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
+    try {
     const userId = localStorage.getItem('userId');
 
-    if (!userId || materialUsageIds.length === 0 || !income || !orderDescription) {
-      setErrorMessage('Por favor, completa todos los campos.');
+    if (!userId) {
       return;
     }
 
     const orderData = {
       userId,
-      materialUsageIds,
-      income: parseFloat(income),
-      orderDescription,
+      materialUsageIds: data.materialUsageIds,
+      income: parseFloat(data.income),
+      orderDescription: data.orderDescription,
     };
 
-    try {
       await createRawMaterialOrder(orderData);
       setSuccessMessage('Pedido creado exitosamente ✅');
       setIncome('');
@@ -164,6 +178,8 @@ export default function RawMaterialOrderTracker() {
     { name: 'Ingreso ($)', selector: row => `$${row.income}`, grow: 1 },
     { name: 'Fecha', selector: row => row.createdAt ? new Date(row.createdAt).toLocaleString() : 'Sin fecha', grow: 2 },
   ];
+
+  filteredOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const styles = {
     divider: {
@@ -280,37 +296,44 @@ export default function RawMaterialOrderTracker() {
 
         <Modal open={open} onClose={closeForm}>
           <Box sx={styles.modalStyle}>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div style={{ marginBottom: '20px' }}>
                 <text style={styles.title}>Crear Pedido</text>
               </div>
               <input className='input col-12'
                 placeholder="Descripción del pedido"
-                value={orderDescription}
-                onChange={(e) => setOrderDescription(e.target.value)}
-                required
+                {...register('orderDescription')}	
               />
+              {errors.orderDescription && <p style={{ color: 'red' }}>{errors.orderDescription.message}</p>}
 
-              <select className='input col-12'
-                multiple
-                value={materialUsageIds}
-                onChange={handleMultiSelectChange}
-                required>
-                {rawMaterials.map((material) => (
-                  <option key={material.id} value={material.id}>
-                    {material.usageDescription} - {material.quantityUsed} unidades
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="materialUsageIds"
+                control={control}
+                render={({ field }) => (
+                  <Select 
+                    {...field}
+                    isMulti
+                    options={materialOptions}
+                    className={`input col-12 basic-multi-select ${errors.materialUsageIds ? 'is-invalid' : ''}`}
+                    classNamePrefix="select"
+                    onChange={(selected) => field.onChange(selected.map(option => option.value))}
+                    value={materialOptions.filter(option =>
+                      field.value?.includes(option.value)
+                    )}
+                  />
+                )}
+              />
+              {errors.materialUsageIds && (
+                <p style={{ color: 'red' }}>{errors.materialUsageIds.message}</p>
+              )}
 
               <input className='input col-12'
                 type="number"
                 style={styles.input}
                 placeholder="Ingreso del pedido ($)"
-                value={income}
-                onChange={(e) => setIncome(e.target.value)}
-                required
+                {...register('income')}
               />
+              {errors.income && <p style={{ color: 'red' }}>{errors.income.message}</p>}
 
               <Divider style={styles.divider} />
 
@@ -318,8 +341,6 @@ export default function RawMaterialOrderTracker() {
                 <button className='primary_button' style={{ width: '40%' }} type="button" onClick={closeForm}>Cancelar</button>
                 <button className='secondary_button' style={{ width: '40%' }} type="submit">Registrar</button>
               </div>
-              {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-              {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
             </form>
           </Box>
         </Modal>

@@ -35,10 +35,13 @@ export default function NewProductOrdersGraphics() {
   const totalNetProfit = filteredOrders.reduce((sum, order) => sum + parseFloat(order.netProfit || 0), 0);
   const balance = totalNetProfit - totalOrderCost;
 
-  const chartData = [
-    { name: 'Costo total de órdenes', value: totalOrderCost, color: '#4AD8C2' },
-    { name: 'Ganancia neta', value: totalNetProfit, color: '#FF8C69' },
-  ];
+  const chartData = () => {
+    if (totalOrderCost === 0 && totalNetProfit === 0) return [];
+    return [
+      { name: 'Costo total de órdenes', value: totalOrderCost, color: '#4AD8C2' },
+      { name: 'Ganancia neta', value: totalNetProfit, color: '#FF8C69' },
+    ];
+  };
 
   const generatePDF = async () => {
     const input = document.getElementById('chart-container');
@@ -147,10 +150,10 @@ export default function NewProductOrdersGraphics() {
 
       <div className='row mt-3 d-flex justify-content-center align-items-center' id="chart-container">
         <p style={styles.title}>GANANCIAS VS GASTOS DE MERCANCÍA</p>
-        {chartData.length > 0 ? (
+        {chartData().length > 0 ? (
           <PieChart width={400} height={450}>
             <Pie
-              data={chartData}
+              data={chartData()}
               dataKey="value"
               nameKey="name"
               cx="50%"
@@ -159,7 +162,7 @@ export default function NewProductOrdersGraphics() {
               outerRadius={120}
               label
             >
-              {chartData.map((entry, index) => (
+              {chartData().map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>

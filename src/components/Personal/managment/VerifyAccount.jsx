@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Divider } from '@mui/material';
 import axios from 'axios';
+import { Alert, Snackbar } from '@mui/material';
 
 export default function VerifyAccount() {
     const location = useLocation();
@@ -12,6 +13,7 @@ export default function VerifyAccount() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [alert, setAlert] = useState({ open: false, message: '', severity: '' });
     const email = location.state?.email;
     const accountType = location.state?.accountType;
 
@@ -23,7 +25,7 @@ export default function VerifyAccount() {
 
     const handleVerification = async () => {
         if (!code) {
-            setError('Por favor, ingresa el código de verificación.');
+            setAlert({ open: true, message: 'Por favor ingresa el código', severity: 'warning' });
             return;
         }
 
@@ -35,7 +37,7 @@ export default function VerifyAccount() {
             });
 
             setSuccess(true);
-            setError('');
+            setAlert({ open: true, message: 'Cuenta verificada correctamente', severity: 'success' });
             console.log("Tipo de cuenta recibido:", accountType);
             setTimeout(() => {
                 switch (accountType) {
@@ -65,9 +67,9 @@ export default function VerifyAccount() {
             setLoading(true);
             await axios.post('http://localhost:8080/auth/resend-code', { email });
             setError('');
-            alert('Se ha enviado un nuevo código de verificación');
+            setAlert({ open: true, message: 'Se ha enviado un nuevo código', severity: 'success' });
         } catch (err) {
-            setError('Error al reenviar el código');
+            setAlert({ open: true, message: 'Error al enviar el código', severity: 'error' });
         } finally {
             setLoading(false);
         }
@@ -101,6 +103,12 @@ export default function VerifyAccount() {
             backgroundColor: '#999',
             marginTop: 20,
         },
+        alert: {
+            position: 'fixed',
+            top: 20,
+            left: '50%',
+            transform: 'translate(-50%, 0)'
+        }
     };
 
     return (
@@ -119,9 +127,8 @@ export default function VerifyAccount() {
                         style={styles.input}
                     />
                     {error && <p style={styles.error}>{error}</p>}
-                    {success && <p style={styles.success}>✅ Cuenta verificada correctamente</p>}
                     <button className='primary_button' onClick={handleVerification} disabled={loading}>
-                        {loading ? 'Verificando...' : 'VERIFICAR CUENTA'}
+                        {loading ? 'VERIFICANDO...' : 'VERIFICAR CUENTA'}
                     </button>
                     <Divider style={styles.divider} />
                     <p style={styles.subtitle}>¿No recibiste el correo?</p>
@@ -130,6 +137,11 @@ export default function VerifyAccount() {
                     </button>
                 </div>
             </div>
+            <Snackbar open={alert.open} autoHideDuration={3000} onClose={() => setAlert({ ...alert, open: false })}>
+                <Alert className='col-md-4 col-12' onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} style={styles.alert}>
+                    {alert.message}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

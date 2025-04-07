@@ -3,17 +3,27 @@ import { getDebtsByUserId, createDebt, updateDebt, deleteDebt } from '../../../s
 import { useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { useLocation } from 'react-router-dom';
-import { Divider } from '@mui/material';
+import { Chip, Divider } from '@mui/material';
 import { GiTakeMyMoney } from "react-icons/gi";
 import { LiaMoneyCheckAltSolid } from "react-icons/lia";
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { Modal, Box } from '@mui/material';
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../MonthSelector';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useForm } from 'react-hook-form';
+
+const schema = yup.object().shape({
+  creditor: yup.string().required('El acreedor es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  amount: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria')
+});
 
 export default function PersonalDebtTracker() {
   const [personalDebts, setPersonalDebts] = useState([]);
   const [filteredDebts, setFilteredDebts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [newDebt, setNewDebt] = useState({
     creditor: '',
@@ -91,28 +101,23 @@ export default function PersonalDebtTracker() {
   const openForm = () => setIsOpen(true);
   const closeForm = () => setIsOpen(false);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewDebt(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const userId = localStorage.getItem('userId');
-
-    if (!userId) {
-      console.error('No hay usuario autenticado');
-      return;
-    }
-
+  const onSubmit = async (data) => {
+    setErrorMessage('');
+    setIsLoading(true);
     try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) throw new Error('No hay usuario autenticado');
+      
       const debtData = {
-        ...newDebt,
-        userId: userId,
-        amount: parseFloat(newDebt.amount),
+        ...data,
+        userId,
+        amount: parseFloat(data.amount),
         date: new Date().toISOString(),
         status: 'PENDING'
       };
@@ -123,19 +128,16 @@ export default function PersonalDebtTracker() {
       // Recargar las deudas
       const response = await getDebtsByUserId(userId);
       setPersonalDebts(response);
-      setFilteredDebts(response.filter(debt =>
-        isSameMonth(debt.date, selectedMonth)
-      ));
+      setFilteredDebts(response.filter(debt => isSameMonth(debt.date, selectedMonth)));
 
       // Limpiar el formulario y cerrar el modal
-      setNewDebt({
-        creditor: '',
-        amount: '',
-        status: 'PENDING'
-      });
+      setValue('creditor', '');
+      setValue('amount', '');
       closeForm();
     } catch (error) {
-      console.error('Error al crear la deuda:', error);
+      setErrorMessage(error.message || 'Error al crear la deuda');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -158,24 +160,12 @@ export default function PersonalDebtTracker() {
     }
   };
 
-  const handleDeleteDebt = async (debtId) => {
-    try {
-      await deleteDebt(debtId);
-
-      // Recargar las deudas
-      const userId = localStorage.getItem('userId');
-      const response = await getDebtsByUserId(userId);
-      setPersonalDebts(response);
-      setFilteredDebts(response.filter(debt =>
-        isSameMonth(debt.date, selectedMonth)
-      ));
-    } catch (error) {
-      console.error('Error al eliminar la deuda:', error);
-    }
-  };
-
   // Calcular el total de deudas del mes
-  const totalDebts = filteredDebts.reduce((sum, debt) => sum + debt.amount, 0);
+  const calculateTotal = () => {
+    return personalDebts
+      .filter(debt => debt.status !== 'PAID')  // Exclude paid debts from the total
+      .reduce((sum, debt) => sum + debt.amount, 0);
+  };
 
   // Definir las columnas
   const columns = [
@@ -189,83 +179,69 @@ export default function PersonalDebtTracker() {
       maxWidth: '80px',
     },
     {
+      name: 'Acreedor',
       selector: row => row.creditor,
       grow: 0.3,
       minWidth: '100px',
     },
     {
+      name: 'Monto',
       selector: row => `$${row.amount.toFixed(2)}`,
-      grow: 0.3,
+      grow: 0.2,
       minWidth: '100px',
     },
     {
+      name: 'Fecha de registro',
       selector: row => new Date(row.date).toLocaleDateString(),
       grow: 0.3,
       minWidth: '120px',
     },
     {
+      name: 'Estado',
       selector: row => (
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-          <span style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+          <Chip 
+          label={row.status}
+          style={{
             backgroundColor: getStatusColor(row.status),
             color: 'white',
           }}>
-            {row.status}
-          </span>
-          {row.status !== 'PENDING' && (
-            <button
-              onClick={() => handleDeleteDebt(row.id)}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#ff4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-              }}
-            >
-              Eliminar
-            </button>
-          )}
+          </Chip>
           {row.status === 'PENDING' && (
             <>
               <button
                 onClick={() => handleStatusUpdate(row.id, 'PAID')}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: '#4CAF50',
+                  backgroundColor: '#3DC9A7',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
                   cursor: 'pointer',
                 }}
               >
-                Marcar como Pagada
-              </button>
-              <button
-                onClick={() => handleStatusUpdate(row.id, 'CANCELLED')}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#ff9800',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}
-              >
-                Cancelar
+                Marcar como pagada
               </button>
             </>
           )}
         </div>
       ),
-      grow: 1,
-      minWidth: '300px',
+      grow: 0.5,
+      minWidth: '150px',
     },
   ];
+
+  filteredDebts.sort((a, b) => new Date(b.date) - new Date(a.date));
   
+  const conditionalRowStyles = [
+    {
+      when: row => row.status === 'PAID',
+      style: {
+        backgroundColor: '#f0f0f0',
+        cursor: 'not-allowed',
+      },
+    },
+  ];
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -374,41 +350,7 @@ export default function PersonalDebtTracker() {
           fontWeight: 'bold',
           color: '#B1B1B1',
         },
-      };
-
-      const customStyles = {
-        headCells: {
-          style: {
-            height: '0px',
-            padding: '0px',
-            border: 'none',
-            visibility: 'hidden',
-          },
-        },
-        cells: {
-          style: {
-            fontSize: '14px',
-            padding: '10px',
-            display: 'flex',
-            whiteSpace: 'nowrap',
-          },
-        },
-        rows: {
-          style: {
-            '&:hover': {
-              backgroundColor: '#e3e3e3',
-            },
-          },
-        },
-        table: {
-          style: {
-            width: '100%',
-            maxWidth: '100%',
-            overflowX: 'auto',
-          },
-        },
-      };
-      
+      };      
 
     return (
       <div>
@@ -430,7 +372,7 @@ export default function PersonalDebtTracker() {
                 <text>DEUDAS</text>
                 <GiTakeMyMoney style={{ fontSize: '220%'}} />
                 </div>
-                  <text style={styles.cardText}>-${totalDebts.toFixed(2)}</text>
+                  <text style={styles.cardText}>${calculateTotal().toFixed(2)}</text>
                   <text style={styles.cardSubtitle}>Deudas del mes</text>
             </div>
             <button
@@ -446,8 +388,8 @@ export default function PersonalDebtTracker() {
             <DataTable
               columns={columns}
               data={filteredDebts}
-              customStyles={customStyles}
               pagination
+              conditionalRowStyles={conditionalRowStyles}
               noDataComponent="No hay deudas disponibles."
             />
             </div>
@@ -455,34 +397,61 @@ export default function PersonalDebtTracker() {
 
       <Modal open={open} onClose={closeForm}>
         <Box sx={styles.modalStyle}>
-            <form onSubmit={handleSubmit}>
-            <div style={{marginBottom: '20px'}}>
-                <text style={styles.title}>Nueva deuda</text>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div style={{ marginBottom: '20px' }}>
+              <p style={styles.title}>Nueva deuda</p>
             </div>
+            {errorMessage && (
+              <div style={{
+                backgroundColor: '#ffebee',
+                padding: '10px',
+                borderRadius: '4px',
+                marginBottom: '15px',
+                color: '#d32f2f',
+              }}>
+                {errorMessage}
+              </div>
+            )}
+            
             <div>
-                <input className='input col-12'
-                placeholder='Acreedor'
+              <input
+                className="input col-12"
+                placeholder="Acreedor"
                 type="text"
-                name="creditor"
-                value={newDebt.creditor}
-                onChange={handleInputChange}
-                required
+                {...register('creditor')}
               />
+              {errors.creditor && <p style={{ color: 'red' }}>{errors.creditor.message}</p>}
             </div>
+            
             <div>
-                <input className='input col-12'
-                placeholder='Cantidad'
+              <input
+                className="input col-12"
+                placeholder="Cantidad"
                 type="number"
-                name="amount"
-                value={newDebt.amount}
-                onChange={handleInputChange}
-                required
+                {...register('amount')}
               />
+              {errors.amount && <p style={{ color: 'red' }}>{errors.amount.message}</p>}
             </div>
+
             <Divider style={styles.divider} />
+
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-              <button className='primary_button' style={{ width: '40%'}} type="button" onClick={closeForm}>Cancelar</button>
-              <button className='secondary_button' style={{ width: '40%' }} type="submit">Agregar</button>
+              <button
+                className="primary_button"
+                style={{ width: '40%' }}
+                type="button"
+                onClick={closeForm}
+              >
+                Cancelar
+              </button>
+              <button
+                className="secondary_button"
+                style={{ width: '40%' }}
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? 'PROCESANDO...' : 'Agregar'}
+              </button>
             </div>
           </form>
         </Box>

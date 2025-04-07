@@ -7,6 +7,19 @@ import { MdOutlineAddToPhotos } from 'react-icons/md';
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
 import { BiStore } from "react-icons/bi";
+import { Alert, Snackbar } from '@mui/material';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useForm } from 'react-hook-form';
+
+const schema = yup.object().shape({
+  description: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  quantity: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
+  unitCost: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('El precio unitario es obligatorio').min(1, 'El precio unitario debe ser mayor a 0'),
+  category: yup.string().required('La categoría es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  paymentMethod: yup.string().required('El método de pago es obligatoria'),
+  productObservations: yup.string().required('Las observaciones son obligatorias').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+});
 
 export default function NewProductExpenseTracker() {
   const [products, setProducts] = useState([]);
@@ -14,6 +27,7 @@ export default function NewProductExpenseTracker() {
   const [openManualModal, setOpenManualModal] = useState(false);
   const [file, setFile] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [alert, setAlert] = useState({ open: false, message: '', severity: '' });
   const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
 
   const [manualForm, setManualForm] = useState({
@@ -38,7 +52,10 @@ export default function NewProductExpenseTracker() {
 
   const navigate = useNavigate();
 
-  const openForm = () => setOpenUploadModal(true);
+  const openForm = () => {
+    setAlert({ open: true, message: 'El uso de la plantilla es esencial para la lectura', severity: 'info' });
+    setOpenUploadModal(true);
+  };
   const closeForm = () => setOpenUploadModal(false);
   const openManualForm = () => setOpenManualModal(true);
   const closeManualForm = () => setOpenManualModal(false);
@@ -84,18 +101,29 @@ export default function NewProductExpenseTracker() {
     }
   };
 
-  const handleManualSubmit = async (e) => {
-    e.preventDefault();
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
+
+  const handleManualSubmit = async (data) => {
+    try {
     const userId = localStorage.getItem('userId');
     if (!userId) return navigate('/login-personal');
 
-    try {
+    
       const newProduct = {
-        ...manualForm,
+        ...manualForm, // Use data directly from react-hook-form
         userId,
-        quantity: parseFloat(manualForm.quantity),
-        unitCost: parseFloat(manualForm.unitCost),
-        totalCost: parseFloat(manualForm.totalCost),
+        productDescription: data.description,
+        quantity: parseInt(data.quantity),
+        unitCost: parseFloat(data.unitCost),
+        category: data.category,
+        paymentMethod: data.paymentMethod,
+        productObservations: data.productObservations,
+        totalCost: (parseInt(data.quantity) * parseFloat(data.unitCost)).toFixed(2),
+        purchaseDate: new Date().toISOString(),
       };
 
       await createNewProductExpense(newProduct);
@@ -117,7 +145,7 @@ export default function NewProductExpenseTracker() {
 
   const columns = [
     {
-      selector: row => (<strong>{row.productDescription}</strong>),
+      selector: row => row.productDescription,
       name: 'Descripción',
       grow: 1,
     },
@@ -142,6 +170,8 @@ export default function NewProductExpenseTracker() {
       grow: 1,
     }
   ];
+
+  filteredProducts.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
   const totalMonthlyCost = filteredProducts.reduce((sum, p) => sum + (p.totalCost || 0), 0);
 
@@ -214,6 +244,12 @@ export default function NewProductExpenseTracker() {
       fontWeight: 'bold',
       color: '#30437A',
     },
+    alert: {
+      position: 'fixed',
+      top: 20,
+      left: '50%',
+      transform: 'translate(-50%, 0)'
+    }
   };
 
   return (
@@ -255,7 +291,7 @@ export default function NewProductExpenseTracker() {
         <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', padding: '20px', boxSizing: 'border-box' }}>
           <DataTable
             columns={columns}
-            data={filteredProducts} // ✅ Solo muestra productos del mes seleccionado
+            data={filteredProducts}
             pagination
             noDataComponent="No hay productos disponibles en este mes."
           />
@@ -299,43 +335,32 @@ export default function NewProductExpenseTracker() {
       {/* Modal manual */}
       <Modal open={openManualModal} onClose={closeManualForm}>
         <Box sx={styles.modalStyle}>
-          <form onSubmit={handleManualSubmit}>
+          <form onSubmit={handleSubmit(handleManualSubmit)}>
             <div style={{ marginBottom: '20px' }}>
               <text style={styles.title}>Nueva mercancía</text>
             </div>
 
-            {[
-              { name: 'productDescription', placeholder: 'Descripción', type: 'text' },
-              { name: 'quantity', placeholder: 'Cantidad adquirida', type: 'number' },
-              { name: 'unitCost', placeholder: 'Costo unitario', type: 'number' },
-              { name: 'category', placeholder: 'Categoría', type: 'text' },
-              { name: 'productObservations', placeholder: 'Observaciones', type: 'text' },
-            ].map(field => (
-              <div key={field.name}>
-                <input
-                  className='input col-12'
-                  placeholder={field.placeholder}
-                  type={field.type}
-                  name={field.name}
-                  value={manualForm[field.name]}
-                  onChange={(e) => setManualForm({ ...manualForm, [field.name]: e.target.value })}
-                  required={field.name !== 'productObservations' && field.name !== 'category'}
-                />
-              </div>
-            ))}
+            <input type="text" placeholder='Descripción' {...register('description')} className='input col-12 mb-2' />
+            {errors.description && <span style={{ color: 'red' }}>{errors.description.message}</span>}
+            <input type="number" placeholder='Cantidad' {...register('quantity')} className='input col-12 mb-2' />
+            {errors.quantity && <span style={{ color: 'red' }}>{errors.quantity.message}</span>}
+            <input type="number" placeholder='Precio Unitario' {...register('unitCost')} className='input col-12 mb-2' />
+            {errors.unitCost && <span style={{ color: 'red' }}>{errors.unitCost.message}</span>}
+            <input type="text" placeholder='Categoría' {...register('category')} className='input col-12 mb-2' />
+            {errors.category && <span style={{ color: 'red' }}>{errors.category.message}</span>}
+            <textarea placeholder='Notas' {...register('productObservations')} className='input col-12 mb-2' />
+            {errors.productObservations && <span style={{ color: 'red' }}>{errors.productObservations.message}</span>}
 
             <select
               className='input col-12'
-              name="paymentMethod"
-              value={manualForm.paymentMethod}
-              onChange={(e) => setManualForm({ ...manualForm, paymentMethod: e.target.value })}
-              required
+              {...register('paymentMethod')}
             >
               <option value="">Selecciona método de pago</option>
               <option value="Tarjeta">Tarjeta</option>
               <option value="Efectivo">Efectivo</option>
               <option value="Transferencia">Transferencia</option>
             </select>
+            {errors.paymentMethod && <p style={{ color: 'red' }}>{errors.paymentMethod.message}</p>}
 
             <Divider style={styles.divider} />
 
@@ -346,6 +371,12 @@ export default function NewProductExpenseTracker() {
           </form>
         </Box>
       </Modal>
+
+      <Snackbar open={alert.open} onClose={() => setAlert({ ...alert, open: false })}>
+        <Alert className='col-md-4 col-12' onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} style={styles.alert}>
+          {alert.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

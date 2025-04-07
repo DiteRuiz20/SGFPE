@@ -7,6 +7,19 @@ import { MdOutlineAddToPhotos } from 'react-icons/md';
 import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
 import { TbWood } from "react-icons/tb";
+import { Alert, Snackbar } from '@mui/material';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useForm } from 'react-hook-form';
+
+const schema = yup.object().shape({
+  description: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  quantity: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
+  unitPrice: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('El precio unitario es obligatorio').min(1, 'El precio unitario debe ser mayor a 0'),
+  supplier: yup.string().required('El proveedor es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  measurementUnit: yup.string().required('La unidad de medida es obligatoria'),
+  notes: yup.string().required('Las observaciones son obligatorias').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+});
 
 export default function RawMaterialsTracker() {
   const [rawMaterials, setRawMaterials] = useState([]);
@@ -14,6 +27,7 @@ export default function RawMaterialsTracker() {
   const [openUploadModal, setOpenUploadModal] = useState(false);
   const [openManualModal, setOpenManualModal] = useState(false);
   const [file, setFile] = useState(null);
+  const [alert, setAlert] = useState({ open: false, message: '', severity: '' });
   const [manualForm, setManualForm] = useState({
     materialDescription: '',
     quantity: '',
@@ -48,7 +62,11 @@ export default function RawMaterialsTracker() {
 
   const isDisabled = !isCurrentMonth();
 
-  const openFileForm = () => setOpenUploadModal(true);
+  const openFileForm = () => {
+    setAlert({ open: true, message: 'El uso de la plantilla es esencial para la lectura', severity: 'info' });
+    setOpenUploadModal(true);
+  };
+  
   const closeFileForm = () => setOpenUploadModal(false);
 
   const openManualForm = () => setOpenManualModal(true);
@@ -97,19 +115,30 @@ export default function RawMaterialsTracker() {
     }
   };
 
-  const handleManualSubmit = async (e) => {
-    e.preventDefault();
-    const userId = localStorage.getItem('userId');
-    if (!userId) return navigate('/login-personal');
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
 
+  const onSubmit = async (data) => {
     try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return navigate('/login-personal');
+
       await createRawMaterial({
         ...manualForm,
+        materialDescription: data.description,
+        quantity: data.quantity,
+        unitPrice: data.unitPrice,
+        supplier: data.supplier,
+        measurementUnit: data.measurementUnit,
+        notes: data.notes,
         entryDate: new Date().toISOString(),
         userId
       });
-      closeManualForm();
       setManualForm({ materialDescription: '', quantity: '', unitPrice: '', supplier: '', measurementUnit: '', notes: '' });
+      closeManualForm();
       fetchRawMaterials();
     } catch (error) {
       console.error('Error al crear materia prima:', error);
@@ -125,7 +154,7 @@ export default function RawMaterialsTracker() {
 
   const columns = [
     {
-      selector: row => (<strong>{row.materialDescription}</strong>),
+      selector: row => row.materialDescription,
       name: 'Descripción',
       grow: 1,
     },
@@ -140,6 +169,12 @@ export default function RawMaterialsTracker() {
       grow: 1,
     },
   ];
+
+  rawMaterials.sort((a, b) => {
+    const dateA = new Date(a.entryDate).getTime();
+    const dateB = new Date(b.entryDate).getTime();
+    return dateB - dateA;
+  });
 
   const styles = {
     divider: {
@@ -173,6 +208,12 @@ export default function RawMaterialsTracker() {
     title: {
       fontSize: 28, fontWeight: 'bold', color: '#B1B1B1',
     },
+    alert: {
+      position: 'fixed',
+      top: 20,
+      left: '50%',
+      transform: 'translate(-50%, 0)'
+    }
   };
 
   return (
@@ -259,31 +300,33 @@ export default function RawMaterialsTracker() {
       {/* Modal manual */}
       <Modal open={openManualModal} onClose={closeManualForm}>
         <Box sx={styles.modalStyle}>
-          <form onSubmit={handleManualSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div style={{ marginBottom: '20px' }}>
               <text style={styles.title}>Nueva materia prima</text>
             </div>
-            <input type="text" placeholder='Descripción' value={manualForm.materialDescription} onChange={(e) => setManualForm({ ...manualForm, materialDescription: e.target.value })} required className='input col-12 mb-2' />
-            <input type="number" placeholder='Cantidad' value={manualForm.quantity} onChange={(e) => setManualForm({ ...manualForm, quantity: e.target.value })} required className='input col-12 mb-2' />
-            <input type="number" placeholder='Precio Unitario' value={manualForm.unitPrice} onChange={(e) => setManualForm({ ...manualForm, unitPrice: e.target.value })} required className='input col-12 mb-2' />
-            <input type="text" placeholder='Proveedor' value={manualForm.supplier}
-              onChange={(e) => setManualForm({ ...manualForm, supplier: e.target.value })} required className='input col-12 mb-2' />
+            <input type="text" placeholder='Descripción' {...register('description')} className='input col-12 mb-2' />
+            {errors.description && <span style={{ color: 'red' }}>{errors.description.message}</span>}
+            <input type="number" placeholder='Cantidad' {...register('quantity')} className='input col-12 mb-2' />
+            {errors.quantity && <span style={{ color: 'red' }}>{errors.quantity.message}</span>}
+            <input type="number" placeholder='Precio Unitario' {...register('unitPrice')} className='input col-12 mb-2' />
+            {errors.unitPrice && <span style={{ color: 'red' }}>{errors.unitPrice.message}</span>}
+            <input type="text" placeholder='Proveedor' {...register('supplier')} className='input col-12 mb-2' />
+            {errors.supplier && <span style={{ color: 'red' }}>{errors.supplier.message}</span>}
 
             {/* Agregado select para la unidad de medida */}
             <select
-              value={manualForm.measurementUnit}
-              onChange={(e) => setManualForm({ ...manualForm, measurementUnit: e.target.value })}
+              {...register('measurementUnit')}
               className='input col-12 mb-2'
-              required
             >
               <option value="">Seleccione unidad de medida</option>
               {measurementUnits.map((unit) => (
                 <option key={unit} value={unit}>{unit}</option>
               ))}
             </select>
+            {errors.measurementUnit && <span style={{ color: 'red' }}>{errors.measurementUnit.message}</span>}
 
-            <textarea placeholder='Notas' value={manualForm.notes}
-              onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })} className='input col-12 mb-2' />
+            <textarea placeholder='Notas' {...register('notes')} className='input col-12 mb-2' />
+            {errors.notes && <span style={{ color: 'red' }}>{errors.notes.message}</span>}
             <Divider style={styles.divider} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
               <button type="button" className='primary_button' onClick={closeManualForm}>Cancelar</button>
@@ -292,6 +335,12 @@ export default function RawMaterialsTracker() {
           </form>
         </Box>
       </Modal>
+
+      <Snackbar open={alert.open} onClose={() => setAlert({ ...alert, open: false })}>
+        <Alert className='col-md-4 col-12' onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} style={styles.alert}>
+          {alert.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

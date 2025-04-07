@@ -9,11 +9,20 @@ import TopNavBar from './TopNavBar';
 import MonthSelector from '../../../MonthSelector';
 import { BsBoxSeam } from "react-icons/bs";
 import { BsTrash } from "react-icons/bs";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useForm, Controller } from 'react-hook-form';
+
+const schema = yup.object().shape({
+  orderDescription: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  income: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
+  items: yup.array().min(1, 'Debes seleccionar al menos un producto').required('El producto es obligatorio'),
+});
 
 export default function NewProductOrderTracker() {
   const [orders, setOrders] = useState([]);
   const [open, setIsOpen] = useState(false);
-  const [form, setForm] = useState({ orderDescription: '', income: 0, items: [] });
+  const [form, setForm] = useState({ orderDescription: '', income: '', items: [] });
   const navigate = useNavigate();
   const [availableProducts, setAvailableProducts] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -26,7 +35,10 @@ export default function NewProductOrderTracker() {
   };
 
   const openForm = () => setIsOpen(true);
-  const closeForm = () => setIsOpen(false);
+  const closeForm = () => {
+    resetFormState();
+    setIsOpen(false);
+  };
 
   const isCurrentMonth = () => {
     const currentMonth = new Date();
@@ -35,6 +47,12 @@ export default function NewProductOrderTracker() {
   };
 
   const isDisabled = !isCurrentMonth();
+
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+      resolver: yupResolver(schema),
+      mode: 'onChange',
+      reValidateMode: 'onChange',
+    });
 
   const fetchAvailableProducts = async () => {
     try {
@@ -67,17 +85,26 @@ export default function NewProductOrderTracker() {
     fetchOrders();
   }, []);
 
-  const handleCreateOrder = async (e) => {
-    e.preventDefault();
-    try {
+  const resetFormState = () => {
+    setForm({ orderDescription: '', income: '', items: [] });
+    setValue("orderDescription", "");
+    setValue("income", "");
+    setValue("items", []);
+  };
+
+  const handleCreateOrder = async (data) => {
+    try {    
       const payload = {
         ...form,
         userId,
-        income: parseFloat(form.income),
+        orderDescription: data.orderDescription,
+        orderDate: new Date(),
+        income: parseFloat(data.income),
       };
       await createNewProductOrder(payload);
       closeForm();
       fetchOrders();
+      fetchAvailableProducts();
     } catch (err) {
       console.error('Error al crear orden:', err);
     }
@@ -174,6 +201,8 @@ export default function NewProductOrderTracker() {
     isSameMonth(order.orderDate, selectedMonth)
   );
 
+  filteredOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+
   const totalNetProfit = filteredOrders.reduce(
     (sum, order) => sum + (order.netProfit || 0),
     0
@@ -225,7 +254,7 @@ export default function NewProductOrderTracker() {
 
         <Modal open={open} onClose={() => closeForm()}>
           <Box sx={styles.modalStyle}>
-            <form onSubmit={handleCreateOrder}>
+            <form onSubmit={handleSubmit(handleCreateOrder)}>
               <div style={{ marginBottom: '20px' }}>
                 <text style={styles.title}>Nueva orden</text>
               </div>
@@ -233,45 +262,51 @@ export default function NewProductOrderTracker() {
               <input className='input col-12'
                 type="text"
                 placeholder="Descripción del pedido"
-                value={form.orderDescription}
-                onChange={(e) => setForm({ ...form, orderDescription: e.target.value })}
-                required
+                {...register('orderDescription')}
               />
+              {errors.orderDescription && <p style={{ color: 'red' }}>{errors.orderDescription.message}</p>}
 
               <input className='input col-12'
                 type="number"
-                step="0.01"
                 placeholder="Ingreso"
-                value={form.income}
-                onChange={(e) => setForm({ ...form, income: e.target.value })}
-                required
+                {...register('income')}
               />
+              {errors.income && <p style={{ color: 'red' }}>{errors.income.message}</p>}
 
-              <select className='input col-12'
+              <select
+                className='input col-12'
                 onChange={(e) => {
                   const selectedId = e.target.value;
                   const selected = availableProducts.find(p => p.id === selectedId);
+
                   if (selected) {
-                    setForm(prev => ({
-                      ...prev, items: [...prev.items, {
-                        productId: selected.id,
-                        productDescription: selected.productDescription,
-                        quantity: 1,
-                        unitCost: selected.unitCost
-                      }]
-                    }));
+                    const alreadyAdded = form.items.some(item => item.productId === selected.id);
+                    if (alreadyAdded) return;
+
+                    const updatedItems = [...form.items, {
+                      productId: selected.id,
+                      productDescription: selected.productDescription,
+                      quantity: 1,
+                      unitCost: selected.unitCost
+                    }];
+
+                    setForm(prev => ({ ...prev, items: updatedItems }));
+                    setValue("items", updatedItems); // sync with react-hook-form
+                    e.target.value = ""; // reset select
                   }
                 }}
               >
-
                 <option value="">Selecciona un producto</option>
-
-                {availableProducts.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.productDescription} - {p.quantity} disponibles
-                  </option>
-                ))}
+                {availableProducts
+                  .filter(p => !form.items.some(item => item.productId === p.id))
+                  .map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.productDescription} - {p.quantity} disponibles
+                    </option>
+                  ))}
               </select>
+
+              {errors.items && (<p style={{ color: 'red' }}>{errors.items.message}</p>)}
 
               <table>
                 <thead>
