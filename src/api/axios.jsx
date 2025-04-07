@@ -10,7 +10,7 @@ const api = axios.create({
 api.interceptors.request.use(
     async config => {
         // Rutas que no requieren token
-        const noAuthRoutes = ['/auth/login', '/auth/validate-account', '/auth/register', '/auth/verify-code', '/auth/resend-code', '/forgot-password'];
+        const noAuthRoutes = ['/auth/login', '/auth/validate-account', '/auth/register', '/auth/verify-code', '/auth/resend-code', '/auth/request-password-reset', '/auth/reset-password'];
 
         if (!noAuthRoutes.includes(config.url)) {
             try {
@@ -338,6 +338,26 @@ export const getNewProductOrdersByUserId = async (userId) => {
         return response;
     } catch (error) {
         console.error('Error fetching new product orders:', error);
+        throw error;
+    }
+};
+
+export const sendResetCode = async (email) => {
+    try {
+        const response = await api.post('/auth/request-password-reset', { email });
+        return response.data;
+    } catch (error) {
+        console.error('Error sending reset code:', error);
+        throw error;
+    }
+};
+
+export const resetPassword = async (email, code, newPassword) => {
+    try {
+        const response = await api.post('/auth/reset-password', { email, code, newPassword });
+        return response.data;
+    } catch (error) {
+        console.error('Error resetting password:', error);
         throw error;
     }
 };

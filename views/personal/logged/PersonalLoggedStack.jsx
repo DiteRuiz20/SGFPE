@@ -17,11 +17,11 @@ const Stack = createStackNavigator();
 
 const getScreenTitle = (routeName) => {
   const titles = {
-    Budget: "Budget Planning",
-    Savings: "Saving Tracker",
-    Debt: "Debt Tracker",
-    Expenses: "Expense Tracker",
-    Graphics: "Graphics Overview",
+    "Planeación": "Planeación",
+    "Ahorros": "Ahorros",
+    "Deudas": "Deudas",
+    "Gastos": "Gastos",
+    "Gráficos": "Gráficos",
   };
   return titles[routeName] || "App";
 };
@@ -75,11 +75,11 @@ const BottomTabNavigator = ({ navigation }) => {
         ),
       })}
     >
-      <Tab.Screen name="Budget" component={BudgetPlanning} />
-      <Tab.Screen name="Savings" component={SavingTracker} />
-      <Tab.Screen name="Debt" component={DebtTracker} />
-      <Tab.Screen name="Expenses" component={ExpenseTracker} />
-      <Tab.Screen name="Graphics" component={Graphics} />
+      <Tab.Screen name="Planeación" component={BudgetPlanning} />
+      <Tab.Screen name="Ahorros" component={SavingTracker} />
+      <Tab.Screen name="Deudas" component={DebtTracker} />
+      <Tab.Screen name="Gastos" component={ExpenseTracker} />
+      <Tab.Screen name="Gráficos" component={Graphics} />
     </Tab.Navigator>
   );
 };
@@ -106,19 +106,19 @@ const getIconName = (routeName, focused) => {
   let iconType = "material-community";
 
   switch (routeName) {
-    case "Budget":
+    case "Planeación":
       iconName = focused ? "home" : "home-outline";
       break;
-    case "Savings":
+    case "Ahorros":
       iconName = focused ? "bank" : "bank-outline";
       break;
-    case "Debt":
+    case "Deudas":
       iconName = focused ? "currency-usd" : "currency-usd-off";
       break;
-    case "Expenses":
+    case "Gastos":
       iconName = focused ? "wallet" : "wallet-outline";
       break;
-    case "Graphics":
+    case "Gráficos":
       iconName = focused ? "chart-bar" : "chart-bar-stacked";
       break;
   }

@@ -16,6 +16,7 @@ import { AuthProvider, useAuth } from './src/auth/AuthContext';
 import VerifyAccount from './views/VerifyAccount';
 import BusinessNewProductExpenseLogin from './views/business/accountManagment/BusinessNewProductExpenseLogin';
 import BusinessNewProductExpenseSignUp from './views/business/accountManagment/BusinessNewProductExpenseSignUp';
+import resetPassword from './views/ResetPassword';
 
 const Stack = createStackNavigator();
 
@@ -43,6 +44,7 @@ return (
     <Stack.Screen name="VerifyAccount" component={VerifyAccount} />
     <Stack.Screen name="BusinessNewProductExpenseLogin" component={BusinessNewProductExpenseLogin} />
     <Stack.Screen name="BusinessNewProductExpenseSignUp" component={BusinessNewProductExpenseSignUp} />
+    <Stack.Screen name="ResetPassword" component={resetPassword} />
   </Stack.Navigator>
 );
 }

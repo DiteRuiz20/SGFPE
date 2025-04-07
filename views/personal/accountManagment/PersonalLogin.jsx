@@ -56,6 +56,11 @@ export default function PersonalLogin({ navigation }) {
       >
         <Text style={styles.button_text}>SIGN UP</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
+        <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
+      </TouchableOpacity>
+
     </View>
   );
 }
@@ -68,6 +73,14 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
     marginTop: -45,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    color: '#30437A',
+    fontSize: 14,
+    marginTop: 18,
+    marginBottom: 10,
+    fontWeight: '500'
   },
   image: {
     width: 130,
