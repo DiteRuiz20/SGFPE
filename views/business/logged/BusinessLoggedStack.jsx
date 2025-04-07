@@ -14,9 +14,8 @@ const Stack = createStackNavigator();
 
 const getScreenTitle = (routeName) => {
   const titles = {
-    Budget: "Budget Planning",
-    Income: "Income Tracker",
-    Expenses: "Expense Tracker",
+    "Mercancía": "Nueva Mercancía",
+    "Pedidos": "Pedidos",
     Graphics: "Graphics Overview",
   };
   return titles[routeName] || "App";
@@ -33,7 +32,7 @@ const BottomTabNavigator = ({ navigation }) => {
 
         tabBarActiveTintColor: "#4abfa4",
         tabBarInactiveTintColor: "gray",
-        headerTitle: getScreenTitle(route.name), 
+        headerTitle: getScreenTitle(route.name),
         headerTitleAlign: "left",
         headerTitleStyle: {
           fontSize: 20,
@@ -46,14 +45,13 @@ const BottomTabNavigator = ({ navigation }) => {
         headerRight: () => (
           <TouchableOpacity style={styles.headerRight} onPress={() => navigation.navigate("Profile")}>
             <Text style={{ marginRight: 10, fontWeight: "bold" }}>MOSHIUR</Text>
-            <Icon style={{marginRight:10}} name="account-circle" type="material" size={40} color="#888" />
+            <Icon style={{ marginRight: 10 }} name="account-circle" type="material" size={40} color="#888" />
           </TouchableOpacity>
         ),
       })}
     >
-      <Tab.Screen name="Budget" component={BudgetPlanning} />
-      <Tab.Screen name="Income" component={IncomeTracker} />
-      <Tab.Screen name="Expenses" component={ExpenseTracker} />
+      <Tab.Screen name="Mercancía" component={ExpenseTracker} />
+      <Tab.Screen name="Pedidos" component={IncomeTracker} />
       <Tab.Screen name="Graphics" component={Graphics} />
     </Tab.Navigator>
   );
@@ -63,10 +61,10 @@ const AppStack = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen 
-        name="Profile" 
+      <Stack.Screen
+        name="Profile"
         component={Profile}
-        options={{ headerShown: true }} 
+        options={{ headerShown: true }}
       />
     </Stack.Navigator>
   );
@@ -84,10 +82,10 @@ const getIconName = (routeName, focused) => {
     case "Budget":
       iconName = focused ? "home" : "home-outline";
       break;
-    case "Income":
+    case "Mercancía":
       iconName = focused ? "bank" : "bank-outline";
       break;
-    case "Expenses":
+    case "Pedidos":
       iconName = focused ? "wallet" : "wallet-outline";
       break;
     case "Graphics":

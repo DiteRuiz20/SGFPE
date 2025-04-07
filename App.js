@@ -13,6 +13,9 @@ import PersonalLoggedStack from './views/personal/logged/PersonalLoggedStack';
 import BusinessLoggedStack from './views/business/logged/BusinessLoggedStack';
 import RawMaterialLoggedStack from './views/business/logged/raw-material/RawMaterialLoggedStack';
 import { AuthProvider, useAuth } from './src/auth/AuthContext';
+import VerifyAccount from './views/VerifyAccount';
+import BusinessNewProductExpenseLogin from './views/business/accountManagment/BusinessNewProductExpenseLogin';
+import BusinessNewProductExpenseSignUp from './views/business/accountManagment/BusinessNewProductExpenseSignUp';
 
 const Stack = createStackNavigator();
 
@@ -37,6 +40,9 @@ return (
     <Stack.Screen name="Business Sign Up" component={BusinessSignUp} />
     <Stack.Screen name="Personal" component={PersonalLogin} />
     <Stack.Screen name="PersonalSignUp" component={PersonalSignUp} />
+    <Stack.Screen name="VerifyAccount" component={VerifyAccount} />
+    <Stack.Screen name="BusinessNewProductExpenseLogin" component={BusinessNewProductExpenseLogin} />
+    <Stack.Screen name="BusinessNewProductExpenseSignUp" component={BusinessNewProductExpenseSignUp} />
   </Stack.Navigator>
 );
 }

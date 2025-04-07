@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { getPersonalExpensesByUserId, getAllCategories, createPersonalExpense } from '../../../../src/api/axios';
 import { DataTable, Portal, Modal, TextInput, Button, HelperText, List, TouchableRipple } from 'react-native-paper';
+import MonthSelector from '../../../MonthSelector';
 
 export default function ExpenseTracker() {
     const { userId } = useAuth();
@@ -123,23 +124,12 @@ export default function ExpenseTracker() {
 
             <View>
                 {/* Meses */}
-                <ScrollView
-                    ref={monthScrollRef}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.monthTabs}
-                >
-                    {months.map((month, index) => (
-                        <TouchableOpacity key={index} onPress={() => handleSelectMonth(new Date(month.date))}>
-                            <Text style={[
-                                styles.monthItem,
-                                isSameMonth(selectedDate, new Date(month.date)) && styles.activeMonth
-                            ]}>
-                                {month.label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                <MonthSelector
+                    selectedMonth={selectedDate}
+                    onSelectMonth={(date) => {
+                        setSelectedDate(date);
+                    }}
+                />
 
                 {/* Resumen */}
                 <View style={styles.summaryCard}>

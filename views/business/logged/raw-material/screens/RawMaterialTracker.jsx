@@ -4,6 +4,7 @@ import { TextInput, Modal, Portal, Button, HelperText } from 'react-native-paper
 import { useAuth } from '../../../../../src/auth/AuthContext';
 import { createRawMaterial, getRawMaterialsByUser } from '../../../../../src/api/axios';
 import { DataTable } from 'react-native-paper';
+import MonthSelector from '../../../../MonthSelector';
 
 export default function RawMaterialTracker() {
     const { userId } = useAuth();
@@ -109,28 +110,16 @@ export default function RawMaterialTracker() {
     return (
         <View style={styles.container}>
             <View>
-            <ScrollView
-                ref={monthScrollRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.monthTabs}>
-                {months.map((month, index) => (
-                    <TouchableOpacity key={index} onPress={() => handleSelectMonth(new Date(month.date))}>
-                        <Text style={[
-                            styles.monthItem,
-                            isSameMonth(selectedDate, new Date(month.date)) && styles.activeMonth
-                        ]}>
-                            {month.label}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
+                <MonthSelector
+                    selectedMonth={selectedDate}
+                    onSelectMonth={(date) => setSelectedDate(date)}
+                />
 
-            <View style={styles.summaryCard}>
-                <Text style={styles.summaryLabel}>Total</Text>
-                <Text style={styles.summaryAmount}>${totalCost.toFixed(2)}</Text>
-                <Text style={styles.summarySubtext}>Gasto mensual</Text>
-            </View>
+                <View style={styles.summaryCard}>
+                    <Text style={styles.summaryLabel}>Total</Text>
+                    <Text style={styles.summaryAmount}>${totalCost.toFixed(2)}</Text>
+                    <Text style={styles.summarySubtext}>Gasto mensual</Text>
+                </View>
             </View>
 
             <Button mode="contained" onPress={() => setModalVisible(true)} style={styles.addButton}>Registrar materia</Button>

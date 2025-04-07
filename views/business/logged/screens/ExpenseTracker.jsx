@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-nati
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { getNewProductExpensesByUser, createNewProductExpense } from '../../../../src/api/axios';
 import { DataTable, Portal, Modal, TextInput, Button, HelperText } from 'react-native-paper';
+import MonthSelector from '../../../MonthSelector';
 
 export default function NewProductTracker() {
   const { userId } = useAuth();
@@ -108,24 +109,21 @@ export default function NewProductTracker() {
 
       <View>
         {/* Selector de meses */}
-      <ScrollView ref={monthScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.monthTabs}>
-        {months.map((month, index) => (
-          <TouchableOpacity key={index} onPress={() => setSelectedDate(new Date(month.date))}>
-            <Text style={[styles.monthItem, isSameMonth(selectedDate, month.date) && styles.activeMonth]}>
-              {month.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+        <MonthSelector
+          selectedMonth={selectedDate}
+          onSelectMonth={(date) => setSelectedDate(date)}
+        />
 
-      {/* Resumen simple */}
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryLabel}>Productos</Text>
-        <Text style={styles.summaryAmount}>{filteredProducts.length}</Text>
-        <Text style={styles.summarySubtext}>Este mes</Text>
+        {/* Resumen simple */}
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Gasto Total</Text>
+          <Text style={styles.summaryAmount}>
+            ${filteredProducts.reduce((acc, p) => acc + (p.totalCost || 0), 0).toFixed(2)}
+          </Text>
+          <Text style={styles.summarySubtext}>Este mes</Text>
+        </View>
       </View>
-      </View>
-      
+
 
       {/* Botón agregar */}
       <Button mode="contained" onPress={openModal} style={styles.addButton}>Agregar Producto</Button>

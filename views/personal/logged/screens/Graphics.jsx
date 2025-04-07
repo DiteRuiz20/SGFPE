@@ -4,15 +4,13 @@ import { getPersonalExpensesByUserId } from '../../../../src/api/axios';
 import { PieChart } from 'react-native-chart-kit';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
+import MonthSelector from '../../../MonthSelector';
 
 export default function Graphics() {
     const { userId } = useAuth();
-    const monthScrollRef = useRef(null);
-
     const [expenses, setExpenses] = useState([]);
     const [filteredExpenses, setFilteredExpenses] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [months, setMonths] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
@@ -31,7 +29,8 @@ export default function Graphics() {
 
     // ✅ Refresca la gráfica cada que entras a la pantalla
     useFocusEffect(
-        useCallback(() => {fetchData();
+        useCallback(() => {
+            fetchData();
         }, [userId])
     );
 
@@ -39,29 +38,6 @@ export default function Graphics() {
         const filtered = (expenses || []).filter(exp => isSameMonth(new Date(exp.date), selectedDate));
         setFilteredExpenses(filtered);
     }, [expenses, selectedDate]);
-
-    // ✅ Generar meses y mover el scroll al mes actual
-    useEffect(() => {
-        generateMonths(new Date()); // Al cargar por primera vez centra el mes actual
-    }, []);
-    
-    const generateMonths = (centerDate) => {
-        const generatedMonths = Array.from({ length: 6 }, (_, i) => {
-            const date = new Date(centerDate);
-            date.setMonth(centerDate.getMonth() - 2 + i);
-            return {
-                label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-                date
-            };
-        });
-        setMonths(generatedMonths);
-    
-        // Centra el mes seleccionado en la posición 5
-        setTimeout(() => {
-            monthScrollRef.current?.scrollTo({ x: 140, animated: true });
-        }, 50);
-    };
-    
 
     const isSameMonth = (date1, date2) =>
         date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
@@ -91,31 +67,10 @@ export default function Graphics() {
     return (
         <View style={styles.container}>
             <View style={styles.monthSelectorContainer}>
-                <ScrollView
-                    ref={monthScrollRef}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.monthTabs}
-                    contentContainerStyle={styles.monthTabsContent}
-                >
-                    {months.map((month, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            onPress={() => {
-                                setSelectedDate(new Date(month.date));
-                                generateMonths(new Date(month.date)); // ✅ Recalcula meses y centra
-                            }}
-                            style={styles.monthItemContainer}
-                        >
-                            <Text style={[
-                                styles.monthItem,
-                                isSameMonth(selectedDate, new Date(month.date)) && styles.activeMonth
-                            ]}>
-                                {month.label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                <MonthSelector
+                    selectedMonth={selectedDate}
+                    onSelectMonth={(date) => setSelectedDate(date)}
+                />
             </View>
 
             <View style={styles.chartContainer}>
@@ -147,11 +102,6 @@ const styles = StyleSheet.create({
     container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
 
     monthSelectorContainer: { marginBottom: 20 },
-    monthTabs: { flexDirection: 'row' },
-    monthTabsContent: { paddingHorizontal: 10 },
-    monthItemContainer: { paddingHorizontal: 10 },
-    monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
-    activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
 
     chartCard: {
         backgroundColor: '#41416e',

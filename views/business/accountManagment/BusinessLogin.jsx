@@ -3,29 +3,17 @@ import React, { useState } from 'react'
 import { Divider } from 'react-native-elements'
 import { useAuth } from '../../../src/auth/AuthContext'
 
-export default function BusinessLogin({ navigation, route }) {
+export default function BusinessLogin({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
-  const { accountType } = route.params;
 
   const handleLogin = async () => {
     try {
-      await login(username, password, accountType);
+      await login(username, password, 'business-raw-material');
       Alert.alert('Success', 'Login successful');
     } catch (error) {
       Alert.alert('Error', error.message || 'Invalid email or password');
-    }
-  };
-
-  const getTitle = () => {
-    switch(accountType) {
-      case 'business-raw-material':
-        return 'Raw Material Business Login';
-      case 'business-new-product-expense':
-        return 'New Products Expenses Business Login';
-      default:
-        return 'Business Login';
     }
   };
 
@@ -33,10 +21,10 @@ export default function BusinessLogin({ navigation, route }) {
     <View style={styles.container}>
       <Text style={styles.title}>SGFPE</Text>
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
-      <Text style={styles.subtitle}>{getTitle()}</Text>
+      <Text style={styles.subtitle}>Raw Material Business Login</Text>
 
       <TextInput style={styles.input} placeholder="Email Address" value={username} onChangeText={setUsername} keyboardType='email-address' placeholderTextColor="#A9A9A9" />
-      <TextInput style={styles.input} placeholder="Password"  value={password} onChangeText={setPassword} placeholderTextColor="#A9A9A9" secureTextEntry />
+      <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} placeholderTextColor="#A9A9A9" secureTextEntry />
 
       <TouchableOpacity style={styles.primary_button} onPress={handleLogin}>
         <Text style={styles.button_text}>LOGIN</Text>
@@ -47,7 +35,7 @@ export default function BusinessLogin({ navigation, route }) {
       <Text style={styles.orText}>or</Text>
       <Text style={styles.getStarted}>Sign up to get started</Text>
 
-      <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('Business Sign Up', { accountType })}>
+      <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('Business Sign Up')}>
         <Text style={styles.button_text}>SIGN UP</Text>
       </TouchableOpacity>
     </View>
@@ -135,4 +123,4 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
   },
-})
+});

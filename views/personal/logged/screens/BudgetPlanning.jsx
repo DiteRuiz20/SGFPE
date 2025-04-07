@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { PieChart } from 'react-native-chart-kit';
 import { getPersonalExpensesByUserId, getDebtsByUserId, getSavingsByUserId } from '../../../../src/api/axios';
 import { useAuth } from '../../../../src/auth/AuthContext';
+import MonthSelector from '../../../MonthSelector';
 
 export default function BudgetPlanning() {
   const { userId } = useAuth();
@@ -89,24 +90,21 @@ export default function BudgetPlanning() {
 
       <View>
         {/* Meses */}
-      <ScrollView ref={monthScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.monthTabs}>
-        {months.map((month, index) => (
-          <TouchableOpacity key={index} onPress={() => { setSelectedDate(month.date); generateMonths(month.date); }}>
-            <Text style={[styles.monthItem, isSameMonth(selectedDate, month.date) && styles.activeMonth]}>
-              {month.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+        <MonthSelector
+          selectedMonth={selectedDate}
+          onSelectMonth={(date) => {
+            setSelectedDate(date);
+          }}
+        />
 
-      {/* Totales */}
-      <View style={styles.summaryContainer}>
-        <Text style={styles.summaryText}>Gastos: ${totalExpenses.toFixed(2)}</Text>
-        <Text style={styles.summaryText}>Ahorros: ${totalSavings.toFixed(2)}</Text>
-        <Text style={styles.summaryText}>Deudas: ${totalDebts.toFixed(2)}</Text>
+        {/* Totales */}
+        <View style={styles.summaryContainer}>
+          <Text style={styles.summaryText}>Gastos: ${totalExpenses.toFixed(2)}</Text>
+          <Text style={styles.summaryText}>Ahorros: ${totalSavings.toFixed(2)}</Text>
+          <Text style={styles.summaryText}>Deudas: ${totalDebts.toFixed(2)}</Text>
+        </View>
       </View>
-      </View>
-      
+
       {/* PieChart comparativo */}
       <View style={styles.chartContainer}>
         {pieData.length > 0 ? (

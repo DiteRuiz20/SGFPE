@@ -10,7 +10,7 @@ const api = axios.create({
 api.interceptors.request.use(
     async config => {
         // Rutas que no requieren token
-        const noAuthRoutes = ['/auth/login', '/auth/validate-account', '/register', '/forgot-password'];
+        const noAuthRoutes = ['/auth/login', '/auth/validate-account', '/auth/register', '/auth/verify-code', '/auth/resend-code', '/forgot-password'];
 
         if (!noAuthRoutes.includes(config.url)) {
             try {
@@ -224,6 +224,120 @@ export const deleteRawMaterial = async (id) => {
         return response.data;
     } catch (error) {
         console.error('Error al eliminar materia prima:', error);
+        throw error;
+    }
+};
+
+export const createUser = async (userData) => {
+    try {
+        const response = await api.post('/auth/register', userData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating user:', error);
+        throw error;
+    }
+};
+
+// Verifica el código de 6 dígitos para activar la cuenta
+export const verifyCode = async ({ email, code }) => {
+    try {
+        const response = await api.post('/auth/verify-code', { email, code });
+        return response.data;
+    } catch (error) {
+        console.error('Error verifying code:', error);
+        throw error;
+    }
+};
+
+// Reenvía el código de verificación al correo
+export const resendCode = async ({ email }) => {
+    try {
+        const response = await api.post('/auth/resend-code', { email });
+        return response.data;
+    } catch (error) {
+        console.error('Error resending code:', error);
+        throw error;
+    }
+};
+
+// Crear un consumo de materia prima (material usage)
+export const createMaterialUsage = async (usageData) => {
+    try {
+        const response = await api.post('/api/material-usage/create', usageData);
+        return response.data;
+    } catch (error) {
+        console.error('Error al crear uso de material:', error);
+        throw error;
+    }
+};
+
+// Obtener todos los usos de materiales por userId
+export const getMaterialUsagesByUserId = async (userId) => {
+    try {
+        const response = await api.get(`/api/material-usage/user/${userId}`);
+        return response;
+    } catch (error) {
+        console.error('Error al obtener usos de materiales:', error);
+        throw error;
+    }
+};
+
+export const createRawMaterialOrder = async (orderData) => {
+    try {
+        const response = await api.post('/api/orders/create', orderData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating raw material order:', error);
+        throw error;
+    }
+};
+
+export const getAllOrders = async () => {
+    try {
+        const response = await api.get('/api/orders');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        throw error;
+    }
+};
+
+export const getOrdersByUserId = async (userId) => {
+    try {
+        const response = await api.get(`/api/orders/user/${userId}`);
+        return response;
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        throw error;
+    }
+};
+
+export const getAvailableMaterialsByUserId = async (userId) => {
+    try {
+        const response = await api.get(`/api/material-usage/available/${userId}`);
+        return response;
+    } catch (error) {
+        console.error('Error fetching available materials:', error);
+        throw error;
+    }
+}
+
+export const createNewProductOrder = async (orderData) => {
+    try {
+        const response = await api.post('/api/new-product-orders', orderData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating new product order:', error);
+        throw error;
+    }
+};
+
+export const getNewProductOrdersByUserId = async (userId) => {
+    try {
+        const response = await api.get(`/api/new-product-orders/user/${userId}`);
+        return response;
+    } catch (error) {
+        console.error('Error fetching new product orders:', error);
         throw error;
     }
 };

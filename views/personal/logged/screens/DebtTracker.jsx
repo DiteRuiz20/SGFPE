@@ -4,22 +4,21 @@ import { useAuth } from '../../../../src/auth/AuthContext';
 import { getDebtsByUserId, createDebt, updateDebt, deleteDebt } from '../../../../src/api/axios';
 import { DataTable, Portal, Modal, TextInput, Button, HelperText, Menu } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import MonthSelector from '../../../MonthSelector';
 
 export default function DebtTracker() {
   const { userId } = useAuth();
-  const monthScrollRef = useRef(null);
 
   const [debts, setDebts] = useState([]);
   const [filteredDebts, setFilteredDebts] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [totalAmount, setTotalAmount] = useState(0);
-  const [months, setMonths] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newDebt, setNewDebt] = useState({ creditor: '', amount: '', dueDate: new Date().toISOString() });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [menuVisible, setMenuVisible] = useState(null); // Control individual del menú
+  const [menuVisible, setMenuVisible] = useState(null);
 
   const isSameMonth = (date1, date2) =>
     date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
@@ -44,33 +43,10 @@ export default function DebtTracker() {
     }
   };
 
-  const generateMonths = (centerDate) => {
-    const generatedMonths = Array.from({ length: 6 }, (_, i) => {
-      const date = new Date(centerDate);
-      date.setMonth(centerDate.getMonth() - 2 + i);
-      return {
-        label: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-        date
-      };
-    });
-    setMonths(generatedMonths);
-
-    // Centrar el mes seleccionado en la posición 5
-    setTimeout(() => {
-      monthScrollRef.current?.scrollTo({ x: 140, animated: true });
-    }, 50);
-  };
-
   useEffect(() => {
     fetchData();
-    generateMonths(new Date());
   }, [userId]);
 
-  const handleSelectMonth = (date) => {
-    setSelectedDate(date);
-    generateMonths(date);  // ✅ Recalcula y centra el mes seleccionado
-  };
-  
   useEffect(() => {
     const filtered = debts.filter(debt => isSameMonth(debt.date, selectedDate));
     setFilteredDebts(filtered);
@@ -93,11 +69,17 @@ export default function DebtTracker() {
   };
 
   const handleCreateDebt = async () => {
-    const { creditor, amount, dueDate } = newDebt;
-    if (!creditor || !amount || !dueDate) return setError('Please fill all fields');
+    const { creditor, amount } = newDebt;
+    if (!creditor || !amount) return setError('Please fill all fields');
 
     try {
-      await createDebt({ creditor, amount: parseFloat(amount), dueDate, userId, status: "PENDING" });
+      await createDebt({
+        creditor,
+        amount: parseFloat(amount),
+        date: new Date().toISOString(), // ← solo esto como fecha
+        userId,
+        status: "PENDING"
+      });
       closeModal();
       fetchData();
     } catch (err) {
@@ -106,27 +88,35 @@ export default function DebtTracker() {
     }
   };
 
-  const handleUpdateDebtStatus = async (debtId, newStatus) => {
+  const handleUpdateDebtStatus = async (debtId) => {
     try {
       const debtToUpdate = debts.find(d => d.id === debtId);
-      if (!debtToUpdate) return Alert.alert("Error", "Debt not found");
+      if (!debtToUpdate) {
+        Alert.alert("Error", "Debt not found");
+        return;
+      }
 
-      const updatedDebt = {
+      const payload = {
         userId,
+        status: "PAID",
         creditor: debtToUpdate.creditor,
         amount: debtToUpdate.amount,
-        dueDate: debtToUpdate.dueDate.toISOString(),
-        status: newStatus
+        date: debtToUpdate.date
+          ? (typeof debtToUpdate.date === 'string' ? debtToUpdate.date : debtToUpdate.date.toISOString())
+          : new Date().toISOString()
       };
 
-      await updateDebt(debtId, updatedDebt);
+      console.log("📤 Actualizando deuda:", payload);
 
-      // ✅ Actualiza solo esa deuda en el estado local para renderizar
+      await updateDebt(debtId, payload);
+
+      // Actualizar el estado local
       setDebts(prev =>
-        prev.map(d => d.id === debtId ? { ...d, status: newStatus } : d)
+        prev.map(d => d.id === debtId ? { ...d, status: "PAID" } : d)
       );
+
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error al actualizar el estado de la deuda:", err);
       Alert.alert("Error", "Failed to update debt status");
     }
   };
@@ -163,20 +153,14 @@ export default function DebtTracker() {
 
   return (
     <View style={styles.container}>
-
       <View>
-        {/* Selector de Mes */}
-        <ScrollView ref={monthScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.monthTabs}>
-          {months.map((month, index) => (
-            <TouchableOpacity key={index} onPress={() => handleSelectMonth(new Date(month.date))}>
-              <Text style={[styles.monthItem, isSameMonth(selectedDate, month.date) && styles.activeMonth]}>
-                {month.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <MonthSelector
+          selectedMonth={selectedDate}
+          onSelectMonth={(date) => {
+            setSelectedDate(date);
+          }}
+        />
 
-        {/* Resumen */}
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>Total Debts</Text>
           <Text style={styles.summaryAmount}>${totalAmount.toFixed(2)}</Text>
@@ -184,7 +168,6 @@ export default function DebtTracker() {
         </View>
       </View>
 
-      {/* Tabla de deudas */}
       <View style={styles.tableContainer}>
         <DataTable>
           <DataTable.Header style={styles.tableHeader}>
@@ -200,7 +183,7 @@ export default function DebtTracker() {
                 <DataTable.Cell>{debt.creditor}</DataTable.Cell>
                 <DataTable.Cell numeric>${debt.amount.toFixed(2)}</DataTable.Cell>
                 <DataTable.Cell>
-                  <Text style={{ color: debt.status === "OVERDUE" ? '#FF3B30' : debt.status === "PAID" ? '#34C759' : '#007AFF' }}>
+                  <Text style={{ color: debt.status === "PAID" ? '#34C759' : '#007AFF' }}>
                     {debt.status}
                   </Text>
                 </DataTable.Cell>
@@ -214,16 +197,11 @@ export default function DebtTracker() {
                       </TouchableOpacity>
                     }
                   >
-                    {/* Si está pendiente, permitir marcar como pagado o cancelado */}
                     {debt.status === "PENDING" && (
-                      <>
-                        <Menu.Item onPress={() => handleUpdateDebtStatus(debt.id, "PAID")} title="Mark as Paid" />
-                        <Menu.Item onPress={() => handleUpdateDebtStatus(debt.id, "CANCELLED")} title="Cancel Debt" />
-                      </>
+                      <Menu.Item onPress={() => handleUpdateDebtStatus(debt.id)} title="Mark as Paid" />
                     )}
 
-                    {/* ✅ SOLO cuando NO sea PENDING se muestra opción de eliminar */}
-                    {debt.status !== "PENDING" && (
+                    {debt.status === "PAID" && (
                       <Menu.Item onPress={() => handleDeleteDebt(debt.id)} title="Delete" />
                     )}
                   </Menu>
@@ -234,10 +212,8 @@ export default function DebtTracker() {
         </DataTable>
       </View>
 
-      {/* Botón de agregar deuda */}
       <Button mode="contained" onPress={openModal} style={styles.addButton}>Add Debt</Button>
 
-      {/* Modal de creación */}
       <Portal>
         <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
           <Text style={styles.modalTitle}>New Debt</Text>
@@ -257,26 +233,6 @@ export default function DebtTracker() {
             style={styles.input}
           />
 
-          {/* 📅 DatePicker */}
-          <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-            <TextInput
-              label="Due Date (Payment Deadline)"
-              value={new Date(newDebt.dueDate).toLocaleDateString()}
-              editable={false}
-              style={styles.input}
-            />
-          </TouchableOpacity>
-
-          {showDatePicker && (
-            <DateTimePicker
-              value={new Date(newDebt.dueDate)}
-              mode="date"
-              display="default"
-              onChange={handleDateChange}
-              minimumDate={new Date()}
-            />
-          )}
-
           {error ? <HelperText type="error">{error}</HelperText> : null}
 
           <View style={styles.modalButtons}>
@@ -290,43 +246,24 @@ export default function DebtTracker() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f9f9f9',
-    justifyContent: 'flex-start' // 🔥 Mantiene todo arriba
-  },
+  container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9', justifyContent: 'flex-start' },
   monthTabs: { flexDirection: 'row', marginBottom: 20 },
   monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
   activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
   summaryCard: {
-    backgroundColor: '#41416e',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16, // 🔥 Reducido para menos separación
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4
+    backgroundColor: '#41416e', borderRadius: 16, padding: 24, marginBottom: 16,
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
   },
   summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
   summaryAmount: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginBottom: 4 },
   summarySubtext: { color: '#ddd', fontSize: 14 },
   tableContainer: {
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    overflow: 'hidden',
-    marginBottom: 16, // 🔥 Ajustado
+    borderRadius: 12, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 16
   },
   tableHeader: { backgroundColor: '#f1f3f5' },
   tableHeaderText: { fontWeight: 'bold', color: '#41416e' },
-  tableRow: { borderBottomWidth: 1, borderBottomColor: '#f1f3f5' },
-  tableCell: { color: '#495057', fontSize: 14 },
   addButton: {
-    backgroundColor: '#00C897',
-    borderRadius: 12,
-    paddingVertical: 12,
-    marginBottom: 16 // 🔥 Espacio antes del final
+    backgroundColor: '#00C897', borderRadius: 12, paddingVertical: 12, marginBottom: 16
   },
   modal: { backgroundColor: '#fff', padding: 24, borderRadius: 16, elevation: 5 },
   modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#41416e', marginBottom: 20, textAlign: 'center' },

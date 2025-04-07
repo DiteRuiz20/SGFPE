@@ -16,7 +16,7 @@ const getScreenTitle = (routeName) => {
     const titles = {
         "Materia prima": "Materia prima",
         "Insumos": "Insumos",
-        "Ordenes": "Órdenes",
+        "Pedidos": "Pedidos",
         "Graficos": "Gráficos",
     };
     return titles[routeName] || "App";
@@ -53,7 +53,7 @@ const BottomTabNavigator = ({ navigation }) => {
         >
             <Tab.Screen name="Materia prima" component={RawMaterialTracker} />
             <Tab.Screen name="Insumos" component={MaterialUsageTracker} />
-            <Tab.Screen name="Ordenes" component={RawMaterialOrder} />
+            <Tab.Screen name="Pedidos" component={RawMaterialOrder} />
             <Tab.Screen name="Graficos" component={RawMaterialGraphics} />
         </Tab.Navigator>
     );
@@ -87,7 +87,7 @@ const getIconName = (routeName, focused) => {
         case "Insumos":
             iconName = focused ? "bank" : "bank-outline";
             break;
-        case "Ordenes":
+        case "Pedidos":
             iconName = focused ? "wallet" : "wallet-outline";
             break;
         case "Graficos":

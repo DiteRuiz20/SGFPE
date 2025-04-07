@@ -1,81 +1,77 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
-import { Icon, Divider } from 'react-native-elements';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { Divider, Icon } from 'react-native-elements';
 import { useAuth } from '../../../../../src/auth/AuthContext';
-import { TextInput } from 'react-native-paper';
 
 export default function RawMaterialProfile() {
     const { logout } = useAuth();
 
     const handleLogOut = () => {
         Alert.alert(
-            'Cerrar sesi\u00f3n',
-            '\u00bfEst\u00e1s seguro de que deseas cerrar sesi\u00f3n?',
+            "Log Out",
+            "Are you sure you want to log out?",
             [
                 {
-                    text: 'Cancelar',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Aceptar',
+                    text: "Yes",
                     onPress: async () => {
                         try {
                             await logout();
                         } catch (error) {
-                            Alert.alert('Error', 'No se pudo cerrar la sesi\u00f3n. Intenta de nuevo.');
+                            Alert.alert('Error', 'Failed to log out. Please try again.');
                         }
-                    },
+                    }
                 },
+                { text: "No", style: "cancel" }
             ]
         );
     };
 
     const handleChangePassword = () => {
         Alert.alert(
-            'Cambiar contrase\u00f1a',
-            '\u00bfEst\u00e1s seguro de que deseas cambiar tu contrase\u00f1a?',
+            "Change Password",
+            "Are you sure you want to change your password?",
             [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Aceptar', onPress: () => console.log('Cambiando contrase\u00f1a') },
+                { text: "Yes", onPress: () => console.log("Changing password") },
+                { text: "No", style: "cancel" }
             ]
         );
     };
 
     const handleUpdateInfo = () => {
         Alert.alert(
-            'Actualizar informaci\u00f3n',
-            '\u00bfEst\u00e1s seguro de que deseas actualizar tu informaci\u00f3n?',
+            "Update Info",
+            "Are you sure you want to update your info?",
             [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Aceptar', onPress: () => console.log('Actualizando informaci\u00f3n') },
+                { text: "Yes", onPress: () => console.log("Updating info") },
+                { text: "No", style: "cancel" }
             ]
         );
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>PERFIL</Text>
+            <Text style={styles.title}>PROFILE</Text>
             <Icon name="account-circle" type="material" size={130} color="#888" style={{ marginBottom: 20 }} />
 
-            <TextInput style={styles.input} label="Nombre completo" mode="outlined" />
-            <TextInput style={styles.input} label="Nombre de usuario" mode="outlined" />
-            <TextInput style={styles.input} label="Tel\u00e9fono" mode="outlined" keyboardType="phone-pad" />
-            <TextInput style={styles.input} label="Correo electr\u00f3nico" mode="outlined" keyboardType="email-address" />
+            <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#A9A9A9" />
+            <TextInput style={styles.input} placeholder="Username" placeholderTextColor="#A9A9A9" />
+            <TextInput style={styles.input} placeholder="Phone Number" placeholderTextColor="#A9A9A9" keyboardType="phone-pad" />
+            <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#A9A9A9" keyboardType="email-address" />
 
             <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10 }}>
                 <TouchableOpacity style={styles.secondary_button} onPress={handleUpdateInfo}>
-                    <Text style={styles.button_text}>ACTUALIZAR INFO</Text>
+                    <Text style={styles.button_text}>UPDATE INFO</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.primary_button} onPress={handleChangePassword}>
-                    <Text style={styles.button_text}>CAMBIAR CONTRASE\u00d1A</Text>
+                    <Text style={styles.button_text}>CHANGE PASSWORD</Text>
                 </TouchableOpacity>
             </View>
 
             <Divider style={styles.divider} />
 
             <TouchableOpacity style={styles.logOut_button} onPress={handleLogOut}>
-                <Text style={styles.button_text}>CERRAR SESI\u00d3N</Text>
+                <Text style={styles.button_text}>LOG OUT</Text>
             </TouchableOpacity>
         </View>
     );
@@ -98,8 +94,14 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
+        backgroundColor: '#EAEAEA',
+        padding: 15,
+        borderRadius: 8,
         marginBottom: 10,
-        backgroundColor: 'white',
+        shadowColor: '#888',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
     },
     primary_button: {
         width: '100%',
