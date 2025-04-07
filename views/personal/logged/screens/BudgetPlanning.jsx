@@ -66,6 +66,8 @@ export default function BudgetPlanning() {
   const totalSavings = filteredSavings.reduce((sum, s) => sum + parseFloat(s.amount), 0);
   const totalDebts = filteredDebts.reduce((sum, d) => sum + parseFloat(d.amount), 0);
 
+  const totalFunds = totalSavings - totalExpenses;
+
   const pieData = [
     {
       name: 'Gastos',
@@ -101,20 +103,24 @@ export default function BudgetPlanning() {
         <View style={styles.summaryContainer}>
           <View style={styles.topCards}>
             <View style={styles.savCard}>
-              <Text style={styles.summaryText}>Ahorros: ${totalSavings.toFixed(2)}</Text>
+              <Text style={styles.summaryTitle}>Ahorros:</Text>
+              <Text style={styles.summaryText}>${totalSavings.toFixed(2)}</Text>
             </View>
 
             <View style={styles.expCard}>
-              <Text style={styles.summaryText}>Gastos: ${totalExpenses.toFixed(2)}</Text>
+              <Text style={styles.summaryTitle}>Gastos:</Text>
+              <Text style={styles.summaryText}>${totalExpenses.toFixed(2)}</Text>
             </View>
           </View>
 
           <View style={styles.topCards}>
             <View style={styles.savCard}>
-              <Text style={styles.summaryText}>Ahorros: ${totalSavings.toFixed(2)}</Text>
+              <Text style={styles.summaryTitle}>Fondos:</Text>
+              <Text style={styles.summaryText}>${totalFunds.toFixed(2)}</Text>
             </View>
             <View style={styles.debtCard}>
-              <Text style={styles.summaryText}>Deudas: ${totalDebts.toFixed(2)}</Text>
+              <Text style={styles.summaryTitle}>Deudas:</Text>
+              <Text style={styles.summaryText}>${totalDebts.toFixed(2)}</Text>
             </View>
           </View>
         </View>
@@ -153,17 +159,42 @@ const styles = StyleSheet.create({
   monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
   activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
   summaryContainer: { marginBottom: 24 },
-  summaryText: { fontSize: 18, color: '#fff', marginBottom: 4 },
+  summaryText: { fontSize: 18, color: '#fff', marginBottom: 4, textAlign: 'center' },
+  summaryTitle: { fontSize: 18, color: '#fff', marginBottom: 4, fontWeight: 'bold', textAlign: 'left' },
   chartContainer: { alignItems: 'center' },
   noDataText: { textAlign: 'center', marginTop: 50, color: '#495057', fontSize: 16 },
-  expCard: { backgroundColor: '#30437A', padding: 10, borderRadius: 8, marginBottom: 20, width: '40%',
-    shadowColor: '0px 8px 5px rgba(48, 55, 122, 0.2)',
+  expCard: {
+    width: '40%',
+    backgroundColor: '#30437A',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    shadowColor: '#30387a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
    },
-  savCard: { backgroundColor: '#3DC9A7', padding: 10, borderRadius: 8, marginBottom: 20, width: '40%',
-    shadowColor: '0px 8px 5px rgba(61, 193, 173, 0.2)',
+  savCard: {
+    width: '40%',
+    backgroundColor: '#3DC9A7',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    shadowColor: '#3dc1ad',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
    },
-  debtCard: { backgroundColor: '#B1B1B1', padding: 10, borderRadius: 8, marginBottom: 20, width: '40%',
-    shadowColor: '0px 8px 5px rgba(176, 176, 176, 0.2)',
+  debtCard: {
+    width: '40%',
+    backgroundColor: '#B1B1B1',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    shadowColor: '#888',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
    },
    topCards: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
 });

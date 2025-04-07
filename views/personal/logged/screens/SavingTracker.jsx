@@ -109,11 +109,14 @@ export default function SavingTracker() {
 
         {/* Resumen de ahorro */}
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Saved</Text>
+          <Text style={styles.summaryLabel}>Ahorros</Text>
           <Text style={styles.summaryAmount}>${totalSaved.toFixed(2)}</Text>
-          <Text style={styles.summarySubtext}>This Month</Text>
+          <Text style={styles.summarySubtext}>Total de ahorros del mes</Text>
         </View>
       </View>
+
+      {/* Botón agregar ahorro */}
+      <Button mode="contained" onPress={openModal} style={styles.addButton} labelStyle={styles.addButtonText}>Agregar ahorro</Button>
 
       {/* Tabla de ahorros */}
       <View style={styles.tableContainer}>
@@ -135,9 +138,6 @@ export default function SavingTracker() {
           </ScrollView>
         </DataTable>
       </View>
-
-      {/* Botón agregar ahorro */}
-      <Button mode="contained" onPress={openModal} style={styles.addButton}>Add Saving</Button>
 
       {/* Modal */}
       <Portal>
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
 
   summaryCard: {
-    backgroundColor: '#41416e',
+    backgroundColor: '#3DC9A7',
     borderRadius: 16,
     padding: 24,
     marginBottom: 5,
@@ -188,9 +188,9 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 4
   },
-  summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
-  summaryAmount: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginBottom: 4 },
-  summarySubtext: { color: '#ddd', fontSize: 14 },
+  summaryLabel: { color: '#fff', fontSize: 20, marginBottom: 8 },
+  summaryAmount: { color: '#fff', fontSize: 32, fontWeight: 'bold', marginBottom: 4 },
+  summarySubtext: { color: '#eee', fontSize: 16 },
 
   tableContainer: {
     borderRadius: 12,
@@ -212,11 +212,17 @@ const styles = StyleSheet.create({
 
   addButton: {
     marginVertical: 20,
-    backgroundColor: '#00C897',
+    backgroundColor: 'white',
+    borderColor: '#3DC9A7',
+    borderWidth: 1,
     borderRadius: 12,
-    paddingVertical: 10
+    paddingVertical: 10,
+    color: 'red'
   },
-
+  addButtonText: {
+    color: 'black',
+    fontSize: 16
+  },
   modal: {
     backgroundColor: '#fff',
     padding: 24,

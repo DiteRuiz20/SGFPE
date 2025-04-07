@@ -46,28 +46,22 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>PROFILE</Text>
-      <Icon style={{ marginBottom: 20 }} name="account-circle" type="material" size={130} color="#888" />
+      <Text style={styles.title}>PERFIL</Text>
 
-      <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#A9A9A9" />
-      <TextInput style={styles.input} placeholder="Username" placeholderTextColor="#A9A9A9" />
-      <TextInput style={styles.input} placeholder="Phone Number" placeholderTextColor="#A9A9A9" keyboardType='phone-pad' />
-      <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#A9A9A9" keyboardType='email-address' />
+      <TextInput style={styles.input} placeholder="Nombre" placeholderTextColor="#A9A9A9" />
+      <TextInput style={styles.input} placeholder="Número telefónico" placeholderTextColor="#A9A9A9" keyboardType='phone-pad' />
+      <TextInput style={styles.input} placeholder="Correo electrónico" placeholderTextColor="#A9A9A9" keyboardType='email-address' />
 
-      <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10 }}>
+      <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10, marginBottom: 10 }}>
         <TouchableOpacity style={styles.secondary_button} onPress={handleUpdateInfo}>
-          <Text style={styles.button_text}>UPDATE INFO</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.primary_button} onPress={handleChangePassword}>
-          <Text style={styles.button_text}>CHANGE PASSWORD</Text>
+          <Text style={styles.button_text}>ACTUALIZAR PERFIL</Text>
         </TouchableOpacity>
       </View>
 
       <Divider style={styles.divider} />
 
       <TouchableOpacity style={styles.logOut_button} onPress={handleLogOut}>
-        <Text style={styles.button_text}>LOG OUT</Text>
+        <Text style={styles.button_text}>CERRAR SESION</Text>
       </TouchableOpacity>
     </View>
   )
@@ -96,7 +90,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#30437A',
-    marginBottom: 20,
+    marginBottom: 40,
   },
   input: {
     width: '100%',
