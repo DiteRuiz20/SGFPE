@@ -70,14 +70,14 @@ export default function BudgetPlanning() {
     {
       name: 'Gastos',
       amount: totalExpenses,
-      color: '#FF6384',
+      color: '#30437A',
       legendFontColor: '#333',
       legendFontSize: 14
     },
     {
       name: 'Ahorros',
       amount: totalSavings,
-      color: '#00C897',
+      color: '#3DC9A7',
       legendFontColor: '#333',
       legendFontSize: 14
     },
@@ -99,9 +99,24 @@ export default function BudgetPlanning() {
 
         {/* Totales */}
         <View style={styles.summaryContainer}>
-          <Text style={styles.summaryText}>Gastos: ${totalExpenses.toFixed(2)}</Text>
-          <Text style={styles.summaryText}>Ahorros: ${totalSavings.toFixed(2)}</Text>
-          <Text style={styles.summaryText}>Deudas: ${totalDebts.toFixed(2)}</Text>
+          <View style={styles.topCards}>
+            <View style={styles.savCard}>
+              <Text style={styles.summaryText}>Ahorros: ${totalSavings.toFixed(2)}</Text>
+            </View>
+
+            <View style={styles.expCard}>
+              <Text style={styles.summaryText}>Gastos: ${totalExpenses.toFixed(2)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.topCards}>
+            <View style={styles.savCard}>
+              <Text style={styles.summaryText}>Ahorros: ${totalSavings.toFixed(2)}</Text>
+            </View>
+            <View style={styles.debtCard}>
+              <Text style={styles.summaryText}>Deudas: ${totalDebts.toFixed(2)}</Text>
+            </View>
+          </View>
         </View>
       </View>
 
@@ -138,7 +153,17 @@ const styles = StyleSheet.create({
   monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
   activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
   summaryContainer: { marginBottom: 24 },
-  summaryText: { fontSize: 18, color: '#41416e', marginBottom: 4 },
+  summaryText: { fontSize: 18, color: '#fff', marginBottom: 4 },
   chartContainer: { alignItems: 'center' },
-  noDataText: { textAlign: 'center', marginTop: 50, color: '#495057', fontSize: 16 }
+  noDataText: { textAlign: 'center', marginTop: 50, color: '#495057', fontSize: 16 },
+  expCard: { backgroundColor: '#30437A', padding: 10, borderRadius: 8, marginBottom: 20, width: '40%',
+    shadowColor: '0px 8px 5px rgba(48, 55, 122, 0.2)',
+   },
+  savCard: { backgroundColor: '#3DC9A7', padding: 10, borderRadius: 8, marginBottom: 20, width: '40%',
+    shadowColor: '0px 8px 5px rgba(61, 193, 173, 0.2)',
+   },
+  debtCard: { backgroundColor: '#B1B1B1', padding: 10, borderRadius: 8, marginBottom: 20, width: '40%',
+    shadowColor: '0px 8px 5px rgba(176, 176, 176, 0.2)',
+   },
+   topCards: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
 });
