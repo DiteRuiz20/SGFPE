@@ -70,7 +70,6 @@ const BottomTabNavigator = ({ navigation }) => {
         headerRight: () => (
           <TouchableOpacity style={styles.headerRight} onPress={() => navigation.navigate("Profile")}>
             <Text style={{ marginRight: 10, fontWeight: "bold" }}>{userName}</Text>
-            <Icon style={{marginRight:10}} name="account-circle" type="material" size={40} color="#888" />
           </TouchableOpacity>
         ),
       })}
@@ -129,5 +128,6 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
+    marginRight: 10,
   },
 });

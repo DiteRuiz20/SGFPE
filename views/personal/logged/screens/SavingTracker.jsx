@@ -5,6 +5,7 @@ import { useAuth } from '../../../../src/auth/AuthContext';
 import { getSavingsByUserId, createSaving } from '../../../../src/api/axios';
 import MonthSelector from '../../../MonthSelector';
 import { validateField } from '../../../InputValidator';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function SavingTracker() {
   const { userId } = useAuth();
@@ -117,6 +118,8 @@ export default function SavingTracker() {
 
   if (loading) return <View style={styles.container}><Text>Cargando...</Text></View>;
 
+  filteredSavings.sort((a, b) => new Date(b.date) - new Date(a.date));
+
   return (
     <View style={styles.container}>
       <View>
@@ -126,9 +129,14 @@ export default function SavingTracker() {
         />
 
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Ahorros</Text>
-          <Text style={styles.summaryAmount}>${totalSaved.toFixed(2)}</Text>
-          <Text style={styles.summarySubtext}>Total de ahorros del mes</Text>
+          <View>
+            <Text style={styles.summaryLabel}>Ahorros</Text>
+            <Text style={styles.summaryAmount}>${totalSaved.toFixed(2)}</Text>
+            <Text style={styles.summarySubtext}>Total de ahorros del mes</Text>
+          </View>
+          <View style={{marginRight: 25}}>
+            <Icon name="hand-holding-usd" size={40} color="#fff" />
+          </View>
         </View>
       </View>
 
@@ -136,11 +144,11 @@ export default function SavingTracker() {
 
       <View style={styles.tableContainer}>
         <DataTable>
-          <DataTable.Header style={styles.tableHeader}>
-            <DataTable.Title textStyle={styles.tableHeaderText}>Description</DataTable.Title>
-            <DataTable.Title numeric textStyle={styles.tableHeaderText}>Amount</DataTable.Title>
-            <DataTable.Title textStyle={styles.tableHeaderText}>Date</DataTable.Title>
-          </DataTable.Header>
+        <DataTable.Header style={styles.tableHeader}>
+          <DataTable.Title textStyle={styles.tableHeaderText}>Description</DataTable.Title>
+          <DataTable.Title textStyle={styles.tableHeaderText}>Amount</DataTable.Title>
+          <DataTable.Title textStyle={styles.tableHeaderText}>Date</DataTable.Title>
+        </DataTable.Header>
 
           <ScrollView>
             {filteredSavings.map((saving, idx) => (
@@ -191,7 +199,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
   summaryCard: {
     backgroundColor: '#3DC9A7', borderRadius: 16, padding: 24, marginBottom: 5,
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
   },
   summaryLabel: { color: '#fff', fontSize: 20, marginBottom: 8 },
   summaryAmount: { color: '#fff', fontSize: 32, fontWeight: 'bold', marginBottom: 4 },
@@ -199,7 +207,7 @@ const styles = StyleSheet.create({
   tableContainer: {
     borderRadius: 12, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 30
   },
-  tableHeader: { backgroundColor: '#f1f3f5' },
+  tableHeader: { backgroundColor: '#f1f3f5', justifyContent: 'space-between' },
   tableHeaderText: { fontWeight: 'bold', color: '#41416e' },
   tableRow: { borderBottomWidth: 1, borderBottomColor: '#f1f3f5' },
   addButton: {

@@ -6,6 +6,7 @@ import { DataTable, Portal, Modal, TextInput, Button, HelperText, Menu } from 'r
 import DateTimePicker from '@react-native-community/datetimepicker';
 import MonthSelector from '../../../MonthSelector';
 import { validateField } from '../../../InputValidator';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function DebtTracker() {
   const { userId } = useAuth();
@@ -179,9 +180,14 @@ export default function DebtTracker() {
         />
 
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Total Debts</Text>
-          <Text style={styles.summaryAmount}>${totalAmount.toFixed(2)}</Text>
-          <Text style={styles.summarySubtext}>This Month</Text>
+          <View>
+            <Text style={styles.summaryLabel}>Total Debts</Text>
+            <Text style={styles.summaryAmount}>${totalAmount.toFixed(2)}</Text>
+            <Text style={styles.summarySubtext}>This Month</Text>
+          </View>
+          <View style={{marginRight: 25}}>
+            <Icon name="money-check-alt" size={40} color="#fff" />
+          </View>
         </View>
       </View>
 
@@ -271,7 +277,7 @@ const styles = StyleSheet.create({
   activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
   summaryCard: {
     backgroundColor: '#41416e', borderRadius: 16, padding: 24, marginBottom: 16,
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
   },
   summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
   summaryAmount: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginBottom: 4 },
