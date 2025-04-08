@@ -1,29 +1,51 @@
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
+// screens/PersonalSignUp.js
 import React, { useState } from 'react';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { createUser } from '../../../src/api/axios';
+import { validateField } from '../../InputValidator';
 
 export default function PersonalSignUp() {
   const navigation = useNavigation();
-
   const [form, setForm] = useState({
     name: '',
     email: '',
     phoneNumber: '',
     password: '',
   });
+
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
+
+    const fieldType = field === 'name' ? 'nameOrDescription' : field;
+    const validation = validateField(fieldType, value);
+
+    setErrors(prev => ({
+      ...prev,
+      [field]: validation.valid ? null : validation.message,
+    }));
   };
 
   const handleSignUp = async () => {
     const { name, email, phoneNumber, password } = form;
-    if (!name || !email || !phoneNumber || !password) {
-      Alert.alert('Campos incompletos', 'Por favor completa todos los campos.');
-      return;
-    }
+
+    const validations = {
+      name: validateField('nameOrDescription', name),
+      email: validateField('email', email),
+      phoneNumber: validateField('phoneNumber', phoneNumber),
+      password: validateField('password', password),
+    };
+
+    const newErrors = {};
+    Object.keys(validations).forEach(key => {
+      if (!validations[key].valid) newErrors[key] = validations[key].message;
+    });
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
     try {
       setLoading(true);
@@ -37,12 +59,7 @@ export default function PersonalSignUp() {
         }]
       );
     } catch (error) {
-      console.error('Error al crear la cuenta:', error);
-      let message = 'Ocurrió un error. Intenta de nuevo más tarde.';
-      if (error?.response?.status === 409) {
-        message = 'El correo ya está registrado.';
-      }
-      Alert.alert('Error', message);
+      Alert.alert('Error', error.message || 'No se pudo crear la cuenta');
     } finally {
       setLoading(false);
     }
@@ -50,104 +67,71 @@ export default function PersonalSignUp() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>SGFPE</Text>
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
-
-      <View style={{ marginBottom: 20, alignItems: 'center' }}>
-        <Text style={styles.subtitle}>Thanks for joining us!</Text>
-        <Text style={styles.subtitle}>Please fill out the required data about your business.</Text>
-      </View>
+      <Text style={styles.subtitle}>Crear cuenta personal</Text>
 
       <TextInput
-        style={styles.input}
-        placeholder="Full Name"
+        style={[styles.input, errors.name && styles.inputError]}
+        placeholder="Nombre completo"
         placeholderTextColor="#A9A9A9"
-        onChangeText={(text) => handleChange('name', text)}
         value={form.name}
+        onChangeText={(text) => handleChange('name', text)}
       />
+      {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+
       <TextInput
-        style={styles.input}
-        placeholder="Email Address"
+        style={[styles.input, errors.email && styles.inputError]}
+        placeholder="Correo electrónico"
         placeholderTextColor="#A9A9A9"
         keyboardType="email-address"
-        onChangeText={(text) => handleChange('email', text)}
+        autoCapitalize="none"
         value={form.email}
+        onChangeText={(text) => handleChange('email', text)}
       />
+      {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+
       <TextInput
-        style={styles.input}
-        placeholder="Phone Number"
+        style={[styles.input, errors.phoneNumber && styles.inputError]}
+        placeholder="Número telefónico"
         placeholderTextColor="#A9A9A9"
-        keyboardType="phone-pad"
-        onChangeText={(text) => handleChange('phoneNumber', text)}
+        keyboardType="number-pad"
         value={form.phoneNumber}
+        onChangeText={(text) => handleChange('phoneNumber', text)}
       />
+      {errors.phoneNumber && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
+
       <TextInput
-        style={styles.input}
-        placeholder="Password"
+        style={[styles.input, errors.password && styles.inputError]}
+        placeholder="Contraseña"
         placeholderTextColor="#A9A9A9"
         secureTextEntry
-        onChangeText={(text) => handleChange('password', text)}
         value={form.password}
+        onChangeText={(text) => handleChange('password', text)}
       />
+      {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
       <TouchableOpacity style={styles.secondary_button} onPress={handleSignUp} disabled={loading}>
-        <Text style={styles.button_text}>{loading ? 'PROCESSING...' : 'SIGN UP'}</Text>
+        <Text style={styles.button_text}>{loading ? 'Procesando...' : 'REGISTRARSE'}</Text>
       </TouchableOpacity>
-
-      <View style={{ marginTop: 25, alignItems: 'center' }}>
-        <Text style={styles.subtitle}>Note:</Text>
-        <Text style={styles.subtitle}>
-          You will be sent a confirmation code via email, which will be used to authenticate your account.
-        </Text>
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'white',
-    marginTop: -45,
-  },
-  image: {
-    width: 130,
-    height: 130,
-    marginBottom: 30,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#444',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: 'white', marginTop: -45 },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#30437A', marginBottom: 10 },
+  subtitle: { fontSize: 14, color: '#444', marginBottom: 20, textAlign: 'center' },
+  image: { width: 130, height: 130, marginBottom: 30 },
   input: {
-    width: '100%',
-    backgroundColor: '#EAEAEA',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-    shadowColor: '#888',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
+    width: '100%', backgroundColor: '#EAEAEA', padding: 15, borderRadius: 8, marginBottom: 10,
+    shadowColor: '#888', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.5, shadowRadius: 2,
   },
+  inputError: { borderColor: 'red', borderWidth: 1 },
+  errorText: { color: 'red', alignSelf: 'flex-start', marginBottom: 8, marginTop: -6 },
   secondary_button: {
-    width: '100%',
-    backgroundColor: '#3DC9A7',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    shadowColor: '#3dc1ad',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
-    marginTop: 15,
+    width: '100%', backgroundColor: '#3DC9A7', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 15,
+    shadowColor: '#3dc1ad', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.5, shadowRadius: 2,
   },
-  button_text: {
-    color: 'white',
-    fontSize: 16,
-  },
+  button_text: { color: 'white', fontSize: 16 },
 });

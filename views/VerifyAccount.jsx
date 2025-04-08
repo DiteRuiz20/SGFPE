@@ -17,7 +17,7 @@ export default function VerifyAccount() {
     useEffect(() => {
         if (!email) {
             Alert.alert('Error', 'No hay correo asociado. Regresando al inicio.', [
-                { text: 'OK', onPress: () => navigation.navigate('Home') },
+                { text: 'OK', onPress: () => navigation.navigate('Account') },
             ]);
         }
     }, [email]);
@@ -46,7 +46,7 @@ export default function VerifyAccount() {
                         navigation.navigate('BusinessNewProductExpenseLogin', { accountType: 'business-new-product-expense' });
                         break;
                     default:
-                        navigation.navigate('Home');
+                        navigation.navigate('Account');
                         break;
                 }
             }, 2500);

@@ -4,6 +4,7 @@ import { useAuth } from '../../../../src/auth/AuthContext';
 import { getPersonalExpensesByUserId, getAllCategories, createPersonalExpense } from '../../../../src/api/axios';
 import { DataTable, Portal, Modal, TextInput, Button, HelperText, List, TouchableRipple } from 'react-native-paper';
 import MonthSelector from '../../../MonthSelector';
+import { validateField } from '../../../InputValidator';
 
 export default function ExpenseTracker() {
     const { userId } = useAuth();
@@ -20,6 +21,7 @@ export default function ExpenseTracker() {
     const [newExpense, setNewExpense] = useState({ description: '', amount: '' });
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
 
@@ -48,7 +50,7 @@ export default function ExpenseTracker() {
 
     useEffect(() => {
         fetchData();
-        generateMonths(new Date()); // Al iniciar carga el rango de meses centrado en el mes actual
+        generateMonths(new Date());
     }, [userId]);
 
     useEffect(() => {
@@ -69,7 +71,6 @@ export default function ExpenseTracker() {
         });
         setMonths(generatedMonths);
 
-        // Centrar visualmente el mes actual en el ScrollView
         setTimeout(() => {
             monthScrollRef.current?.scrollTo({ x: 140, animated: true });
         }, 50);
@@ -77,18 +78,32 @@ export default function ExpenseTracker() {
 
     const handleSelectMonth = (date) => {
         setSelectedDate(date);
-        generateMonths(date); // Al seleccionar un mes, regeneras el rango
+        generateMonths(date);
     };
 
     const handleExpenseChange = (field, value) => {
         setNewExpense(prev => ({ ...prev, [field]: value }));
+
+        const type = field === 'description' ? 'nameOrDescription' : field === 'amount' ? 'positiveNumber' : null;
+        if (type) {
+            const result = validateField(type, value);
+            setFormErrors(prev => ({ ...prev, [field]: result.valid ? null : result.message }));
+        }
     };
 
     const handleCreateExpense = async () => {
         const { description, amount } = newExpense;
-        if (!description || !amount || !selectedCategory) {
-            return setError('Please fill all fields');
-        }
+
+        const descValidation = validateField('nameOrDescription', description);
+        const amountValidation = validateField('positiveNumber', amount);
+
+        const errors = {};
+        if (!descValidation.valid) errors.description = descValidation.message;
+        if (!amountValidation.valid) errors.amount = amountValidation.message;
+        if (!selectedCategory) errors.category = 'Selecciona una categoría';
+
+        setFormErrors(errors);
+        if (Object.keys(errors).length > 0) return;
 
         try {
             await createPersonalExpense({
@@ -114,6 +129,7 @@ export default function ExpenseTracker() {
         setModalVisible(false);
         setNewExpense({ description: '', amount: '' });
         setSelectedCategory(null);
+        setFormErrors({});
         setError('');
     };
 
@@ -121,17 +137,12 @@ export default function ExpenseTracker() {
 
     return (
         <View style={styles.container}>
-
             <View>
-                {/* Meses */}
                 <MonthSelector
                     selectedMonth={selectedDate}
-                    onSelectMonth={(date) => {
-                        setSelectedDate(date);
-                    }}
+                    onSelectMonth={(date) => setSelectedDate(date)}
                 />
 
-                {/* Resumen */}
                 <View style={styles.summaryCard}>
                     <Text style={styles.summaryLabel}>Spent</Text>
                     <Text style={styles.summaryAmount}>-${totalAmount.toFixed(2)}</Text>
@@ -139,23 +150,24 @@ export default function ExpenseTracker() {
                 </View>
             </View>
 
-
-            {/* Botón agregar */}
             <Button mode="contained" onPress={openModal} style={styles.addButton}>Add Expense</Button>
 
-            {/* Modal */}
             <Portal>
                 <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
                     <Text style={styles.modalTitle}>New Expense</Text>
 
                     <TextInput label="Description" value={newExpense.description} onChangeText={(text) => handleExpenseChange('description', text)} style={styles.input} />
+                    {formErrors.description && <HelperText type="error">{formErrors.description}</HelperText>}
+
                     <TextInput label="Amount" value={newExpense.amount} onChangeText={(text) => handleExpenseChange('amount', text)} keyboardType="numeric" style={styles.input} />
+                    {formErrors.amount && <HelperText type="error">{formErrors.amount}</HelperText>}
 
                     <TouchableRipple onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}>
                         <View style={styles.categorySelector}>
                             <Text>{selectedCategory ? selectedCategory.name : 'Select Category'}</Text>
                         </View>
                     </TouchableRipple>
+                    {formErrors.category && <HelperText type="error">{formErrors.category}</HelperText>}
 
                     {showCategoryDropdown && (
                         <View style={styles.categoryDropdown}>
@@ -166,6 +178,7 @@ export default function ExpenseTracker() {
                                     onPress={() => {
                                         setSelectedCategory(category);
                                         setShowCategoryDropdown(false);
+                                        setFormErrors(prev => ({ ...prev, category: null }));
                                     }}
                                 />
                             ))}
@@ -181,7 +194,6 @@ export default function ExpenseTracker() {
                 </Modal>
             </Portal>
 
-            {/* Tabla de gastos */}
             <View style={styles.tableContainer}>
                 <DataTable>
                     <DataTable.Header style={styles.tableHeader}>
@@ -209,93 +221,26 @@ export default function ExpenseTracker() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
-
     monthTabs: { flexDirection: 'row', marginBottom: 20 },
     monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
     activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
-
     summaryCard: {
-        backgroundColor: '#41416e',
-        borderRadius: 16,
-        padding: 24,
-        marginBottom: 5,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        elevation: 4
+        backgroundColor: '#41416e', borderRadius: 16, padding: 24, marginBottom: 5,
+        shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
     },
     summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
     summaryAmount: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginBottom: 4 },
     summarySubtext: { color: '#ddd', fontSize: 14 },
-
-    addButton: {
-        marginVertical: 20,
-        backgroundColor: '#00C897',
-        borderRadius: 12,
-        paddingVertical: 10
-    },
-
-    modal: {
-        backgroundColor: '#fff',
-        padding: 24,
-        marginHorizontal: 16,
-        borderRadius: 16,
-        elevation: 5
-    },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#41416e',
-        marginBottom: 20,
-        textAlign: 'center'
-    },
-    input: {
-        marginBottom: 16,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        elevation: 1
-    },
-    categorySelector: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 16,
-        marginBottom: 16,
-        backgroundColor: '#fff'
-    },
-    categoryDropdown: {
-        maxHeight: 200,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        backgroundColor: '#fff',
-        marginBottom: 16
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 20
-    },
-
-    tableContainer: {
-        borderRadius: 12,
-        backgroundColor: '#fff',
-        overflow: 'hidden',
-        marginBottom: 30
-    },
-    tableHeader: {
-        backgroundColor: '#f1f3f5'
-    },
-    tableHeaderText: {
-        fontWeight: 'bold',
-        color: '#41416e'
-    },
-    tableRow: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#f1f3f5'
-    },
-    tableCell: {
-        color: '#495057',
-        fontSize: 14
-    },
+    addButton: { marginVertical: 20, backgroundColor: '#00C897', borderRadius: 12, paddingVertical: 10 },
+    modal: { backgroundColor: '#fff', padding: 24, marginHorizontal: 16, borderRadius: 16, elevation: 5 },
+    modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#41416e', marginBottom: 20, textAlign: 'center' },
+    input: { marginBottom: 16, backgroundColor: '#fff', borderRadius: 8, elevation: 1 },
+    categorySelector: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 16, marginBottom: 16, backgroundColor: '#fff' },
+    categoryDropdown: { maxHeight: 200, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff', marginBottom: 16 },
+    modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
+    tableContainer: { borderRadius: 12, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 30 },
+    tableHeader: { backgroundColor: '#f1f3f5' },
+    tableHeaderText: { fontWeight: 'bold', color: '#41416e' },
+    tableRow: { borderBottomWidth: 1, borderBottomColor: '#f1f3f5' },
+    tableCell: { color: '#495057', fontSize: 14 },
 });

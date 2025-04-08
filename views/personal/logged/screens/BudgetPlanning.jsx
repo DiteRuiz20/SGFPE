@@ -4,6 +4,7 @@ import { PieChart } from 'react-native-chart-kit';
 import { getPersonalExpensesByUserId, getDebtsByUserId, getSavingsByUserId } from '../../../../src/api/axios';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import MonthSelector from '../../../MonthSelector';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function BudgetPlanning() {
   const { userId } = useAuth();
@@ -19,10 +20,22 @@ export default function BudgetPlanning() {
   const isSameMonth = (date1, date2) =>
     date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
 
+  const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+  const totalSavings = savings.reduce((sum, s) => sum + parseFloat(s.amount), 0);
+  const totalDebts = debts.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+
+
   useEffect(() => {
     fetchData();
     generateMonths(new Date());
-  }, [userId]);
+  }, [userId, selectedDate]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [userId, selectedDate])
+  );
+
 
   const fetchData = async () => {
     if (!userId) return;
@@ -33,9 +46,13 @@ export default function BudgetPlanning() {
         getSavingsByUserId(userId)
       ]);
 
-      setExpenses(expData || []);
-      setDebts(debtData || []);
-      setSavings(saveData || []);
+      const filteredExpenses = expData.filter(e => isSameMonth(new Date(e.date), selectedDate));
+      const filteredDebts = debtData.filter(d => isSameMonth(new Date(d.date), selectedDate));
+      const filteredSavings = saveData.filter(s => isSameMonth(new Date(s.date), selectedDate));
+
+      setExpenses(filteredExpenses);
+      setDebts(filteredDebts);
+      setSavings(filteredSavings);
     } catch (err) {
       console.error(err);
     } finally {
@@ -57,14 +74,6 @@ export default function BudgetPlanning() {
       monthScrollRef.current?.scrollTo({ x: 140, animated: true });
     }, 50);
   };
-
-  const filteredExpenses = expenses.filter(e => isSameMonth(new Date(e.date), selectedDate));
-  const filteredSavings = savings.filter(s => isSameMonth(new Date(s.date), selectedDate));
-  const filteredDebts = debts.filter(d => isSameMonth(new Date(d.date), selectedDate));
-
-  const totalExpenses = filteredExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-  const totalSavings = filteredSavings.reduce((sum, s) => sum + parseFloat(s.amount), 0);
-  const totalDebts = filteredDebts.reduce((sum, d) => sum + parseFloat(d.amount), 0);
 
   const totalFunds = totalSavings - totalExpenses;
 
@@ -173,7 +182,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
-   },
+  },
   savCard: {
     width: '40%',
     backgroundColor: '#3DC9A7',
@@ -184,7 +193,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
-   },
+  },
   debtCard: {
     width: '40%',
     backgroundColor: '#B1B1B1',
@@ -195,6 +204,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
-   },
-   topCards: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
+  },
+  topCards: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
 });

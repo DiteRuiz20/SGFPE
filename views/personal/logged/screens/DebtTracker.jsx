@@ -5,6 +5,7 @@ import { getDebtsByUserId, createDebt, updateDebt, deleteDebt } from '../../../.
 import { DataTable, Portal, Modal, TextInput, Button, HelperText, Menu } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import MonthSelector from '../../../MonthSelector';
+import { validateField } from '../../../InputValidator';
 
 export default function DebtTracker() {
   const { userId } = useAuth();
@@ -15,6 +16,7 @@ export default function DebtTracker() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [newDebt, setNewDebt] = useState({ creditor: '', amount: '', dueDate: new Date().toISOString() });
+  const [formErrors, setFormErrors] = useState({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -56,6 +58,12 @@ export default function DebtTracker() {
 
   const handleDebtChange = (field, value) => {
     setNewDebt(prev => ({ ...prev, [field]: value }));
+
+    let type = field === 'creditor' ? 'nameOrDescription' : field === 'amount' ? 'positiveNumber' : null;
+    if (type) {
+      const result = validateField(type, value);
+      setFormErrors(prev => ({ ...prev, [field]: result.valid ? null : result.message }));
+    }
   };
 
   const handleDateChange = (event, selectedDate) => {
@@ -70,13 +78,22 @@ export default function DebtTracker() {
 
   const handleCreateDebt = async () => {
     const { creditor, amount } = newDebt;
-    if (!creditor || !amount) return setError('Please fill all fields');
+
+    const creditorValidation = validateField('nameOrDescription', creditor);
+    const amountValidation = validateField('positiveNumber', amount);
+
+    const errors = {};
+    if (!creditorValidation.valid) errors.creditor = creditorValidation.message;
+    if (!amountValidation.valid) errors.amount = amountValidation.message;
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     try {
       await createDebt({
         creditor,
         amount: parseFloat(amount),
-        date: new Date().toISOString(), // ← solo esto como fecha
+        date: new Date().toISOString(),
         userId,
         status: "PENDING"
       });
@@ -110,7 +127,6 @@ export default function DebtTracker() {
 
       await updateDebt(debtId, payload);
 
-      // Actualizar el estado local
       setDebts(prev =>
         prev.map(d => d.id === debtId ? { ...d, status: "PAID" } : d)
       );
@@ -146,6 +162,7 @@ export default function DebtTracker() {
   const closeModal = () => {
     setModalVisible(false);
     setNewDebt({ creditor: '', amount: '', dueDate: new Date().toISOString() });
+    setFormErrors({});
     setError('');
   };
 
@@ -224,6 +241,7 @@ export default function DebtTracker() {
             onChangeText={text => handleDebtChange('creditor', text)}
             style={styles.input}
           />
+          {formErrors.creditor && <HelperText type="error">{formErrors.creditor}</HelperText>}
 
           <TextInput
             label="Amount"
@@ -232,6 +250,7 @@ export default function DebtTracker() {
             keyboardType="numeric"
             style={styles.input}
           />
+          {formErrors.amount && <HelperText type="error">{formErrors.amount}</HelperText>}
 
           {error ? <HelperText type="error">{error}</HelperText> : null}
 

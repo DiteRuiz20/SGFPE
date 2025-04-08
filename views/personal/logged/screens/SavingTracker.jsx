@@ -4,6 +4,7 @@ import { DataTable, Portal, Modal, TextInput, Button, HelperText } from 'react-n
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { getSavingsByUserId, createSaving } from '../../../../src/api/axios';
 import MonthSelector from '../../../MonthSelector';
+import { validateField } from '../../../InputValidator';
 
 export default function SavingTracker() {
   const { userId } = useAuth();
@@ -16,9 +17,9 @@ export default function SavingTracker() {
   const [totalSaved, setTotalSaved] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Modal states
   const [modalVisible, setModalVisible] = useState(false);
   const [newSaving, setNewSaving] = useState({ amount: '', description: '' });
+  const [formErrors, setFormErrors] = useState({});
   const [error, setError] = useState('');
 
   const isSameMonth = (date1, date2) =>
@@ -69,14 +70,33 @@ export default function SavingTracker() {
     setTotalSaved(total);
   }, [savings, selectedDate]);
 
+  const handleSavingChange = (field, value) => {
+    setNewSaving(prev => ({ ...prev, [field]: value }));
+
+    const type = field === 'description' ? 'nameOrDescription' : field === 'amount' ? 'positiveNumber' : null;
+    if (type) {
+      const result = validateField(type, value);
+      setFormErrors(prev => ({ ...prev, [field]: result.valid ? null : result.message }));
+    }
+  };
+
   const handleCreateSaving = async () => {
     const { amount, description } = newSaving;
-    if (!amount || !description) return setError('Todos los campos son requeridos');
+
+    const descValidation = validateField('nameOrDescription', description);
+    const amountValidation = validateField('positiveNumber', amount);
+
+    const errors = {};
+    if (!descValidation.valid) errors.description = descValidation.message;
+    if (!amountValidation.valid) errors.amount = amountValidation.message;
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     try {
       await createSaving({ userId, amount: parseFloat(amount), description });
       closeModal();
-      fetchSavings(); // Refresca la tabla
+      fetchSavings();
     } catch (err) {
       console.error('Error creating saving:', err);
       setError('Error al guardar el ahorro');
@@ -91,6 +111,7 @@ export default function SavingTracker() {
   const closeModal = () => {
     setModalVisible(false);
     setNewSaving({ amount: '', description: '' });
+    setFormErrors({});
     setError('');
   };
 
@@ -99,15 +120,11 @@ export default function SavingTracker() {
   return (
     <View style={styles.container}>
       <View>
-        {/* Selector de Meses */}
         <MonthSelector
           selectedMonth={selectedDate}
-          onSelectMonth={(date) => {
-            setSelectedDate(date);
-          }}
+          onSelectMonth={setSelectedDate}
         />
 
-        {/* Resumen de ahorro */}
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>Ahorros</Text>
           <Text style={styles.summaryAmount}>${totalSaved.toFixed(2)}</Text>
@@ -115,10 +132,8 @@ export default function SavingTracker() {
         </View>
       </View>
 
-      {/* Botón agregar ahorro */}
       <Button mode="contained" onPress={openModal} style={styles.addButton} labelStyle={styles.addButtonText}>Agregar ahorro</Button>
 
-      {/* Tabla de ahorros */}
       <View style={styles.tableContainer}>
         <DataTable>
           <DataTable.Header style={styles.tableHeader}>
@@ -139,31 +154,32 @@ export default function SavingTracker() {
         </DataTable>
       </View>
 
-      {/* Modal */}
       <Portal>
         <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
-          <Text style={styles.modalTitle}>New Saving</Text>
+          <Text style={styles.modalTitle}>Nuevo ahorro</Text>
 
           <TextInput
             label="Description"
             value={newSaving.description}
-            onChangeText={(text) => setNewSaving(prev => ({ ...prev, description: text }))}
+            onChangeText={text => handleSavingChange('description', text)}
             style={styles.input}
           />
+          {formErrors.description && <HelperText type="error">{formErrors.description}</HelperText>}
 
           <TextInput
             label="Amount"
             value={newSaving.amount}
-            onChangeText={(text) => setNewSaving(prev => ({ ...prev, amount: text }))}
+            onChangeText={text => handleSavingChange('amount', text)}
             keyboardType="numeric"
             style={styles.input}
           />
+          {formErrors.amount && <HelperText type="error">{formErrors.amount}</HelperText>}
 
           {error ? <HelperText type="error">{error}</HelperText> : null}
 
           <View style={styles.modalButtons}>
-            <Button onPress={closeModal}>Cancel</Button>
-            <Button mode="contained" onPress={handleCreateSaving}>Save</Button>
+            <Button onPress={closeModal}>Cancelar</Button>
+            <Button mode="contained" onPress={handleCreateSaving}>Guardar</Button>
           </View>
         </Modal>
       </Portal>
@@ -173,79 +189,26 @@ export default function SavingTracker() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
-
-  monthTabs: { flexDirection: 'row', marginBottom: 20 },
-  monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
-  activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
-
   summaryCard: {
-    backgroundColor: '#3DC9A7',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4
+    backgroundColor: '#3DC9A7', borderRadius: 16, padding: 24, marginBottom: 5,
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
   },
   summaryLabel: { color: '#fff', fontSize: 20, marginBottom: 8 },
   summaryAmount: { color: '#fff', fontSize: 32, fontWeight: 'bold', marginBottom: 4 },
   summarySubtext: { color: '#eee', fontSize: 16 },
-
   tableContainer: {
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    overflow: 'hidden',
-    marginBottom: 30
+    borderRadius: 12, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 30
   },
-  tableHeader: {
-    backgroundColor: '#f1f3f5'
-  },
-  tableHeaderText: {
-    fontWeight: 'bold',
-    color: '#41416e'
-  },
-  tableRow: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f3f5'
-  },
-
+  tableHeader: { backgroundColor: '#f1f3f5' },
+  tableHeaderText: { fontWeight: 'bold', color: '#41416e' },
+  tableRow: { borderBottomWidth: 1, borderBottomColor: '#f1f3f5' },
   addButton: {
-    marginVertical: 20,
-    backgroundColor: 'white',
-    borderColor: '#3DC9A7',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
-    color: 'red'
+    marginVertical: 20, backgroundColor: 'white', borderColor: '#3DC9A7', borderWidth: 1,
+    borderRadius: 12, paddingVertical: 10
   },
-  addButtonText: {
-    color: 'black',
-    fontSize: 16
-  },
-  modal: {
-    backgroundColor: '#fff',
-    padding: 24,
-    marginHorizontal: 16,
-    borderRadius: 16,
-    elevation: 5
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#41416e',
-    marginBottom: 20,
-    textAlign: 'center'
-  },
-  input: {
-    marginBottom: 16,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    elevation: 1
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20
-  },
+  addButtonText: { color: 'black', fontSize: 16 },
+  modal: { backgroundColor: '#fff', padding: 24, marginHorizontal: 16, borderRadius: 16, elevation: 5 },
+  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#41416e', marginBottom: 20, textAlign: 'center' },
+  input: { marginBottom: 16, backgroundColor: '#fff', borderRadius: 8, elevation: 1 },
+  modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
 });
