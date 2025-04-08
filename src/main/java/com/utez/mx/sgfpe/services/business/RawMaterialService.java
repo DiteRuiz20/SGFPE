@@ -68,20 +68,44 @@ public class RawMaterialService {
             Row row = sheet.getRow(i);
             if (row == null) continue;
 
-            RawMaterial material = new RawMaterial();
-            material.setUserId(userId);
+            // Saltar filas que estén completamente vacías
+            boolean rowIsEmpty = true;
+            for (int j = 0; j <= 4; j++) {
+                if (row.getCell(j) != null && row.getCell(j).getCellType() != CellType.BLANK) {
+                    rowIsEmpty = false;
+                    break;
+                }
+            }
+            if (rowIsEmpty) continue;
 
-            // ✅ Fecha con soporte para formato de fecha o string ISO
-            material.setEntryDate(Instant.now());
+            try {
+                RawMaterial material = new RawMaterial();
+                material.setUserId(userId);
+                material.setEntryDate(Instant.now());
 
-            material.setMaterialDescription(row.getCell(0).getStringCellValue());
-            material.setSupplier(row.getCell(1).getStringCellValue());
-            material.setQuantity(row.getCell(2).getNumericCellValue());
-            material.setMeasurementUnit(row.getCell(3).getStringCellValue());
-            material.setUnitPrice(BigDecimal.valueOf(row.getCell(4).getNumericCellValue()));
-            material.setNotes(row.getCell(5) != null ? row.getCell(5).getStringCellValue() : "");
+                Cell c0 = row.getCell(0);
+                Cell c1 = row.getCell(1);
+                Cell c2 = row.getCell(2);
+                Cell c3 = row.getCell(3);
+                Cell c4 = row.getCell(4);
+                Cell c5 = row.getCell(5);
 
-            materials.add(material);
+                if (c0 == null || c1 == null || c2 == null || c3 == null || c4 == null) {
+                    continue; // si alguna celda obligatoria está vacía, se salta
+                }
+
+                material.setMaterialDescription(c0.getStringCellValue());
+                material.setSupplier(c1.getStringCellValue());
+                material.setQuantity(c2.getNumericCellValue());
+                material.setMeasurementUnit(c3.getStringCellValue());
+                material.setUnitPrice(BigDecimal.valueOf(c4.getNumericCellValue()));
+                material.setNotes((c5 != null) ? c5.getStringCellValue() : "");
+
+                materials.add(material);
+            } catch (Exception e) {
+                // Si hay error con una fila, se ignora pero continúa
+                System.out.println("Error procesando fila " + i + ": " + e.getMessage());
+            }
         }
 
         workbook.close();

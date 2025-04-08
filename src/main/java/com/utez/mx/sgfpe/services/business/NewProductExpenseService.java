@@ -31,27 +31,47 @@ public class NewProductExpenseService {
             Row row = sheet.getRow(i);
             if (row == null) continue;
 
-            NewProductExpense expense = new NewProductExpense();
-            expense.setUserId(userId);
-            expense.setPurchaseDate(Instant.now());
+            // Saltar filas vacías
+            boolean rowIsEmpty = true;
+            for (int j = 0; j <= 4; j++) {
+                if (row.getCell(j) != null && row.getCell(j).getCellType() != CellType.BLANK) {
+                    rowIsEmpty = false;
+                    break;
+                }
+            }
+            if (rowIsEmpty) continue;
 
-            expense.setProductDescription(row.getCell(0).getStringCellValue());
+            try {
+                Cell c0 = row.getCell(0); // descripción
+                Cell c1 = row.getCell(1); // cantidad
+                Cell c2 = row.getCell(2); // unitCost
+                Cell c3 = row.getCell(3); // categoría
+                Cell c4 = row.getCell(4); // método de pago
+                Cell c5 = row.getCell(5); // observaciones (opcional)
 
-            int quantity = (int) row.getCell(1).getNumericCellValue();
-            BigDecimal unitCost = BigDecimal.valueOf(row.getCell(2).getNumericCellValue()); // ← Cambiado a índice 2
-            BigDecimal totalCost = unitCost.multiply(BigDecimal.valueOf(quantity));
+                if (c0 == null || c1 == null || c2 == null || c3 == null || c4 == null) continue;
 
-            expense.setQuantity(quantity);
-            expense.setUnitCost(unitCost);
-            expense.setTotalCost(totalCost);
+                NewProductExpense expense = new NewProductExpense();
+                expense.setUserId(userId);
+                expense.setPurchaseDate(Instant.now());
 
-            expense.setCategory(row.getCell(3).getStringCellValue()); // ← Índice 3
-            expense.setPaymentMethod(row.getCell(4).getStringCellValue()); // ← Índice 4
+                expense.setProductDescription(c0.getStringCellValue());
+                int quantity = (int) c1.getNumericCellValue();
+                BigDecimal unitCost = BigDecimal.valueOf(c2.getNumericCellValue());
+                BigDecimal totalCost = unitCost.multiply(BigDecimal.valueOf(quantity));
 
-            Cell notesCell = row.getCell(5); // ← Índice 5
-            expense.setNotes(notesCell != null ? notesCell.getStringCellValue() : "");
+                expense.setQuantity(quantity);
+                expense.setUnitCost(unitCost);
+                expense.setTotalCost(totalCost);
+                expense.setCategory(c3.getStringCellValue());
+                expense.setPaymentMethod(c4.getStringCellValue());
+                expense.setNotes((c5 != null) ? c5.getStringCellValue() : "");
 
-            expenses.add(expense);
+                expenses.add(expense);
+            } catch (Exception e) {
+                System.out.println("Error al procesar fila " + i + ": " + e.getMessage());
+                // Puedes loguearlo o mostrar una advertencia
+            }
         }
 
         workbook.close();
