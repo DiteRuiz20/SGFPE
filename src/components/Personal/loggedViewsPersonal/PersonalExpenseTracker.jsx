@@ -56,8 +56,14 @@ export default function PersonalExpensesTracker() {
     categoryName: '',
   });  // Estado para el nuevo gasto
   const [open, setIsOpen] = React.useState(false); //Estado para abrir el modal de crear gasto
-  const openForm = () => setIsOpen(true); //Settear el estado del modal de crear gasto para abrir
-  const closeForm = () => setIsOpen(false); //Settear el estado del modal de crear gasto para cerrar
+  const openForm = () => {
+    reset();
+    setIsOpen(true);
+  };
+  const closeForm = () => {
+    reset();
+    setIsOpen(false);
+  };
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -171,7 +177,7 @@ export default function PersonalExpensesTracker() {
     fetchCategories();
   }, []);
 
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',

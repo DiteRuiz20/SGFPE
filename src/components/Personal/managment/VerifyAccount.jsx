@@ -17,6 +17,8 @@ export default function VerifyAccount() {
     const email = location.state?.email;
     const accountType = location.state?.accountType;
 
+    const regexCode = /^[0-9]{6}$/;
+
     useEffect(() => {
         if (!email) {
             navigate('/');
@@ -26,6 +28,11 @@ export default function VerifyAccount() {
     const handleVerification = async () => {
         if (!code) {
             setAlert({ open: true, message: 'Por favor ingresa el código', severity: 'warning' });
+            return;
+        }
+
+        if (!regexCode.test(code)) {
+            setAlert({ open: true, message: 'El código debe tener exactamente 6 dígitos numéricos', severity: 'error' });
             return;
         }
 
@@ -119,14 +126,23 @@ export default function VerifyAccount() {
                     Hemos enviado un código de 6 dígitos a tu correo. Ingresa el código para completar tu registro.
                 </p>
                 <div className='d-flex flex-column col-sm-6 col-lg-4 mt-3'>
-                    <input className='input'
+                    <input
+                        className='input'
                         type="text"
                         placeholder="Código de verificación"
                         value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        style={styles.input}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || /^[0-9]{0,6}$/.test(value)) {
+                                setCode(value);
+                                setError(''); // limpiar error al escribir bien
+                            } else {
+                                setError('El código debe tener 6 dígitos numéricos');
+                            }
+                        }}
+                        maxLength={6}
                     />
-                    {error && <p style={styles.error}>{error}</p>}
+                    {error && <p style={{ color: 'red', marginTop: '5px' }}>{error}</p>}
                     <button className='primary_button' onClick={handleVerification} disabled={loading}>
                         {loading ? 'VERIFICANDO...' : 'VERIFICAR CUENTA'}
                     </button>

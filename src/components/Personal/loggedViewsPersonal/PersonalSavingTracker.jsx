@@ -142,10 +142,16 @@ export default function PersonalSavingTracker() {
     fetchPersonalSavings();
   }, [navigate]);
 
-  const openForm = () => setIsOpen(true);
-  const closeForm = () => setIsOpen(false);
+  const openForm = () => {
+    reset();
+    setIsOpen(true);
+  };
+  const closeForm = () => {
+    reset();
+    setIsOpen(false);
+  };
 
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',

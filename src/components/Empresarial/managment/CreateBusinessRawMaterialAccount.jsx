@@ -8,46 +8,21 @@ import { useNavigate } from 'react-router-dom';
 import { Alert, Snackbar } from '@mui/material';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-const regexLettersSpaces = /^[a-zA-Z\s]+$/;
-const regexLettersNumbers = /^[a-zA-Z0-9]+$/;
+const regexLettersSpaces = /^[A-Za-zÀ-ÿĀ-ſ\s]+$/;
+const regexLettersNumbers = /^[A-Za-z0-9À-ÿĀ-ſ\s]+$/;
+const regexEmail = /^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const regexPhone = /^[0-9]{10}$/;
+const regexZip = /^[0-9]{5}$/;
 
 const schema = yup.object().shape({
-  name: yup.string().required('El nombre es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
-  email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio').matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Ingresa un correo válido'),
-  phoneNumber: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').min(10, 'El número debe tener 10 dígitos').required('El número es obligatorio').max(10, 'El número debe tener 10 dígitos'),
-  password: yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('La contraseña es obligatoria'),
-    city: yup
-    .string()
-    .optional()
-    .test(
-      'valid-city',
-      'Solo se permiten letras y espacios',
-      value => !value || regexLettersSpaces.test(value)
-    ),
-  street: yup
-    .string()
-    .optional()
-    .test(
-      'valid-street',
-      'No se permiten caracteres especiales',
-      value => !value || regexLettersNumbers.test(value)
-    ),
-  zip: yup
-    .string()
-    .optional()
-    .test(
-      'valid-zip',
-      'No se permiten caracteres especiales',
-      value => !value || regexLettersNumbers.test(value)
-    ),
-  state: yup
-    .string()
-    .optional()
-    .test(
-      'valid-state',
-      'Solo se permiten letras y espacios',
-      value => !value || regexLettersSpaces.test(value)
-    ),
+    name: yup.string().required('El nombre es obligatorio').matches(regexLettersSpaces, 'Solo se permiten letras y espacios'),
+    email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio').matches(regexEmail, 'Ingresa un correo válido'),
+    phoneNumber: yup.string().matches(regexPhone, 'El número debe tener 10 dígitos').required('El número es obligatorio'),
+    password: yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('La contraseña es obligatoria'),
+    city: yup.string().optional().test('valid-city', 'Solo se permiten letras y espacios', value => !value || regexLettersSpaces.test(value)),
+    street: yup.string().optional().test('valid-street', 'Solo se permiten letras y números', value => !value || regexLettersNumbers.test(value)),
+    zip: yup.string().optional().matches(regexZip, 'El código postal debe tener 5 dígitos'),
+    state: yup.string().optional().test('valid-state', 'Solo se permiten letras y espacios', value => !value || regexLettersSpaces.test(value)),
 });
 
 export default function CreateBusinessRawMaterialAccount() {
@@ -60,7 +35,7 @@ export default function CreateBusinessRawMaterialAccount() {
         resolver: yupResolver(schema),
         mode: 'onChange',
         reValidateMode: 'onChange'
-      });
+    });
 
     const onSubmit = async (data) => {
         setIsLoading(true);
@@ -76,28 +51,26 @@ export default function CreateBusinessRawMaterialAccount() {
 
             setTimeout(() => {
                 navigate('/verify-account', { state: { email: data.email, accountType: 'business-raw-material' } });
-              }, 3000);
+            }, 3000);
         } catch (error) {
             console.error('Error al crear la cuenta:', error);
-            
             let errorMessage = 'Hubo un error al crear la cuenta. Intenta de nuevo más tarde.';
             if (error.response) {
-              switch (error.response.status) {
-                case 403:
-                  errorMessage = 'Error de permisos: No tienes permisos para registrar una cuenta.';
-                  break;
-                case 400:
-                  errorMessage = 'El email ya está registrado.';
-                  break;
-                default:
-                  errorMessage = `Error del servidor (${error.response.status}): Contacta al administrador.`;
-              }
+                switch (error.response.status) {
+                    case 403:
+                        errorMessage = 'Error de permisos: No tienes permisos para registrar una cuenta.';
+                        break;
+                    case 400:
+                        errorMessage = 'El email ya está registrado.';
+                        break;
+                    default:
+                        errorMessage = `Error del servidor (${error.response.status}): Contacta al administrador.`;
+                }
             }
-            
             setAlert({ open: true, message: errorMessage, severity: 'error' });
-          } finally {
+        } finally {
             setIsLoading(false);
-          }
+        }
     };
 
     const styles = {
@@ -114,7 +87,7 @@ export default function CreateBusinessRawMaterialAccount() {
             top: 20,
             left: '50%',
             transform: 'translate(-50%, 0)'
-          }
+        }
     };
 
     return (
@@ -170,14 +143,14 @@ export default function CreateBusinessRawMaterialAccount() {
                                     {...register('password')}
                                     placeholder="Contraseña"
                                 />
-                                <span 
+                                <span
                                     onClick={() => setShowPassword(!showPassword)}
                                     style={{
-                                    alignSelf: 'flex-end',
-                                    marginTop: '-53px',
-                                    paddingRight: '140px',
-                                    cursor: 'pointer',
-                                    color: '#555'
+                                        alignSelf: 'flex-end',
+                                        marginTop: '-53px',
+                                        paddingRight: '140px',
+                                        cursor: 'pointer',
+                                        color: '#555'
                                     }}
                                 >
                                     {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
@@ -217,7 +190,7 @@ export default function CreateBusinessRawMaterialAccount() {
                                         placeholder="Estado (Opcional)"
                                     />
                                     {errors.state && <p style={{ color: 'red' }}>{errors.state.message}</p>}
-                                </div>                 
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -225,7 +198,7 @@ export default function CreateBusinessRawMaterialAccount() {
             </div>
             <Snackbar open={alert.open} autoHideDuration={3000} onClose={() => setAlert({ ...alert, open: false })}>
                 <Alert className='col-md-4 col-12' onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} style={styles.alert}>
-                  {alert.message}
+                    {alert.message}
                 </Alert>
             </Snackbar>
         </div>

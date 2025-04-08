@@ -34,6 +34,12 @@ const schema = yup.object().shape({
   notes: yup.string().required('Las observaciones son obligatorias').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
 });
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const options = { day: 'numeric', month: 'long', year: 'numeric' };
+  return date.toLocaleDateString('es-MX', options);
+};
+
 export default function RawMaterialsTracker() {
   const [rawMaterials, setRawMaterials] = useState([]);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
@@ -176,7 +182,9 @@ export default function RawMaterialsTracker() {
   const columns = [
     { selector: row => row.materialDescription, name: 'Descripción', grow: 1 },
     { selector: row => row.quantity, name: 'Cantidad', grow: 1 },
-    { selector: row => `$${row.unitPrice}`, name: 'Precio Unitario', grow: 1 },
+    { selector: row => `$${row.unitPrice.toFixed(2)}`, name: 'Precio Unitario', grow: 1 },
+    { selector: row => row.measurementUnit, name: 'Unidad de Medida', grow: 1 },
+    { selector: row => formatDate(row.entryDate), name: 'Fecha de ingreso', grow: 1 },
   ];
 
   rawMaterials.sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());

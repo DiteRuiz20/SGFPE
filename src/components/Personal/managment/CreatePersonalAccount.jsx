@@ -10,7 +10,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 // Esquema de validación con Yup
 const schema = yup.object().shape({
-  name: yup.string().required('El nombre es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  name: yup.string().required('El nombre es obligatorio').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
   email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio').matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Ingresa un correo válido'),
   phoneNumber: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').min(10, 'El número debe tener 10 dígitos').required('El número es obligatorio').max(10, 'El número debe tener 10 dígitos'),
   password: yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('La contraseña es obligatoria'),
@@ -49,7 +49,7 @@ export default function CreatePersonalAccount() {
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
@@ -61,7 +61,7 @@ export default function CreatePersonalAccount() {
     try {
       const newUser = await createUser({ ...data, accountType: 'personal' });
       console.log('Nuevo usuario creado:', newUser);
-      
+
       setAlert({ open: true, message: '¡Cuenta creada exitosamente!', severity: 'success' });
 
       reset();
@@ -72,7 +72,7 @@ export default function CreatePersonalAccount() {
       }, 3000);
     } catch (error) {
       console.error('Error al crear la cuenta:', error);
-      
+
       let errorMessage = 'Hubo un error al crear la cuenta. Intenta de nuevo más tarde.';
       if (error.response) {
         switch (error.response.status) {
@@ -86,7 +86,7 @@ export default function CreatePersonalAccount() {
             errorMessage = `Error del servidor (${error.response.status}): Contacta al administrador.`;
         }
       }
-      
+
       setAlert({ open: true, message: errorMessage, severity: 'error' });
     } finally {
       setIsLoading(false);
@@ -147,7 +147,7 @@ export default function CreatePersonalAccount() {
                   {...register('password')}
                   placeholder="Contraseña"
                 />
-                <span 
+                <span
                   onClick={() => setShowPassword(!showPassword)}
                   style={{
                     alignSelf: 'flex-end',

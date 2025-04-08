@@ -127,7 +127,18 @@ export default function NewProductOrderTracker() {
 
   const columns = [
     { name: 'Descripción', selector: row => row.orderDescription, grow: 1 },
-    { name: 'Fecha', selector: row => new Date(row.orderDate).toLocaleDateString(), grow: 1 },
+    {
+      name: 'Fecha',
+      selector: row => {
+        const date = new Date(row.orderDate);
+        return date.toLocaleDateString('es-MX', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }).replace('de ', 'de ').replace(' de ', ' de ').replace(/,/, '');
+      },
+      grow: 1
+    },
     { name: 'Ingreso', selector: row => `$${row.income}`, grow: 1 },
     { name: 'Costo Total', selector: row => `$${row.totalOrderCost}`, grow: 1 },
     { name: 'Ganancia Neta', selector: row => `$${row.netProfit}`, grow: 1 },
