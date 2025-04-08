@@ -5,6 +5,7 @@ import { getPersonalExpensesByUserId, getDebtsByUserId, getSavingsByUserId } fro
 import { useAuth } from '../../../../src/auth/AuthContext';
 import MonthSelector from '../../../MonthSelector';
 import { useFocusEffect } from '@react-navigation/native';
+import { Divider } from 'react-native-elements';
 
 export default function BudgetPlanning() {
   const { userId } = useAuth();
@@ -123,7 +124,7 @@ export default function BudgetPlanning() {
           </View>
 
           <View style={styles.topCards}>
-            <View style={styles.savCard}>
+            <View style={styles.fondCard}>
               <Text style={styles.summaryTitle}>Fondos:</Text>
               <Text style={styles.summaryText}>${totalFunds.toFixed(2)}</Text>
             </View>
@@ -135,6 +136,11 @@ export default function BudgetPlanning() {
         </View>
       </View>
 
+      <Divider style={styles.divider} />
+
+      <Text style={{ fontSize:24, color: '#30437A', marginBottom: 10, textAlign: 'center', fontWeight: 'bold' }}>
+        BALANCE TOTAL
+      </Text>
       {/* PieChart comparativo */}
       <View style={styles.chartContainer}>
         {pieData.length > 0 ? (
@@ -172,6 +178,7 @@ const styles = StyleSheet.create({
   summaryTitle: { fontSize: 18, color: '#fff', marginBottom: 4, fontWeight: 'bold', textAlign: 'left' },
   chartContainer: { alignItems: 'center' },
   noDataText: { textAlign: 'center', marginTop: 50, color: '#495057', fontSize: 16 },
+  divider: { width: '100%', height: 2, backgroundColor: '#EAEAEA', marginBottom: 15 },
   expCard: {
     width: '40%',
     backgroundColor: '#30437A',
@@ -190,6 +197,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 15,
     shadowColor: '#3dc1ad',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+  },
+  fondCard: {
+    width: '40%',
+    backgroundColor: '#3DB1A7',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    shadowColor: '#3db1ad',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,

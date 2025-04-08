@@ -140,21 +140,24 @@ export default function SavingTracker() {
         </View>
       </View>
 
-      <Button mode="contained" onPress={openModal} style={styles.addButton} labelStyle={styles.addButtonText}>Agregar ahorro</Button>
+      <TouchableOpacity style={styles.addButton} onPress={openModal}>
+        <Icon name="plus" size={20} color="#3DC9A7" style={{marginRight: 10}} />
+        <Text style={styles.addButtonText}>Nuevo ahorro</Text>
+      </TouchableOpacity>
 
       <View style={styles.tableContainer}>
         <DataTable>
         <DataTable.Header style={styles.tableHeader}>
-          <DataTable.Title textStyle={styles.tableHeaderText}>Description</DataTable.Title>
-          <DataTable.Title textStyle={styles.tableHeaderText}>Amount</DataTable.Title>
-          <DataTable.Title textStyle={styles.tableHeaderText}>Date</DataTable.Title>
+          <DataTable.Title textStyle={styles.tableHeaderText}>Descripción</DataTable.Title>
+          <DataTable.Title textStyle={styles.tableHeaderText}>Cantidad</DataTable.Title>
+          <DataTable.Title textStyle={styles.tableHeaderText}>Fecha registro</DataTable.Title>
         </DataTable.Header>
 
           <ScrollView>
             {filteredSavings.map((saving, idx) => (
               <DataTable.Row key={saving.id || idx} style={styles.tableRow}>
                 <DataTable.Cell>{saving.description}</DataTable.Cell>
-                <DataTable.Cell numeric>${parseFloat(saving.amount).toFixed(2)}</DataTable.Cell>
+                <DataTable.Cell>${parseFloat(saving.amount).toFixed(2)}</DataTable.Cell>
                 <DataTable.Cell>{new Date(saving.date).toLocaleDateString()}</DataTable.Cell>
               </DataTable.Row>
             ))}
@@ -167,7 +170,7 @@ export default function SavingTracker() {
           <Text style={styles.modalTitle}>Nuevo ahorro</Text>
 
           <TextInput
-            label="Description"
+            label="Descripción"
             value={newSaving.description}
             onChangeText={text => handleSavingChange('description', text)}
             style={styles.input}
@@ -175,7 +178,7 @@ export default function SavingTracker() {
           {formErrors.description && <HelperText type="error">{formErrors.description}</HelperText>}
 
           <TextInput
-            label="Amount"
+            label="Cantidad"
             value={newSaving.amount}
             onChangeText={text => handleSavingChange('amount', text)}
             keyboardType="numeric"
@@ -186,8 +189,8 @@ export default function SavingTracker() {
           {error ? <HelperText type="error">{error}</HelperText> : null}
 
           <View style={styles.modalButtons}>
-            <Button onPress={closeModal}>Cancelar</Button>
-            <Button mode="contained" onPress={handleCreateSaving}>Guardar</Button>
+            <Button style={styles.primary_button} mode="contained" onPress={closeModal}>Cancelar</Button>
+            <Button style={styles.secondary_button} mode="contained" onPress={handleCreateSaving}>Guardar</Button>
           </View>
         </Modal>
       </Portal>
@@ -199,7 +202,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
   summaryCard: {
     backgroundColor: '#3DC9A7', borderRadius: 16, padding: 24, marginBottom: 5,
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
+    elevation: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    shadowColor: '#3dc1ad',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
   },
   summaryLabel: { color: '#fff', fontSize: 20, marginBottom: 8 },
   summaryAmount: { color: '#fff', fontSize: 32, fontWeight: 'bold', marginBottom: 4 },
@@ -209,14 +216,40 @@ const styles = StyleSheet.create({
   },
   tableHeader: { backgroundColor: '#f1f3f5', justifyContent: 'space-between' },
   tableHeaderText: { fontWeight: 'bold', color: '#41416e' },
-  tableRow: { borderBottomWidth: 1, borderBottomColor: '#f1f3f5' },
+  tableRow: { borderBottomWidth: 1, borderBottomColor: '#f1f3f5'},
   addButton: {
     marginVertical: 20, backgroundColor: 'white', borderColor: '#3DC9A7', borderWidth: 1,
-    borderRadius: 12, paddingVertical: 10
+    borderRadius: 12, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', height: 50,
+    shadowColor: '#3dc1ad',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
   },
   addButtonText: { color: 'black', fontSize: 16 },
   modal: { backgroundColor: '#fff', padding: 24, marginHorizontal: 16, borderRadius: 16, elevation: 5 },
-  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#41416e', marginBottom: 20, textAlign: 'center' },
+  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#3DC9A7', marginBottom: 20, textAlign: 'left' },
   input: { marginBottom: 16, backgroundColor: '#fff', borderRadius: 8, elevation: 1 },
   modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
+  primary_button: {
+    width: '40%',
+    backgroundColor: '#30437A',
+    padding: 2,
+    borderRadius: 8,
+    alignItems: 'center',
+    shadowColor: '#30387a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+  },
+  secondary_button: {
+    width: '40%',
+    backgroundColor: '#3DC9A7',
+    padding: 2,
+    borderRadius: 8,
+    alignItems: 'center',
+    shadowColor: '#3dc1ad',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+  },
 });
