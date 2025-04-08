@@ -13,12 +13,25 @@ import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 
 const schema = yup.object().shape({
-  description: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
-  quantity: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
-  unitCost: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('El precio unitario es obligatorio').min(1, 'El precio unitario debe ser mayor a 0'),
-  category: yup.string().required('La categoría es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
-  paymentMethod: yup.string().required('El método de pago es obligatoria'),
-  productObservations: yup.string().required('Las observaciones son obligatorias').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  description: yup.string().required('La descripción es obligatoria').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
+  quantity: yup
+    .number()
+    .typeError('La cantidad debe ser un número')
+    .positive('La cantidad debe ser mayor a 0')
+    .required('La cantidad es obligatoria'),
+  unitCost: yup
+    .number()
+    .typeError('El precio unitario debe ser un número')
+    .positive('El precio unitario debe ser mayor a 0')
+    .test(
+      'is-valid-decimal',
+      'Debe contener hasta 2 decimales',
+      value => /^\d+(\.\d{1,2})?$/.test(value?.toString())
+    )
+    .required('El precio unitario es obligatorio'),
+  category: yup.string().required('La categoría es obligatoria').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
+  paymentMethod: yup.string().required('El método de pago es obligatorio'),
+  productObservations: yup.string().required('Las observaciones son obligatorias').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
 });
 
 export default function NewProductExpenseTracker() {
@@ -26,47 +39,12 @@ export default function NewProductExpenseTracker() {
   const [openUploadModal, setOpenUploadModal] = useState(false);
   const [openManualModal, setOpenManualModal] = useState(false);
   const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [alert, setAlert] = useState({ open: false, message: '', severity: '' });
   const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
 
-  const [manualForm, setManualForm] = useState({
-    productDescription: '',
-    quantity: '',
-    unitCost: '',
-    totalCost: '',
-    category: '',
-    paymentMethod: '',
-    productObservations: ''
-  });
-
-  const isSameMonth = (date1, date2) => {
-    const d1 = new Date(date1);
-    const d2 = new Date(date2);
-    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
-  };
-
-  const filteredProducts = products.filter(p =>
-    isSameMonth(p.purchaseDate, selectedMonth)
-  );
-
   const navigate = useNavigate();
-
-  const openForm = () => {
-    setAlert({ open: true, message: 'El uso de la plantilla es esencial para la lectura', severity: 'info' });
-    setOpenUploadModal(true);
-  };
-  const closeForm = () => setOpenUploadModal(false);
-  const openManualForm = () => setOpenManualModal(true);
-  const closeManualForm = () => setOpenManualModal(false);
-
-  const isCurrentMonth = () => {
-    const currentMonth = new Date();
-    return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
-      selectedMonth.getMonth() === currentMonth.getMonth();
-  };
-
-  const isDisabled = !isCurrentMonth();
 
   const fetchProducts = async () => {
     const userId = localStorage.getItem('userId');
@@ -81,16 +59,58 @@ export default function NewProductExpenseTracker() {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [selectedMonth]);
+
+  const isSameMonth = (date1, date2) => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+  };
+
+  const filteredProducts = products.filter(p => isSameMonth(p.purchaseDate, selectedMonth));
+
+  const isCurrentMonth = () => {
+    const currentMonth = new Date();
+    return selectedMonth.getFullYear() === currentMonth.getFullYear() && selectedMonth.getMonth() === currentMonth.getMonth();
+  };
+
+  const isDisabled = !isCurrentMonth();
+
+  const openForm = () => {
+    setFileError('');
+    setAlert({ open: true, message: 'El uso de la plantilla es esencial para la lectura', severity: 'info' });
+    setOpenUploadModal(true);
+  };
+  const closeForm = () => {
+    setFile(null);
+    setFileError('');
+    setOpenUploadModal(false);
+  };
+
+  const openManualForm = () => {
+    reset();
+    setOpenManualModal(true);
+  };
+  const closeManualForm = () => {
+    reset();
+    setOpenManualModal(false);
+  };
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+    setFileError('');
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
     const userId = localStorage.getItem('userId');
-    if (!userId || !file) return navigate('/login-personal');
+
+    if (!file) {
+      setFileError('Debes seleccionar un archivo Excel.');
+      return;
+    }
+
+    if (!userId) return navigate('/login-personal');
 
     try {
       await uploadNewProductExpenses(file, userId);
@@ -98,10 +118,11 @@ export default function NewProductExpenseTracker() {
       fetchProducts();
     } catch (error) {
       console.error('Error al subir el archivo:', error);
+      setFileError('Error al subir el archivo. Verifica el formato o la plantilla.');
     }
   };
 
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -109,12 +130,10 @@ export default function NewProductExpenseTracker() {
 
   const handleManualSubmit = async (data) => {
     try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) return navigate('/login-personal');
+      const userId = localStorage.getItem('userId');
+      if (!userId) return navigate('/login-personal');
 
-    
       const newProduct = {
-        ...manualForm, // Use data directly from react-hook-form
         userId,
         productDescription: data.description,
         quantity: parseInt(data.quantity),
@@ -127,15 +146,6 @@ export default function NewProductExpenseTracker() {
       };
 
       await createNewProductExpense(newProduct);
-      setManualForm({
-        productDescription: '',
-        quantity: '',
-        unitCost: '',
-        totalCost: '',
-        category: '',
-        paymentMethod: '',
-        productObservations: ''
-      });
       closeManualForm();
       fetchProducts();
     } catch (error) {
@@ -144,36 +154,16 @@ export default function NewProductExpenseTracker() {
   };
 
   const columns = [
-    {
-      selector: row => row.productDescription,
-      name: 'Descripción',
-      grow: 1,
-    },
-    {
-      selector: row => row.quantity,
-      name: 'Cantidad',
-      grow: 1,
-    },
-    {
-      selector: row => `$${row.unitCost}`,
-      name: 'Costo Unitario',
-      grow: 1,
-    },
-    {
-      selector: row => `$${row.totalCost}`,
-      name: 'Costo Total',
-      grow: 1,
-    },
-    {
-      selector: row => row.category,
-      name: 'Categoría',
-      grow: 1,
-    }
+    { selector: row => row.productDescription, name: 'Descripción', grow: 1 },
+    { selector: row => row.quantity, name: 'Cantidad', grow: 1 },
+    { selector: row => `$${row.unitCost}`, name: 'Costo Unitario', grow: 1 },
+    { selector: row => `$${row.totalCost}`, name: 'Costo Total', grow: 1 },
+    { selector: row => row.category, name: 'Categoría', grow: 1 },
   ];
 
   filteredProducts.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
-  const totalMonthlyCost = filteredProducts.reduce((sum, p) => sum + (p.totalCost || 0), 0);
+  const totalMonthlyCost = filteredProducts.reduce((sum, p) => sum + (parseFloat(p.totalCost) || 0), 0);
 
   const styles = {
     divider: {
@@ -252,6 +242,27 @@ export default function NewProductExpenseTracker() {
     }
   };
 
+  const customStyles = {
+    cells: {
+      style: {
+        color: '#333', // Texto oscuro
+        fontSize: '14px',
+      },
+    },
+    headCells: {
+      style: {
+        color: '#222',
+        fontWeight: 'bold',
+        fontSize: '14px',
+      },
+    },
+    paginationRowsPerPage: {
+      style: {
+        display: 'none',
+      },
+    },
+  };
+
   return (
     <div>
       <div className="row justify-content-center">
@@ -294,39 +305,29 @@ export default function NewProductExpenseTracker() {
             data={filteredProducts}
             pagination
             noDataComponent="No hay productos disponibles en este mes."
+            customStyles={customStyles}
           />
         </div>
       </div>
 
       {/* Modal subir archivo */}
       <Modal open={openUploadModal} onClose={closeForm}>
-        <Box sx={styles.modalStyle}>
+        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: '8px' }}>
           <form onSubmit={handleUpload}>
             <div style={{ marginBottom: '20px' }}>
-              <text style={styles.title}>Subir archivo Excel</text>
+              <span style={{ fontSize: 28, fontWeight: 'bold', color: '#30437A' }}>Subir archivo Excel</span>
             </div>
-
-            <input className='input col-12' type="file" accept=".xlsx" onChange={handleFileChange} required />
-
-            <Divider style={styles.divider} />
-
+            <input className='input col-12' type="file" accept=".xlsx" onChange={handleFileChange} />
+            {fileError && <span style={{ color: 'red', fontSize: '14px' }}>{fileError}</span>}
+            <Divider style={{ width: '100%', height: '2px', backgroundColor: '#999', marginTop: 20 }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', gap: '10px' }}>
-              <button
-                type="button"
-                className="primary_button"
-                style={{ flex: 1, fontSize: '14px' }}
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = '/plantilla_mercancia.xlsx';
-                  link.download = 'plantilla_mercancia.xlsx';
-                  link.click();
-                }}
-              >
-                Descargar plantilla
-              </button>
-              <button type="submit" className="secondary_button" style={{ flex: 1 }}>
-                Subir
-              </button>
+              <button type="button" className="primary_button" style={{ flex: 1, fontSize: '14px' }} onClick={() => {
+                const link = document.createElement('a');
+                link.href = '/plantilla_mercancia.xlsx';
+                link.download = 'plantilla_mercancia.xlsx';
+                link.click();
+              }}>Descargar plantilla</button>
+              <button type="submit" className="secondary_button" style={{ flex: 1 }}>Subir</button>
             </div>
           </form>
         </Box>
@@ -344,7 +345,7 @@ export default function NewProductExpenseTracker() {
             {errors.description && <span style={{ color: 'red' }}>{errors.description.message}</span>}
             <input type="number" placeholder='Cantidad' {...register('quantity')} className='input col-12 mb-2' />
             {errors.quantity && <span style={{ color: 'red' }}>{errors.quantity.message}</span>}
-            <input type="number" placeholder='Precio Unitario' {...register('unitCost')} className='input col-12 mb-2' />
+            <input type="number" step="0.01" placeholder='Precio Unitario' {...register('unitCost')} className='input col-12 mb-2' />
             {errors.unitCost && <span style={{ color: 'red' }}>{errors.unitCost.message}</span>}
             <input type="text" placeholder='Categoría' {...register('category')} className='input col-12 mb-2' />
             {errors.category && <span style={{ color: 'red' }}>{errors.category.message}</span>}

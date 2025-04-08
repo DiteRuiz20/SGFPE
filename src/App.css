@@ -11,9 +11,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -22,6 +24,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -39,4 +42,38 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Estilo directo al select del paginador */
+div.rd__pagination select {
+  color: #212121 !important;
+  background-color: #f0f0f0 !important;
+  border: 1px solid #ccc !important;
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+  font-size: 14px !important;
+  appearance: none;
+  /* Desactiva el estilo nativo */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%204%205'%3E%3Cpath%20fill='%23000'%20d='M2%200L0%202h4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px;
+}
+
+/* Para que el menú desplegable tenga color de fondo blanco */
+select option {
+  background-color: white;
+  color: #212121;
+}
+
+.custom-datatable select {
+  color: #212121 !important;
+  background-color: #f0f0f0 !important;
+}
+
+
+div.rd__pagination-rows-per-page {
+  display: none !important;
 }

@@ -13,12 +13,25 @@ import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 
 const schema = yup.object().shape({
-  description: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
-  quantity: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
-  unitPrice: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('El precio unitario es obligatorio').min(1, 'El precio unitario debe ser mayor a 0'),
-  supplier: yup.string().required('El proveedor es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  description: yup.string().required('La descripción es obligatoria').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
+  quantity: yup
+    .number()
+    .typeError('La cantidad debe ser un número')
+    .positive('La cantidad debe ser mayor a 0')
+    .required('La cantidad es obligatoria'),
+  unitPrice: yup
+    .number()
+    .typeError('El precio unitario debe ser un número')
+    .positive('El precio unitario debe ser mayor a 0')
+    .test(
+      'is-valid-decimal',
+      'Debe contener hasta 2 decimales',
+      value => /^\d+(\.\d{1,2})?$/.test(value?.toString())
+    )
+    .required('El precio unitario es obligatorio'),
+  supplier: yup.string().required('El proveedor es obligatorio').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
   measurementUnit: yup.string().required('La unidad de medida es obligatoria'),
-  notes: yup.string().required('Las observaciones son obligatorias').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
+  notes: yup.string().required('Las observaciones son obligatorias').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
 });
 
 export default function RawMaterialsTracker() {
@@ -27,50 +40,49 @@ export default function RawMaterialsTracker() {
   const [openUploadModal, setOpenUploadModal] = useState(false);
   const [openManualModal, setOpenManualModal] = useState(false);
   const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState('');
   const [alert, setAlert] = useState({ open: false, message: '', severity: '' });
   const [manualForm, setManualForm] = useState({
     materialDescription: '',
     quantity: '',
     unitPrice: '',
     supplier: '',
-    measurementUnit: '',  // Unidad de medida
+    measurementUnit: '',
     notes: ''
   });
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [dateWindow, setDateWindow] = useState({
-    center: new Date(),
-    offset: 3,
-  });
+  const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
 
-  // Unidades de medida posibles
-  const measurementUnits = [
-    'cm', 'mm', 'm', 'mg', 'g', 'kg', 'ml', 'L',
-    'Pieza', 'Caja', 'Rollo', 'Paquete', 'Bolsa',
-    'Docena', 'Unidad', 'Par', 'Set'
-  ];
+  const measurementUnits = ['cm', 'mm', 'm', 'mg', 'g', 'kg', 'ml', 'L', 'Pieza', 'Caja', 'Rollo', 'Paquete', 'Bolsa', 'Docena', 'Unidad', 'Par', 'Set'];
 
-  const isSameMonth = (date1, date2) => {
-    return date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
-  };
-
+  const isSameMonth = (date1, date2) => date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
   const isCurrentMonth = () => {
     const currentMonth = new Date();
     return selectedMonth.getFullYear() === currentMonth.getFullYear() && selectedMonth.getMonth() === currentMonth.getMonth();
   };
-
   const isDisabled = !isCurrentMonth();
 
   const openFileForm = () => {
+    setFileError('');
     setAlert({ open: true, message: 'El uso de la plantilla es esencial para la lectura', severity: 'info' });
     setOpenUploadModal(true);
   };
-  
-  const closeFileForm = () => setOpenUploadModal(false);
+  const closeFileForm = () => {
+    setFile(null);
+    setFileError('');
+    setOpenUploadModal(false);
+  };
 
-  const openManualForm = () => setOpenManualModal(true);
-  const closeManualForm = () => setOpenManualModal(false);
+  const openManualForm = () => {
+    reset();
+    setOpenManualModal(true);
+  };
+  const closeManualForm = () => {
+    reset();
+    setOpenManualModal(false);
+  };
 
   const fetchRawMaterials = async () => {
     const userId = localStorage.getItem('userId');
@@ -99,12 +111,19 @@ export default function RawMaterialsTracker() {
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+    setFileError('');
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
     const userId = localStorage.getItem('userId');
-    if (!userId || !file) return navigate('/login-personal');
+
+    if (!file) {
+      setFileError('Debes seleccionar un archivo Excel.');
+      return;
+    }
+
+    if (!userId) return navigate('/login-personal');
 
     try {
       await uploadRawMaterial(file, userId);
@@ -112,10 +131,11 @@ export default function RawMaterialsTracker() {
       fetchRawMaterials();
     } catch (error) {
       console.error('Error al subir el archivo:', error);
+      setFileError('Error al subir el archivo. Intenta nuevamente.');
     }
   };
 
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -137,6 +157,7 @@ export default function RawMaterialsTracker() {
         entryDate: new Date().toISOString(),
         userId
       });
+      reset();
       setManualForm({ materialDescription: '', quantity: '', unitPrice: '', supplier: '', measurementUnit: '', notes: '' });
       closeManualForm();
       fetchRawMaterials();
@@ -147,53 +168,29 @@ export default function RawMaterialsTracker() {
 
   const downloadTemplate = () => {
     const link = document.createElement('a');
-    link.href = '/plantilla_materia_prima.xlsx'; // sin assets
+    link.href = '/plantilla_materia_prima.xlsx';
     link.download = 'plantilla_materia_prima.xlsx';
     link.click();
   };
 
   const columns = [
-    {
-      selector: row => row.materialDescription,
-      name: 'Descripción',
-      grow: 1,
-    },
-    {
-      selector: row => row.quantity,
-      name: 'Cantidad',
-      grow: 1,
-    },
-    {
-      selector: row => `$${row.unitPrice}`,
-      name: 'Precio Unitario',
-      grow: 1,
-    },
+    { selector: row => row.materialDescription, name: 'Descripción', grow: 1 },
+    { selector: row => row.quantity, name: 'Cantidad', grow: 1 },
+    { selector: row => `$${row.unitPrice}`, name: 'Precio Unitario', grow: 1 },
   ];
 
-  rawMaterials.sort((a, b) => {
-    const dateA = new Date(a.entryDate).getTime();
-    const dateB = new Date(b.entryDate).getTime();
-    return dateB - dateA;
-  });
+  rawMaterials.sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());
 
   const styles = {
-    divider: {
-      width: '100%', height: '2px', backgroundColor: '#999', marginTop: 20,
-    },
+    divider: { width: '100%', height: '2px', backgroundColor: '#999', marginTop: 20 },
     card: {
       backgroundColor: '#B1B1B1', color: 'white', width: '200px', height: '140px',
       margin: '20px 30px', borderRadius: '8px', display: 'flex', flexDirection: 'column',
       fontSize: '20px', boxShadow: '0px 8px 5px rgba(136, 136, 136, 0.2)',
     },
-    button: {
-      alignSelf: 'flex-end', margin: '15px', fontSize: '35px', color: '#B1B1B1',
-    },
-    cardText: {
-      fontSize: '20px', alignSelf: 'center', marginTop: '-10px', fontWeight: 'bold',
-    },
-    cardSubtitle: {
-      fontSize: '16px', alignSelf: 'center', marginTop: '10px', color: 'white',
-    },
+    button: { alignSelf: 'flex-end', margin: '15px', fontSize: '35px', color: '#B1B1B1' },
+    cardText: { fontSize: '20px', alignSelf: 'center', marginTop: '-10px', fontWeight: 'bold' },
+    cardSubtitle: { fontSize: '16px', alignSelf: 'center', marginTop: '10px', color: 'white' },
     addButton: {
       border: '1px solid #B1B1B1', backgroundColor: 'white', width: '200px', height: '140px',
       margin: '20px 30px', borderRadius: '8px', display: 'flex', padding: '10px',
@@ -205,15 +202,29 @@ export default function RawMaterialsTracker() {
       position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
       width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: '8px',
     },
-    title: {
-      fontSize: 28, fontWeight: 'bold', color: '#B1B1B1',
+    title: { fontSize: 28, fontWeight: 'bold', color: '#B1B1B1' },
+    alert: { position: 'fixed', top: 20, left: '50%', transform: 'translate(-50%, 0)' }
+  };
+
+  const customStyles = {
+    cells: {
+      style: {
+        color: '#333', // Texto oscuro
+        fontSize: '14px',
+      },
     },
-    alert: {
-      position: 'fixed',
-      top: 20,
-      left: '50%',
-      transform: 'translate(-50%, 0)'
-    }
+    headCells: {
+      style: {
+        color: '#222',
+        fontWeight: 'bold',
+        fontSize: '14px',
+      },
+    },
+    paginationRowsPerPage: {
+      style: {
+        display: 'none',
+      },
+    },
   };
 
   return (
@@ -257,6 +268,7 @@ export default function RawMaterialsTracker() {
             data={rawMaterials}
             pagination
             noDataComponent="No hay materiales disponibles."
+            customStyles={customStyles}
           />
         </div>
       </div>
@@ -268,31 +280,15 @@ export default function RawMaterialsTracker() {
             <div style={{ marginBottom: '20px' }}>
               <text style={styles.title}>Subir archivo Excel</text>
             </div>
-            <input type="file" accept=".xlsx" onChange={handleFileChange} required className='input col-12' />
+            <input type="file" accept=".xlsx" onChange={handleFileChange} className='input col-12' />
+            {fileError && <span style={{ color: 'red', fontSize: '14px' }}>{fileError}</span>}
             <Divider style={styles.divider} />
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: '10px',
-              marginTop: '20px',
-              flexWrap: 'nowrap'
-            }}>
-              <button
-                type="button"
-                className="primary_button"
-                style={{ flex: 1, padding: '10px 20px', fontSize: '14px' }}
-                onClick={downloadTemplate}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginTop: '20px', flexWrap: 'nowrap' }}>
+              <button type="button" className="primary_button" style={{ flex: 1, padding: '10px 20px', fontSize: '14px' }} onClick={downloadTemplate}>
                 Descargar plantilla
               </button>
-
-              <button
-                type="submit"
-                className="secondary_button"
-                style={{ flex: 1, padding: '10px 20px' }}>
-                Subir
-              </button>
+              <button type="submit" className="secondary_button" style={{ flex: 1, padding: '10px 20px' }}>Subir</button>
             </div>
-
           </form>
         </Box>
       </Modal>
@@ -308,7 +304,7 @@ export default function RawMaterialsTracker() {
             {errors.description && <span style={{ color: 'red' }}>{errors.description.message}</span>}
             <input type="number" placeholder='Cantidad' {...register('quantity')} className='input col-12 mb-2' />
             {errors.quantity && <span style={{ color: 'red' }}>{errors.quantity.message}</span>}
-            <input type="number" placeholder='Precio Unitario' {...register('unitPrice')} className='input col-12 mb-2' />
+            <input type="number" step="0.01" placeholder='Precio Unitario' {...register('unitPrice')} className='input col-12 mb-2' />
             {errors.unitPrice && <span style={{ color: 'red' }}>{errors.unitPrice.message}</span>}
             <input type="text" placeholder='Proveedor' {...register('supplier')} className='input col-12 mb-2' />
             {errors.supplier && <span style={{ color: 'red' }}>{errors.supplier.message}</span>}

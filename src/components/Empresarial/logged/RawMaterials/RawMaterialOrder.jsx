@@ -15,8 +15,15 @@ import * as yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
 
 const schema = yup.object().shape({
-  orderDescription: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
-  income: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
+  orderDescription: yup.string().required('La descripción es obligatoria').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
+  income: yup
+    .number()
+    .typeError('Debe ser un número válido')
+    .positive('Debe ser mayor a 0')
+    .test('max-two-decimals', 'Máximo dos decimales', value =>
+      /^\d+(\.\d{1,2})?$/.test(value?.toString())
+    )
+    .required('La cantidad es obligatoria'),
   materialUsageIds: yup.array().min(1, 'Debes seleccionar al menos un material').required('La materia prima es obligatoria'),
 });
 
@@ -51,13 +58,20 @@ export default function RawMaterialOrderTracker() {
   };
 
   const location = useLocation();
-  const openForm = () => setIsOpen(true);
-  const closeForm = () => setIsOpen(false);
+  const openForm = () => {
+    reset(); // Limpia campos
+    setIsOpen(true);
+  };
+
+  const closeForm = () => {
+    reset(); // Limpia también al cerrar
+    setIsOpen(false);
+  };
 
   const materialOptions = rawMaterials.map((material) => ({
     value: material.id,
     label: `${material.usageDescription} - ${material.quantityUsed} unidades`,
-  }));  
+  }));
 
   const isCurrentMonth = () => {
     const currentMonth = new Date();
@@ -136,7 +150,7 @@ export default function RawMaterialOrderTracker() {
     fetchMaterials();
   }, [navigate]);
 
-  const { control, register, handleSubmit, formState: { errors }, setValue } = useForm({
+  const { control, register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -144,18 +158,18 @@ export default function RawMaterialOrderTracker() {
 
   const onSubmit = async (data) => {
     try {
-    const userId = localStorage.getItem('userId');
+      const userId = localStorage.getItem('userId');
 
-    if (!userId) {
-      return;
-    }
+      if (!userId) {
+        return;
+      }
 
-    const orderData = {
-      userId,
-      materialUsageIds: data.materialUsageIds,
-      income: parseFloat(data.income),
-      orderDescription: data.orderDescription,
-    };
+      const orderData = {
+        userId,
+        materialUsageIds: data.materialUsageIds,
+        income: parseFloat(data.income),
+        orderDescription: data.orderDescription,
+      };
 
       await createRawMaterialOrder(orderData);
       setSuccessMessage('Pedido creado exitosamente ✅');
@@ -176,10 +190,42 @@ export default function RawMaterialOrderTracker() {
   const columns = [
     { name: 'Descripción', selector: row => row.orderDescription, grow: 2 },
     { name: 'Ingreso ($)', selector: row => `$${row.income}`, grow: 1 },
-    { name: 'Fecha', selector: row => row.createdAt ? new Date(row.createdAt).toLocaleString() : 'Sin fecha', grow: 2 },
+    {
+      name: 'Fecha', selector: row =>
+        row.createdAt
+          ? new Date(row.createdAt).toLocaleDateString('es-MX', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }).replace(' de ', ' de ').replace(',', '')
+            .replace(/(\d+) de (\w+) de (\d+)/, '$1 de $2 del $3')
+          : 'Sin fecha',
+      grow: 2
+    },
   ];
 
   filteredOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const customStyles = {
+    cells: {
+      style: {
+        color: '#333', // Texto oscuro
+        fontSize: '14px',
+      },
+    },
+    headCells: {
+      style: {
+        color: '#222',
+        fontWeight: 'bold',
+        fontSize: '14px',
+      },
+    },
+    paginationRowsPerPage: {
+      style: {
+        display: 'none',
+      },
+    },
+  };
 
   const styles = {
     divider: {
@@ -291,6 +337,7 @@ export default function RawMaterialOrderTracker() {
             data={filteredOrders}
             pagination
             noDataComponent="No hay pedidos registrados."
+            customStyles={customStyles}
           />
         </div>
 
@@ -302,7 +349,7 @@ export default function RawMaterialOrderTracker() {
               </div>
               <input className='input col-12'
                 placeholder="Descripción del pedido"
-                {...register('orderDescription')}	
+                {...register('orderDescription')}
               />
               {errors.orderDescription && <p style={{ color: 'red' }}>{errors.orderDescription.message}</p>}
 
@@ -310,7 +357,7 @@ export default function RawMaterialOrderTracker() {
                 name="materialUsageIds"
                 control={control}
                 render={({ field }) => (
-                  <Select 
+                  <Select
                     {...field}
                     isMulti
                     options={materialOptions}
@@ -327,12 +374,14 @@ export default function RawMaterialOrderTracker() {
                 <p style={{ color: 'red' }}>{errors.materialUsageIds.message}</p>
               )}
 
-              <input className='input col-12'
+              <input
+                className='input col-12'
                 type="number"
-                style={styles.input}
+                step="0.01"
                 placeholder="Ingreso del pedido ($)"
                 {...register('income')}
               />
+
               {errors.income && <p style={{ color: 'red' }}>{errors.income.message}</p>}
 
               <Divider style={styles.divider} />

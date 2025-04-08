@@ -15,8 +15,13 @@ import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 
 const schema = yup.object().shape({
-  creditor: yup.string().required('El acreedor es obligatorio').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
-  amount: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria')
+  creditor: yup.string().required('El acreedor es obligatorio').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
+  amount: yup
+    .number()
+    .typeError('La cantidad debe ser un número válido')
+    .positive('La cantidad debe ser mayor a 0')
+    .test('decimal-precision', 'Máximo 2 decimales', value => /^\d+(\.\d{1,2})?$/.test(value?.toString()))
+    .required('La cantidad es obligatoria'),
 });
 
 export default function PersonalDebtTracker() {
@@ -43,7 +48,7 @@ export default function PersonalDebtTracker() {
   const isCurrentMonth = () => {
     const currentMonth = new Date();
     return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
-           selectedMonth.getMonth() === currentMonth.getMonth();
+      selectedMonth.getMonth() === currentMonth.getMonth();
   };
 
   const isDisabled = !isCurrentMonth();
@@ -56,15 +61,52 @@ export default function PersonalDebtTracker() {
     );
   };
 
-    // Filtrar las deudas por el mes seleccionado
-    useEffect(() => {
-        if (personalDebts.length > 0) {
-            const filtered = personalDebts.filter(debt =>
-                isSameMonth(debt.date, selectedMonth)
-            );
-            setFilteredDebts(filtered);
-        }
-    }, [personalDebts, selectedMonth]);
+  const customStyles = {
+    cells: {
+      style: {
+        color: '#333', // Texto oscuro
+        fontSize: '14px',
+      },
+    },
+    headCells: {
+      style: {
+        color: '#222',
+        fontWeight: 'bold',
+        fontSize: '14px',
+      },
+    },
+    paginationRowsPerPage: {
+      style: {
+        display: 'none',
+      },
+    },
+  };
+
+  const getTranslatedStatus = (status) => {
+    switch (status) {
+      case 'PENDING':
+        return 'Pendiente';
+      case 'PAID':
+        return 'Pagado';
+      case 'OVERDUE':
+        return 'Atrasado';
+      case 'CANCELLED':
+        return 'Cancelado';
+      default:
+        return status;
+    }
+  };
+
+
+  // Filtrar las deudas por el mes seleccionado
+  useEffect(() => {
+    if (personalDebts.length > 0) {
+      const filtered = personalDebts.filter(debt =>
+        isSameMonth(debt.date, selectedMonth)
+      );
+      setFilteredDebts(filtered);
+    }
+  }, [personalDebts, selectedMonth]);
 
   // Cargar las deudas
   useEffect(() => {
@@ -113,7 +155,7 @@ export default function PersonalDebtTracker() {
     try {
       const userId = localStorage.getItem('userId');
       if (!userId) throw new Error('No hay usuario autenticado');
-      
+
       const debtData = {
         ...data,
         userId,
@@ -192,7 +234,11 @@ export default function PersonalDebtTracker() {
     },
     {
       name: 'Fecha de registro',
-      selector: row => new Date(row.date).toLocaleDateString(),
+      selector: row => new Date(row.date).toLocaleDateString('es-MX', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      }),
       grow: 0.3,
       minWidth: '120px',
     },
@@ -200,29 +246,27 @@ export default function PersonalDebtTracker() {
       name: 'Estado',
       selector: row => (
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-          <Chip 
-          label={row.status}
-          style={{
-            backgroundColor: getStatusColor(row.status),
-            color: 'white',
-          }}>
-          </Chip>
+          <Chip
+            label={getTranslatedStatus(row.status)} // 👈 usa aquí la traducción
+            style={{
+              backgroundColor: getStatusColor(row.status),
+              color: 'white',
+            }}
+          />
           {row.status === 'PENDING' && (
-            <>
-              <button
-                onClick={() => handleStatusUpdate(row.id, 'PAID')}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#3DC9A7',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}
-              >
-                Marcar como pagada
-              </button>
-            </>
+            <button
+              onClick={() => handleStatusUpdate(row.id, 'PAID')}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#3DC9A7',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+              }}
+            >
+              Marcar como pagada
+            </button>
           )}
         </div>
       ),
@@ -232,7 +276,7 @@ export default function PersonalDebtTracker() {
   ];
 
   filteredDebts.sort((a, b) => new Date(b.date) - new Date(a.date));
-  
+
   const conditionalRowStyles = [
     {
       when: row => row.status === 'PAID',
@@ -261,7 +305,7 @@ export default function PersonalDebtTracker() {
   const CategoryIcon = () => {
     const icon = <LiaMoneyCheckAltSolid />;
     const color = '#B1B1B1';
-  
+
     return (
       <div
         style={{
@@ -281,119 +325,120 @@ export default function PersonalDebtTracker() {
     );
   };
 
-    const styles = {
-        divider: {
-          width: '100%',
-          height: '2px',
-          backgroundColor: '#999',
-          marginTop: 20,
-        },
-        card: {
-          backgroundColor: '#B1B1B1',
-          color: 'white',
-          width: '200px',
-          height: '140px',
-          margin: '20px 30px',
-          borderRadius: '8px',
-          display: 'flex',
-          flexDirection: 'column',
-          fontSize: '20px',
-          boxShadow:'0px 8px 5px rgba(136, 136, 136, 0.2)',
-        },
-        button: {
-          alignSelf: 'flex-end',
-          margin: '15px',
-          fontSize: '35px',
-          color: '#B1B1B1',
-        },
-        cardText: {
-          fontSize: '20px',
-          alignSelf: 'center',
-          marginTop: '-10px',
-          fontWeight: 'bold',
-        },
-        cardSubtitle: {
-          fontSize: '16px',
-          alignSelf: 'center',
-          marginTop: '10px',
-          color: 'white',
-        },
-        addButton: {
-          border: '1px solid #B1B1B1',
-          backgroundColor: 'white',
-          width: '200px',
-          height: '140px',
-          margin: '20px 30px',
-          borderRadius: '8px',
-          display: 'flex',
-          padding: '10px',
-          flexDirection: 'column',
-          fontSize: '20px',
-          color: 'black',
-          boxShadow:'0px 8px 5px rgba(136, 136, 136, 0.2)',
-          opacity: isDisabled ? 0.6 : 1,
-          cursor: isDisabled ? 'not-allowed' : 'pointer',
-        },
-        modalStyle: {
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 400,
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: 4,
-          borderRadius: '8px',
-        },
-        title: {
-          fontSize: 28,
-          fontWeight: 'bold',
-          color: '#B1B1B1',
-        },
-      };      
+  const styles = {
+    divider: {
+      width: '100%',
+      height: '2px',
+      backgroundColor: '#999',
+      marginTop: 20,
+    },
+    card: {
+      backgroundColor: '#B1B1B1',
+      color: 'white',
+      width: '200px',
+      height: '140px',
+      margin: '20px 30px',
+      borderRadius: '8px',
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: '20px',
+      boxShadow: '0px 8px 5px rgba(136, 136, 136, 0.2)',
+    },
+    button: {
+      alignSelf: 'flex-end',
+      margin: '15px',
+      fontSize: '35px',
+      color: '#B1B1B1',
+    },
+    cardText: {
+      fontSize: '20px',
+      alignSelf: 'center',
+      marginTop: '-10px',
+      fontWeight: 'bold',
+    },
+    cardSubtitle: {
+      fontSize: '16px',
+      alignSelf: 'center',
+      marginTop: '10px',
+      color: 'white',
+    },
+    addButton: {
+      border: '1px solid #B1B1B1',
+      backgroundColor: 'white',
+      width: '200px',
+      height: '140px',
+      margin: '20px 30px',
+      borderRadius: '8px',
+      display: 'flex',
+      padding: '10px',
+      flexDirection: 'column',
+      fontSize: '20px',
+      color: 'black',
+      boxShadow: '0px 8px 5px rgba(136, 136, 136, 0.2)',
+      opacity: isDisabled ? 0.6 : 1,
+      cursor: isDisabled ? 'not-allowed' : 'pointer',
+    },
+    modalStyle: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 400,
+      bgcolor: 'background.paper',
+      boxShadow: 24,
+      p: 4,
+      borderRadius: '8px',
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: '#B1B1B1',
+    },
+  };
 
-    return (
-      <div>
-          <div className="row justify-content-center">
-            <TopNavBar/>
-            <MonthSelector
-              selectedMonth={selectedMonth}
-              onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
-              dateWindow={dateWindow}
-              setDateWindow={setDateWindow}
-            />
-            <Divider style={styles.divider} />
-          </div>
+  return (
+    <div>
+      <div className="row justify-content-center">
+        <TopNavBar />
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
+          dateWindow={dateWindow}
+          setDateWindow={setDateWindow}
+        />
+        <Divider style={styles.divider} />
+      </div>
 
-        <div className='row mt-3'>
-          <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
-            <div style={styles.card}>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
-                <text>DEUDAS</text>
-                <GiTakeMyMoney style={{ fontSize: '220%'}} />
-                </div>
-                  <text style={styles.cardText}>${calculateTotal().toFixed(2)}</text>
-                  <text style={styles.cardSubtitle}>Deudas del mes</text>
+      <div className='row mt-3'>
+        <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
+          <div style={styles.card}>
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
+              <text>DEUDAS</text>
+              <GiTakeMyMoney style={{ fontSize: '220%' }} />
             </div>
-            <button
-              style={styles.addButton}
-              onClick={() => !isDisabled && openForm()}
-              disabled={isDisabled}>
-              <MdOutlineAddToPhotos style={styles.button} />
-              <text style={{alignSelf: 'center'}}>NUEVA DEUDA</text>
-            </button>
+            <text style={styles.cardText}>${calculateTotal().toFixed(2)}</text>
+            <text style={styles.cardSubtitle}>Deudas del mes</text>
           </div>
+          <button
+            style={styles.addButton}
+            onClick={() => !isDisabled && openForm()}
+            disabled={isDisabled}>
+            <MdOutlineAddToPhotos style={styles.button} />
+            <text style={{ alignSelf: 'center' }}>NUEVA DEUDA</text>
+          </button>
+        </div>
 
-          <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', paddingHorizontal: '20px', boxSizing: 'border-box' }}>
-            <DataTable
-              columns={columns}
-              data={filteredDebts}
-              pagination
-              conditionalRowStyles={conditionalRowStyles}
-              noDataComponent="No hay deudas disponibles."
-            />
-            </div>
-          </div>
+        <div className='col-9 flex-column justify-content-center align-items-center' style={{ overflowX: 'auto', paddingHorizontal: '20px', boxSizing: 'border-box' }}>
+          <DataTable
+            columns={columns}
+            data={filteredDebts}
+            pagination
+            conditionalRowStyles={conditionalRowStyles}
+            noDataComponent="No hay deudas disponibles."
+            customStyles={customStyles}
+          />
+        </div>
+      </div>
 
       <Modal open={open} onClose={closeForm}>
         <Box sx={styles.modalStyle}>
@@ -412,7 +457,7 @@ export default function PersonalDebtTracker() {
                 {errorMessage}
               </div>
             )}
-            
+
             <div>
               <input
                 className="input col-12"
@@ -422,10 +467,11 @@ export default function PersonalDebtTracker() {
               />
               {errors.creditor && <p style={{ color: 'red' }}>{errors.creditor.message}</p>}
             </div>
-            
+
             <div>
               <input
                 className="input col-12"
+                step={0.01}
                 placeholder="Cantidad"
                 type="number"
                 {...register('amount')}

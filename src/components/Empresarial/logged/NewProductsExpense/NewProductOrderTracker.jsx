@@ -14,10 +14,35 @@ import * as yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
 
 const schema = yup.object().shape({
-  orderDescription: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
-  income: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria').min(1, 'La cantidad debe ser mayor a 0'),
+  orderDescription: yup.string().required('La descripción es obligatoria').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
+  income: yup
+    .number()
+    .typeError('El ingreso debe ser un número')
+    .positive('El ingreso debe ser mayor a 0')
+    .required('El ingreso es obligatorio'),
   items: yup.array().min(1, 'Debes seleccionar al menos un producto').required('El producto es obligatorio'),
 });
+
+const customStyles = {
+  cells: {
+    style: {
+      color: '#333',
+      fontSize: '14px',
+    },
+  },
+  headCells: {
+    style: {
+      color: '#222',
+      fontWeight: 'bold',
+      fontSize: '14px',
+    },
+  },
+  paginationRowsPerPage: {
+    style: {
+      display: 'none',
+    },
+  },
+};
 
 export default function NewProductOrderTracker() {
   const [orders, setOrders] = useState([]);
@@ -28,11 +53,7 @@ export default function NewProductOrderTracker() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
 
-  const isSameMonth = (date1, date2) => {
-    const d1 = new Date(date1);
-    const d2 = new Date(date2);
-    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
-  };
+  const isSameMonth = (date1, date2) => new Date(date1).getFullYear() === new Date(date2).getFullYear() && new Date(date1).getMonth() === new Date(date2).getMonth();
 
   const openForm = () => setIsOpen(true);
   const closeForm = () => {
@@ -41,18 +62,19 @@ export default function NewProductOrderTracker() {
   };
 
   const isCurrentMonth = () => {
-    const currentMonth = new Date();
-    return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
-      selectedMonth.getMonth() === currentMonth.getMonth();
+    const current = new Date();
+    return selectedMonth.getFullYear() === current.getFullYear() && selectedMonth.getMonth() === current.getMonth();
   };
 
   const isDisabled = !isCurrentMonth();
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm({
-      resolver: yupResolver(schema),
-      mode: 'onChange',
-      reValidateMode: 'onChange',
-    });
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
+
+  const userId = localStorage.getItem('userId');
 
   const fetchAvailableProducts = async () => {
     try {
@@ -62,14 +84,6 @@ export default function NewProductOrderTracker() {
       console.error('Error al obtener productos disponibles:', error);
     }
   };
-
-  useEffect(() => {
-    fetchOrders();
-    fetchAvailableProducts();
-  }, []);
-
-
-  const userId = localStorage.getItem('userId');
 
   const fetchOrders = async () => {
     if (!userId) return navigate('/login-personal');
@@ -83,6 +97,7 @@ export default function NewProductOrderTracker() {
 
   useEffect(() => {
     fetchOrders();
+    fetchAvailableProducts();
   }, []);
 
   const resetFormState = () => {
@@ -93,13 +108,13 @@ export default function NewProductOrderTracker() {
   };
 
   const handleCreateOrder = async (data) => {
-    try {    
+    try {
       const payload = {
-        ...form,
         userId,
         orderDescription: data.orderDescription,
         orderDate: new Date(),
         income: parseFloat(data.income),
+        items: form.items
       };
       await createNewProductOrder(payload);
       closeForm();
@@ -109,6 +124,18 @@ export default function NewProductOrderTracker() {
       console.error('Error al crear orden:', err);
     }
   };
+
+  const columns = [
+    { name: 'Descripción', selector: row => row.orderDescription, grow: 1 },
+    { name: 'Fecha', selector: row => new Date(row.orderDate).toLocaleDateString(), grow: 1 },
+    { name: 'Ingreso', selector: row => `$${row.income}`, grow: 1 },
+    { name: 'Costo Total', selector: row => `$${row.totalOrderCost}`, grow: 1 },
+    { name: 'Ganancia Neta', selector: row => `$${row.netProfit}`, grow: 1 },
+  ];
+
+  const filteredOrders = orders.filter(order => isSameMonth(order.orderDate, selectedMonth));
+  filteredOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+  const totalNetProfit = filteredOrders.reduce((sum, order) => sum + (order.netProfit || 0), 0);
 
   const styles = {
     divider: {
@@ -189,25 +216,6 @@ export default function NewProductOrderTracker() {
     },
   };
 
-  const columns = [
-    { name: 'Descripción', selector: row => row.orderDescription, grow: 1 },
-    { name: 'Fecha', selector: row => new Date(row.orderDate).toLocaleDateString(), grow: 1 },
-    { name: 'Ingreso', selector: row => `$${row.income}`, grow: 1 },
-    { name: 'Costo Total', selector: row => `$${row.totalOrderCost}`, grow: 1 },
-    { name: 'Ganancia Neta', selector: row => `$${row.netProfit}`, grow: 1 },
-  ];
-
-  const filteredOrders = orders.filter(order =>
-    isSameMonth(order.orderDate, selectedMonth)
-  );
-
-  filteredOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-
-  const totalNetProfit = filteredOrders.reduce(
-    (sum, order) => sum + (order.netProfit || 0),
-    0
-  );
-
   return (
     <div>
       <div className="row justify-content-center">
@@ -268,6 +276,7 @@ export default function NewProductOrderTracker() {
 
               <input className='input col-12'
                 type="number"
+                step={0.01}
                 placeholder="Ingreso"
                 {...register('income')}
               />

@@ -19,8 +19,13 @@ import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 
 const schema = yup.object().shape({
-  description: yup.string().required('La descripción es obligatoria').matches(/^[a-zA-Z\s]+$/, 'Solo se permiten letras y espacios'),
-  amount: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').required('La cantidad es obligatoria'),
+  description: yup.string().required('La descripción es obligatoria').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
+  amount: yup
+    .number()
+    .typeError('La cantidad debe ser un número válido')
+    .positive('La cantidad debe ser mayor a 0')
+    .test('decimal-precision', 'Máximo 2 decimales', value => /^\d+(\.\d{1,2})?$/.test(value?.toString()))
+    .required('La cantidad es obligatoria'),
   category: yup.string().required('La categoría es obligatoria'),
 });
 
@@ -40,7 +45,7 @@ export default function PersonalExpensesTracker() {
   const isCurrentMonth = () => {
     const currentMonth = new Date();
     return selectedMonth.getFullYear() === currentMonth.getFullYear() &&
-           selectedMonth.getMonth() === currentMonth.getMonth();
+      selectedMonth.getMonth() === currentMonth.getMonth();
   };
 
   const isDisabled = !isCurrentMonth();
@@ -82,6 +87,27 @@ export default function PersonalExpensesTracker() {
     }
 
     return months;
+  };
+
+  const customStyles = {
+    cells: {
+      style: {
+        color: '#333', // Texto oscuro
+        fontSize: '14px',
+      },
+    },
+    headCells: {
+      style: {
+        color: '#222',
+        fontWeight: 'bold',
+        fontSize: '14px',
+      },
+    },
+    paginationRowsPerPage: {
+      style: {
+        display: 'none',
+      },
+    },
   };
 
   useEffect(() => {
@@ -163,7 +189,7 @@ export default function PersonalExpensesTracker() {
 
       const expenseData = {
         ...newExpense,
-        userId:userId,
+        userId: userId,
         description: data.description,
         amount: parseFloat(data.amount),
         categoryId: data.category,
@@ -250,7 +276,11 @@ export default function PersonalExpensesTracker() {
     },
     {
       name: 'Fecha de registro',
-      selector: row => new Date(row.date).toLocaleString(),
+      selector: row => new Date(row.date).toLocaleDateString('es-MX', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      }),
       grow: 0.3,
       minWidth: '100px',
     },
@@ -317,7 +347,7 @@ export default function PersonalExpensesTracker() {
       display: 'flex',
       flexDirection: 'column',
       fontSize: '20px',
-      boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)'
+      boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)'
     },
     button: {
       alignSelf: 'flex-end',
@@ -349,7 +379,7 @@ export default function PersonalExpensesTracker() {
       flexDirection: 'column',
       fontSize: '20px',
       color: 'black',
-      boxShadow:'0px 8px 5px rgba(48, 55, 122, 0.2)',
+      boxShadow: '0px 8px 5px rgba(48, 55, 122, 0.2)',
       opacity: isDisabled ? 0.6 : 1,
       cursor: isDisabled ? 'not-allowed' : 'pointer',
     },
@@ -374,7 +404,7 @@ export default function PersonalExpensesTracker() {
   return (
     <div>
       <div className="row justify-content-center">
-        <TopNavBar/>
+        <TopNavBar />
         <MonthSelector
           selectedMonth={selectedMonth}
           onMonthSelect={(monthObj) => setSelectedMonth(monthObj.date)}
@@ -383,15 +413,15 @@ export default function PersonalExpensesTracker() {
         />
         <Divider style={styles.divider} />
       </div>
-    
+
       <div className='row mt-3'>
         <div className='col-sm-3 d-flex flex-column justify-content-center align-items-center'>
           <div style={styles.card}>
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', margin: '15px' }}>
               <text>GASTOS</text>
-              <GiPayMoney style={{ fontSize: '220%'}} />
+              <GiPayMoney style={{ fontSize: '220%' }} />
             </div>
-            
+
             <text style={styles.cardText}>${totalExpenses.toFixed(2)}</text>
             <text style={styles.cardSubtitle}>Gastos del mes</text>
           </div>
@@ -411,6 +441,7 @@ export default function PersonalExpensesTracker() {
             data={filteredExpenses}
             pagination
             noDataComponent="No hay gastos disponibles."
+            customStyles={customStyles}
           />
         </div>
       </div>
@@ -433,6 +464,7 @@ export default function PersonalExpensesTracker() {
             <div>
               <input className='input col-12'
                 placeholder='Amount'
+                step={0.01}
                 type="number"
                 {...register('amount')}
               />
