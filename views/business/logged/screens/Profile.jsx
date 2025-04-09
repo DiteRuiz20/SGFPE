@@ -1,24 +1,73 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native'
-import React from 'react'
-import { Icon } from 'react-native-elements';
-import { Divider } from 'react-native-elements'
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Divider } from 'react-native-elements';
 import { useAuth } from '../../../../src/auth/AuthContext';
+import { getUserById, updateUser } from '../../../../src/api/axios';
+import { validateField } from '../../../InputValidator';
 
 export default function Profile() {
-  const { logout } = useAuth();
+  const { userId, logout } = useAuth();
 
-  const handleLogOut = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState('');
+  const [formErrors, setFormErrors] = useState({ name: '', phoneNumber: '' });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await getUserById(userId);
+        setName(user.name || '');
+        setEmail(user.email || '');
+        setPhoneNumber(user.phoneNumber || '');
+        setAddress(user.address || '');
+      } catch (error) {
+        Alert.alert('Error', 'Error al cargar el perfil');
+      }
+    };
+    fetchUserData();
+  }, [userId]);
+
+  const handleNameChange = (text) => {
+    setName(text);
+    const result = validateField('nameOrDescription', text);
+    setFormErrors((prev) => ({ ...prev, name: result.valid ? '' : result.message }));
+  };
+
+  const handlePhoneChange = (text) => {
+    setPhoneNumber(text);
+    const result = validateField('phoneNumber', text);
+    setFormErrors((prev) => ({ ...prev, phoneNumber: result.valid ? '' : result.message }));
+  };
+
+  const validateInputs = () => {
+    const nameValidation = validateField('nameOrDescription', name);
+    const phoneValidation = validateField('phoneNumber', phoneNumber);
+
+    const errors = {};
+    if (!nameValidation.valid) errors.name = nameValidation.message;
+    if (!phoneValidation.valid) errors.phoneNumber = phoneValidation.message;
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleUpdateInfo = async () => {
+    if (!validateInputs()) return;
+
     Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out?",
+      "Actualizar Perfil",
+      "¿Estás seguro de que deseas actualizar tu perfil?",
       [
         {
-          text: "Yes",
+          text: "Sí",
           onPress: async () => {
             try {
-              await logout();
+              await updateUser(userId, { name, phoneNumber, email, address });
+              Alert.alert('Éxito', 'Perfil actualizado exitosamente');
             } catch (error) {
-              Alert.alert('Error', 'Failed to log out. Please try again.');
+              Alert.alert('Error', 'Hubo un error al actualizar el perfil');
             }
           }
         },
@@ -29,50 +78,80 @@ export default function Profile() {
     );
   };
 
-  const handleChangePassword = () => {
+  const handleLogOut = () => {
     Alert.alert(
-      "Change Password",
-      "Are you sure you want to change your password?",
-      [{ text: "Yes", onPress: () => console.log("Changing password") }, { text: "No", onPress: () => console.log("Cancelled") }]
-    );
-  };
-
-  const handleUpdateInfo = () => {
-    Alert.alert(
-      "Update Info",
-      "Are you sure you want to update your info?",
-      [{ text: "Yes", onPress: () => console.log("Updating info") }, { text: "No", onPress: () => console.log("Cancelled") }]
+      "Cerrar Sesión",
+      "¿Estás seguro de que deseas cerrar sesión?",
+      [
+        {
+          text: "Sí",
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              Alert.alert('Error', 'No se pudo cerrar sesión');
+            }
+          }
+        },
+        {
+          text: "No"
+        }
+      ]
     );
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>PROFILE</Text>
+      <Text style={styles.title}>PERFIL</Text>
 
-      <Icon style={{ marginBottom: 20 }} name="account-circle" type="material" size={130} color="#888" />
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre"
+        placeholderTextColor="#A9A9A9"
+        value={name}
+        onChangeText={handleNameChange}
+      />
+      {formErrors.name ? <Text style={styles.errorText}>{formErrors.name}</Text> : null}
 
-      <TextInput style={styles.input} placeholder="Business Name" placeholderTextColor="#A9A9A9" />
-      <TextInput style={styles.input} placeholder="Phone Number" placeholderTextColor="#A9A9A9" keyboardType='phone-pad' />
-      <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#A9A9A9" keyboardType='email-address' />
-      <TextInput style={styles.input} placeholder="Address(Optional)" placeholderTextColor="#A9A9A9" />
+      <TextInput
+        style={[styles.input, { opacity: 0.6 }]}
+        placeholder="Correo electrónico"
+        placeholderTextColor="#A9A9A9"
+        value={email}
+        editable={false}
+      />
 
-      <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10 }}>
+      <TextInput
+        style={styles.input}
+        placeholder="Número telefónico"
+        placeholderTextColor="#A9A9A9"
+        value={phoneNumber}
+        onChangeText={handlePhoneChange}
+        keyboardType='phone-pad'
+      />
+      {formErrors.phoneNumber ? <Text style={styles.errorText}>{formErrors.phoneNumber}</Text> : null}
+
+      <TextInput
+        style={styles.input}
+        placeholder="Dirección (opcional)"
+        placeholderTextColor="#A9A9A9"
+        value={address}
+        onChangeText={setAddress}
+      />
+
+      <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10, marginBottom: 10 }}>
         <TouchableOpacity style={styles.secondary_button} onPress={handleUpdateInfo}>
-          <Text style={styles.button_text}>UPDATE INFO</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.primary_button} onPress={handleChangePassword}>
-          <Text style={styles.button_text}>CHANGE PASSWORD</Text>
+          <Text style={styles.button_text}>ACTUALIZAR PERFIL</Text>
         </TouchableOpacity>
       </View>
 
       <Divider style={styles.divider} />
 
       <TouchableOpacity style={styles.logOut_button} onPress={handleLogOut}>
-        <Text style={styles.button_text}>LOG OUT</Text>
+        <Text style={styles.button_text}>CERRAR SESIÓN</Text>
       </TouchableOpacity>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -84,21 +163,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginTop: -45,
   },
-  image: {
-    width: 70,
-    height: 70,
-    marginBottom: 30,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#444',
-    marginBottom: 20,
-  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#30437A',
-    marginBottom: 20,
+    marginBottom: 40,
   },
   input: {
     width: '100%',
@@ -111,34 +180,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 2,
   },
-  primary_button: {
-    width: '100%',
-    backgroundColor: '#30437A',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 15,
-    shadowColor: '#30387a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
-  },
-  divider: {
-    width: '100%',
-    height: 2,
-    backgroundColor: '#EAEAEA',
-    marginVertical: 15,
-  },
-  orText: {
-    fontSize: 14,
-    color: '#666',
-    backgroundColor: 'white',
-    top: -23,
-  },
-  getStarted: {
-    color: '#666',
-    fontSize: 14,
-    marginBottom: 15,
+  errorText: {
+    color: 'red',
+    alignSelf: 'flex-start',
+    marginBottom: 10
   },
   secondary_button: {
     width: '100%',
@@ -155,6 +200,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
   },
+  divider: {
+    width: '100%',
+    height: 2,
+    backgroundColor: '#EAEAEA',
+    marginVertical: 15,
+  },
   logOut_button: {
     width: '100%',
     backgroundColor: '#dd1e1e',
@@ -167,4 +218,4 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     marginTop: 15,
   },
-})
+});

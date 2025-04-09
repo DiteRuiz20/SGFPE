@@ -1,6 +1,6 @@
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getPersonalExpensesByUserId } from '../../../../src/api/axios';
+import { getPersonalExpensesByUserId, getSavingsByUserId, getDebtsByUserId } from '../../../../src/api/axios';
 import { PieChart } from 'react-native-chart-kit';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
@@ -8,20 +8,42 @@ import MonthSelector from '../../../MonthSelector';
 
 export default function Graphics() {
     const { userId } = useAuth();
+    const isSameMonth = (date1, date2) =>
+        date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
     const [expenses, setExpenses] = useState([]);
     const [filteredExpenses, setFilteredExpenses] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [loading, setLoading] = useState(true);
+    const [savings, setSavings] = useState([]);
+    const [debts, setDebts] = useState([]);
+
+    const getFilteredTotal = (items, dateKey) => {
+        return items
+            .filter(item => isSameMonth(new Date(item[dateKey]), selectedDate))
+            .reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+    };
+
+    const totalSavings = getFilteredTotal(savings, 'date');
+    const totalDebts = getFilteredTotal(debts, 'date');
+
 
     const fetchData = async () => {
         if (!userId) return;
         try {
-            const expensesData = await getPersonalExpensesByUserId(userId);
-            // ✅ Protegemos contra undefined o null
+            const [expensesData, savingsData, debtsData] = await Promise.all([
+                getPersonalExpensesByUserId(userId),
+                getSavingsByUserId(userId),
+                getDebtsByUserId(userId)
+            ]);
+
             setExpenses(Array.isArray(expensesData) ? expensesData : []);
+            setSavings(Array.isArray(savingsData) ? savingsData : []);
+            setDebts(Array.isArray(debtsData) ? debtsData : []);
         } catch (err) {
             console.error(err);
-            setExpenses([]); // ✅ Aún si falla, no rompe
+            setExpenses([]);
+            setSavings([]);
+            setDebts([]);
         } finally {
             setLoading(false);
         }
@@ -38,9 +60,6 @@ export default function Graphics() {
         const filtered = (expenses || []).filter(exp => isSameMonth(new Date(exp.date), selectedDate));
         setFilteredExpenses(filtered);
     }, [expenses, selectedDate]);
-
-    const isSameMonth = (date1, date2) =>
-        date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
 
     const getPieChartData = () => {
         const data = filteredExpenses.reduce((acc, exp) => {
@@ -62,6 +81,9 @@ export default function Graphics() {
 
     const pieData = getPieChartData();
 
+    const hasExpenseData = pieData.length > 0;
+    const hasSavingsDebtsData = totalSavings > 0 || totalDebts > 0;
+
     if (loading) return <View style={styles.container}><Text>Cargando...</Text></View>;
 
     return (
@@ -74,7 +96,7 @@ export default function Graphics() {
             </View>
 
             <View style={styles.chartContainer}>
-                {pieData.length > 0 ? (
+                {hasExpenseData && (
                     <PieChart
                         data={pieData}
                         width={350}
@@ -90,10 +112,47 @@ export default function Graphics() {
                         paddingLeft="15"
                         absolute
                     />
-                ) : (
-                    <Text style={styles.noDataText}>No hay datos para este mes</Text>
                 )}
             </View>
+
+            <View style={styles.chartContainer}>
+                {hasSavingsDebtsData && (
+                    <PieChart
+                        data={[
+                            {
+                                name: 'Ahorros',
+                                amount: totalSavings,
+                                color: '#4CAF50',
+                                legendFontColor: '#333',
+                                legendFontSize: 14,
+                            },
+                            {
+                                name: 'Deudas',
+                                amount: totalDebts,
+                                color: '#FF6384',
+                                legendFontColor: '#333',
+                                legendFontSize: 14,
+                            },
+                        ]}
+                        width={350}
+                        height={220}
+                        chartConfig={{
+                            backgroundColor: '#41416e',
+                            backgroundGradientFrom: '#41416e',
+                            backgroundGradientTo: '#41416e',
+                            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`
+                        }}
+                        accessor="amount"
+                        backgroundColor="transparent"
+                        paddingLeft="15"
+                        absolute
+                    />
+                )}
+            </View>
+
+            {!hasExpenseData && !hasSavingsDebtsData && (
+                <Text style={styles.noDataText}>No hay datos disponibles para este mes</Text>
+            )}
         </View>
     );
 }

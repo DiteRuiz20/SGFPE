@@ -4,6 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DatePicker from '@react-native-community/datetimepicker';
 import { getRawMaterialsByUser, getMaterialUsagesByUserId, createMaterialUsage } from '../../../../../src/api/axios';
 import MonthSelector from '../../../../MonthSelector';
+import { Input } from '@rneui/base';
+import { validateField } from '../../../../InputValidator';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function MaterialUsageTracker() {
     const [rawMaterials, setRawMaterials] = useState([]);
@@ -15,6 +18,11 @@ export default function MaterialUsageTracker() {
     const [selectedMonth, setSelectedMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [totalCost, setTotalCost] = useState(0);
+    const [formErrors, setFormErrors] = useState({});
+    const [unitMenuVisible, setUnitMenuVisible] = useState(false);
+    const [selectedMaterialQty, setSelectedMaterialQty] = useState(0);
+    const [selectedMaterialName, setSelectedMaterialName] = useState('');
+    const isFocused = useIsFocused();
 
     useEffect(() => {
         fetchInitialData();
@@ -32,6 +40,12 @@ export default function MaterialUsageTracker() {
         const total = filtered.reduce((acc, item) => acc + (item.totalCost || 0), 0);
         setTotalCost(total);
     }, [usages, selectedDate]);
+
+    useEffect(() => {
+        if (isFocused) {
+            fetchInitialData();
+        }
+    }, [isFocused]);
 
     const fetchInitialData = async () => {
         const userId = await AsyncStorage.getItem('userId');
@@ -58,10 +72,16 @@ export default function MaterialUsageTracker() {
     const handleSubmit = async () => {
         const userId = await AsyncStorage.getItem('userId');
 
-        if (!selectedMaterialId || !quantityUsed || !description) {
-            Alert.alert('Error', 'Todos los campos son obligatorios');
-            return;
-        }
+        const quantityValidation = validateField('positiveInteger', quantityUsed);
+        const descriptionValidation = validateField('nameOrDescription', description);
+
+        const errors = {};
+        if (!quantityValidation.valid) errors.quantityUsed = quantityValidation.message;
+        if (!descriptionValidation.valid) errors.description = descriptionValidation.message;
+        if (!selectedMaterialId) errors.material = 'Selecciona una materia prima';
+
+        setFormErrors(errors);
+        if (Object.keys(errors).length > 0) return;
 
         try {
             const data = await createMaterialUsage({
@@ -134,32 +154,75 @@ export default function MaterialUsageTracker() {
                         <Text style={styles.modalTitle}>Nuevo Consumo</Text>
 
                         <Text style={styles.label}>Materia Prima</Text>
-                        <View style={styles.selectBox}>
-                            {rawMaterials.map((mat) => (
-                                <TouchableOpacity
-                                    key={mat.id}
-                                    style={selectedMaterialId === mat.id ? styles.selectedItem : styles.selectItem}
-                                    onPress={() => setSelectedMaterialId(mat.id)}
-                                >
-                                    <Text>{mat.materialDescription} - Qty: {mat.quantity}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
 
-                        <TextInput
-                            placeholder="Cantidad usada"
-                            value={quantityUsed}
+                        <TouchableOpacity
+                            onPress={() => setUnitMenuVisible(!unitMenuVisible)}
+                            style={styles.selectButton}
+                        >
+                            <Text style={styles.selectButtonText}>
+                                {selectedMaterialName || 'Selecciona una materia prima'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        {unitMenuVisible && (
+                            <View style={styles.menuBox}>
+                                {rawMaterials.length === 0 ? (
+                                    <View style={styles.selectItem}>
+                                        <Text style={{ color: '#999' }}>No hay materia prima disponible</Text>
+                                    </View>
+                                ) : (
+                                    rawMaterials.map((mat) => (
+                                        <TouchableOpacity
+                                            key={mat.id}
+                                            style={styles.selectItem}
+                                            onPress={() => {
+                                                setSelectedMaterialId(mat.id);
+                                                setSelectedMaterialName(mat.materialDescription);
+                                                setSelectedMaterialQty(parseFloat(mat.quantity));
+                                                setUnitMenuVisible(false);
+                                                setFormErrors(prev => ({ ...prev, material: null }));
+                                            }}
+                                        >
+                                            <Text>{mat.materialDescription} - Qty: {mat.quantity}</Text>
+                                        </TouchableOpacity>
+                                    ))
+                                )}
+                            </View>
+                        )}
+
+                        {formErrors.material && (
+                            <Text style={{ color: 'red', marginTop: 4 }}>{formErrors.material}</Text>
+                        )}
+
+                        <Input
+                            label="Cantidad usada"
+                            placeholder="Cantidad"
                             keyboardType="numeric"
-                            onChangeText={setQuantityUsed}
-                            style={styles.input}
+                            onChange={({ nativeEvent: { text } }) => {
+                                setQuantityUsed(text);
+                                const result = validateField('positiveInteger', text);
+                                if (!result.valid) {
+                                    setFormErrors(prev => ({ ...prev, quantityUsed: result.message }));
+                                } else if (parseFloat(text) > selectedMaterialQty) {
+                                    setFormErrors(prev => ({ ...prev, quantityUsed: 'La cantidad excede lo disponible' }));
+                                } else {
+                                    setFormErrors(prev => ({ ...prev, quantityUsed: null }));
+                                }
+                            }}
+                            errorMessage={formErrors.quantityUsed}
                         />
 
-                        <TextInput
-                            placeholder="Descripción"
-                            value={description}
-                            onChangeText={setDescription}
-                            style={styles.input}
+                        <Input
+                            label="Descripción"
+                            placeholder="Descripción del uso"
+                            onChange={({ nativeEvent: { text } }) => {
+                                setDescription(text);
+                                const result = validateField('nameOrDescription', text);
+                                setFormErrors(prev => ({ ...prev, description: result.valid ? null : result.message }));
+                            }}
+                            errorMessage={formErrors.description}
                         />
+
 
                         <View style={styles.modalButtons}>
                             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
@@ -269,5 +332,23 @@ const styles = StyleSheet.create({
     label: {
         fontWeight: 'bold',
         marginBottom: 5,
+    },
+    selectButton: {
+        backgroundColor: '#f1f3f5',
+        padding: 14,
+        borderRadius: 8,
+        marginBottom: 8,
+    },
+    selectButtonText: {
+        color: '#495057',
+        fontSize: 16,
+    },
+    menuBox: {
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        marginBottom: 10,
+        maxHeight: 150,
     },
 });

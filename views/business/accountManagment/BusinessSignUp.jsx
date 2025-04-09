@@ -19,8 +19,8 @@ export default function BusinessSignUp() {
   };
 
   const handleRegister = async () => {
-    const { companyName, phoneNumber, email, password, address } = form;
-    if (!companyName || !phoneNumber || !email || !password) {
+    const { name, phoneNumber, email, password, address } = form;
+    if (!name || !phoneNumber || !email || !password) {
       Alert.alert('Error', 'Please fill all required fields.');
       return;
     }
@@ -28,7 +28,7 @@ export default function BusinessSignUp() {
     try {
       setLoading(true);
       await createUser({
-        companyName,
+        name,
         phoneNumber,
         email,
         password,
@@ -56,7 +56,7 @@ export default function BusinessSignUp() {
         <Text style={styles.subtitle}>Please fill out the required data about your business.</Text>
       </View>
 
-      <TextInput style={styles.input} placeholder="Business Name" placeholderTextColor="#A9A9A9" onChangeText={(text) => handleChange('companyName', text)} />
+      <TextInput style={styles.input} placeholder="Business Name" placeholderTextColor="#A9A9A9" onChangeText={(text) => handleChange('name', text)} />
       <TextInput style={styles.input} placeholder="Phone Number" placeholderTextColor="#A9A9A9" keyboardType='phone-pad' onChangeText={(text) => handleChange('phoneNumber', text)} />
       <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#A9A9A9" keyboardType='email-address' onChangeText={(text) => handleChange('email', text)} />
       <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#A9A9A9" secureTextEntry onChangeText={(text) => handleChange('password', text)} />

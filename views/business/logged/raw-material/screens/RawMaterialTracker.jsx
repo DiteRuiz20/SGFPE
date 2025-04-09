@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { TextInput, Modal, Portal, Button, HelperText } from 'react-native-paper';
+import { DataTable, Modal, Portal, Button, HelperText, Menu } from 'react-native-paper';
+import { Input } from '@rneui/base';
 import { useAuth } from '../../../../../src/auth/AuthContext';
 import { createRawMaterial, getRawMaterialsByUser } from '../../../../../src/api/axios';
-import { DataTable } from 'react-native-paper';
 import MonthSelector from '../../../../MonthSelector';
+import { validateField } from '../../../../InputValidator';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function RawMaterialTracker() {
     const { userId } = useAuth();
@@ -17,15 +19,18 @@ export default function RawMaterialTracker() {
     const [totalCost, setTotalCost] = useState(0);
 
     const [modalVisible, setModalVisible] = useState(false);
-    const [form, setForm] = useState({
-        materialDescription: '',
-        quantity: '',
-        unitPrice: '',
-        supplier: '',
-        measurementUnit: '',
-        notes: '',
-    });
+    const [materialDescription, setMaterialDescription] = useState('');
+    const [quantity, setQuantity] = useState('');
+    const [unitPrice, setUnitPrice] = useState('');
+    const [supplier, setSupplier] = useState('');
+    const [measurementUnit, setMeasurementUnit] = useState('');
+    const [formErrors, setFormErrors] = useState({});
     const [error, setError] = useState('');
+    const isFocused = useIsFocused();
+
+    const [unitMenuVisible, setUnitMenuVisible] = useState(false);
+    const [unitAnchor, setUnitAnchor] = useState(null);
+    const measurementUnits = ['cm', 'mm', 'm', 'mg', 'g', 'kg', 'ml', 'L', 'Pieza', 'Caja', 'Paquete', 'Unidad', 'Par'];
 
     const isSameMonth = (date1, date2) => {
         const d1 = new Date(date1);
@@ -50,6 +55,12 @@ export default function RawMaterialTracker() {
     }, [userId]);
 
     useEffect(() => {
+        if (isFocused) {
+            fetchMaterials();
+        }
+    }, [isFocused]);
+
+    useEffect(() => {
         const filtered = materials.filter(m => isSameMonth(m.entryDate, selectedDate));
         setFilteredMaterials(filtered);
         const total = filtered.reduce((sum, m) => sum + (parseFloat(m.quantity) * parseFloat(m.unitPrice)), 0);
@@ -71,25 +82,30 @@ export default function RawMaterialTracker() {
         }, 50);
     };
 
-    const handleSelectMonth = (date) => {
-        setSelectedDate(date);
-        generateMonths(date);
-    };
-
-    const handleChange = (field, value) => {
-        setForm(prev => ({ ...prev, [field]: value }));
-    };
-
     const handleCreate = async () => {
-        const { materialDescription, quantity, unitPrice, supplier, measurementUnit } = form;
-        if (!materialDescription || !quantity || !unitPrice || !supplier || !measurementUnit) {
-            return setError('Por favor llena todos los campos obligatorios.');
-        }
+        const errors = {};
+        const descriptionVal = validateField('nameOrDescription', materialDescription);
+        const quantityVal = validateField('positiveInteger', quantity);
+        const priceVal = validateField('positiveNumber', unitPrice);
+        const supplierVal = validateField('nameOrDescription', supplier);
+        const unitVal = validateField('nameOrDescription', measurementUnit);
+
+        if (!descriptionVal.valid) errors.materialDescription = descriptionVal.message;
+        if (!quantityVal.valid) errors.quantity = quantityVal.message;
+        if (!priceVal.valid) errors.unitPrice = priceVal.message;
+        if (!supplierVal.valid) errors.supplier = supplierVal.message;
+        if (!unitVal.valid) errors.measurementUnit = unitVal.message;
+
+        setFormErrors(errors);
+        if (Object.keys(errors).length > 0) return;
+
         try {
             await createRawMaterial({
-                ...form,
+                materialDescription,
                 quantity: parseFloat(quantity),
                 unitPrice: parseFloat(unitPrice),
+                supplier,
+                measurementUnit,
                 entryDate: new Date().toISOString(),
                 userId
             });
@@ -103,17 +119,20 @@ export default function RawMaterialTracker() {
 
     const closeModal = () => {
         setModalVisible(false);
-        setForm({ materialDescription: '', quantity: '', unitPrice: '', supplier: '', measurementUnit: '', notes: '' });
+        setMaterialDescription('');
+        setQuantity('');
+        setUnitPrice('');
+        setSupplier('');
+        setMeasurementUnit('');
+        setFormErrors({});
         setError('');
     };
 
     return (
         <View style={styles.container}>
+
             <View>
-                <MonthSelector
-                    selectedMonth={selectedDate}
-                    onSelectMonth={(date) => setSelectedDate(date)}
-                />
+                <MonthSelector selectedMonth={selectedDate} onSelectMonth={setSelectedDate} />
 
                 <View style={styles.summaryCard}>
                     <Text style={styles.summaryLabel}>Total</Text>
@@ -122,20 +141,100 @@ export default function RawMaterialTracker() {
                 </View>
             </View>
 
-            <Button mode="contained" onPress={() => setModalVisible(true)} style={styles.addButton}>Registrar materia</Button>
+            <Button mode="contained" onPress={() => setModalVisible(true)} style={styles.addButton}>
+                Registrar materia
+            </Button>
 
             <Portal>
                 <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
                     <Text style={styles.modalTitle}>Nueva materia prima</Text>
 
-                    <TextInput label="Descripción" value={form.materialDescription} onChangeText={text => handleChange('materialDescription', text)} style={styles.input} />
-                    <TextInput label="Cantidad" value={form.quantity} onChangeText={text => handleChange('quantity', text)} keyboardType="numeric" style={styles.input} />
-                    <TextInput label="Precio Unitario" value={form.unitPrice} onChangeText={text => handleChange('unitPrice', text)} keyboardType="numeric" style={styles.input} />
-                    <TextInput label="Proveedor" value={form.supplier} onChangeText={text => handleChange('supplier', text)} style={styles.input} />
-                    <TextInput label="Unidad de medida" value={form.measurementUnit} onChangeText={text => handleChange('measurementUnit', text)} style={styles.input} />
-                    <TextInput label="Notas" value={form.notes} onChangeText={text => handleChange('notes', text)} style={styles.input} multiline />
+                    <Input
+                        label="Descripción"
+                        placeholder="Descripción del material"
+                        onChange={({ nativeEvent: { text } }) => {
+                            setMaterialDescription(text);
+                            const result = validateField('nameOrDescription', text);
+                            setFormErrors(prev => ({ ...prev, materialDescription: result.valid ? null : result.message }));
+                        }}
+                        errorMessage={formErrors.materialDescription}
+                    />
 
-                    {error ? <HelperText type="error">{error}</HelperText> : null}
+                    <Input
+                        label="Cantidad"
+                        placeholder="Cantidad"
+                        keyboardType="numeric"
+                        onChange={({ nativeEvent: { text } }) => {
+                            setQuantity(text);
+                            const result = validateField('positiveInteger', text);
+                            setFormErrors(prev => ({ ...prev, quantity: result.valid ? null : result.message }));
+                        }}
+                        errorMessage={formErrors.quantity}
+                    />
+
+                    <Input
+                        label="Precio Unitario"
+                        placeholder="Precio por unidad"
+                        keyboardType="numeric"
+                        onChange={({ nativeEvent: { text } }) => {
+                            setUnitPrice(text);
+                            const result = validateField('positiveNumber', text);
+                            setFormErrors(prev => ({ ...prev, unitPrice: result.valid ? null : result.message }));
+                        }}
+                        errorMessage={formErrors.unitPrice}
+                    />
+
+                    <Input
+                        label="Proveedor"
+                        placeholder="Nombre del proveedor"
+                        onChange={({ nativeEvent: { text } }) => {
+                            setSupplier(text);
+                            const result = validateField('nameOrDescription', text);
+                            setFormErrors(prev => ({ ...prev, supplier: result.valid ? null : result.message }));
+                        }}
+                        errorMessage={formErrors.supplier}
+                    />
+
+                    <View>
+                        <TouchableOpacity
+                            onPress={(e) => {
+                                setUnitAnchor(e.nativeEvent.target);
+                                setUnitMenuVisible(true);
+                            }}
+                            style={styles.selectButton}
+                        >
+                            <Text style={styles.selectButtonText}>
+                                {measurementUnit || 'Selecciona unidad de medida'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <Menu
+                            visible={unitMenuVisible}
+                            onDismiss={() => setUnitMenuVisible(false)}
+                            anchor={{ x: 0, y: 0 }} // required dummy anchor
+                        >
+                            {measurementUnits.map((unit) => (
+                                <Menu.Item
+                                    key={unit}
+                                    title={unit}
+                                    onPress={() => {
+                                        setMeasurementUnit(unit);
+                                        setUnitMenuVisible(false);
+                                        const result = validateField('nameOrDescription', unit);
+                                        setFormErrors(prev => ({ ...prev, measurementUnit: result.valid ? null : result.message }));
+                                    }}
+                                />
+                            ))}
+                        </Menu>
+
+                        {formErrors.measurementUnit && (
+                            <HelperText type="error" visible>
+                                {formErrors.measurementUnit}
+                            </HelperText>
+                        )}
+                    </View>
+
+                    {!!error && <HelperText type="error">{error}</HelperText>}
 
                     <View style={styles.modalButtons}>
                         <Button onPress={closeModal}>Cancelar</Button>
@@ -144,37 +243,39 @@ export default function RawMaterialTracker() {
                 </Modal>
             </Portal>
 
-            {/* Tabla */}
-            <View style={styles.tableContainer}>
-                <DataTable>
-                    <DataTable.Header style={styles.tableHeader}>
-                        <DataTable.Title textStyle={styles.tableHeaderText}>Descripción</DataTable.Title>
-                        <DataTable.Title numeric textStyle={styles.tableHeaderText}>Cantidad</DataTable.Title>
-                        <DataTable.Title numeric textStyle={styles.tableHeaderText}>Precio</DataTable.Title>
-                    </DataTable.Header>
+            {filteredMaterials.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>
+                        No hay materias primas registradas este mes
+                    </Text>
+                </View>
+            ) : (
+                <View style={styles.tableContainer}>
+                    <DataTable>
+                        <DataTable.Header style={styles.tableHeader}>
+                            <DataTable.Title textStyle={styles.tableHeaderText}>Descripción</DataTable.Title>
+                            <DataTable.Title numeric textStyle={styles.tableHeaderText}>Cantidad</DataTable.Title>
+                            <DataTable.Title numeric textStyle={styles.tableHeaderText}>Precio</DataTable.Title>
+                        </DataTable.Header>
 
-                    <ScrollView>
-                        {filteredMaterials.map((m, idx) => (
-                            <DataTable.Row key={m._id || idx} style={styles.tableRow}>
-                                <DataTable.Cell textStyle={styles.tableCell}>{m.materialDescription}</DataTable.Cell>
-                                <DataTable.Cell numeric textStyle={styles.tableCell}>{m.quantity}</DataTable.Cell>
-                                <DataTable.Cell numeric textStyle={styles.tableCell}>${m.unitPrice}</DataTable.Cell>
-                            </DataTable.Row>
-                        ))}
-                    </ScrollView>
-                </DataTable>
-            </View>
+                        <ScrollView>
+                            {filteredMaterials.map((m, idx) => (
+                                <DataTable.Row key={m._id || idx} style={styles.tableRow}>
+                                    <DataTable.Cell textStyle={styles.tableCell}>{m.materialDescription}</DataTable.Cell>
+                                    <DataTable.Cell numeric textStyle={styles.tableCell}>{m.quantity}</DataTable.Cell>
+                                    <DataTable.Cell numeric textStyle={styles.tableCell}>${m.unitPrice}</DataTable.Cell>
+                                </DataTable.Row>
+                            ))}
+                        </ScrollView>
+                    </DataTable>
+                </View>
+            )}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
-
-    monthTabs: { flexDirection: 'row', marginBottom: 20 },
-    monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
-    activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
-
     summaryCard: {
         backgroundColor: '#41416e', borderRadius: 16, padding: 24, marginBottom: 10,
         shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
@@ -182,24 +283,18 @@ const styles = StyleSheet.create({
     summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
     summaryAmount: { color: '#fff', fontSize: 32, fontWeight: 'bold' },
     summarySubtext: { color: '#ddd', fontSize: 14 },
-
     addButton: {
         marginVertical: 20, backgroundColor: '#00C897', borderRadius: 12, paddingVertical: 10
     },
-
     modal: {
         backgroundColor: '#fff', padding: 24, marginHorizontal: 16, borderRadius: 16, elevation: 5
     },
     modalTitle: {
         fontSize: 22, fontWeight: 'bold', color: '#41416e', marginBottom: 20, textAlign: 'center'
     },
-    input: {
-        marginBottom: 16, backgroundColor: '#fff', borderRadius: 8, elevation: 1
-    },
     modalButtons: {
         flexDirection: 'row', justifyContent: 'space-between', marginTop: 20
     },
-
     tableContainer: {
         borderRadius: 12, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 30
     },
@@ -215,4 +310,24 @@ const styles = StyleSheet.create({
     tableCell: {
         color: '#495057', fontSize: 14
     },
+    selectButton: {
+        backgroundColor: '#f1f3f5',
+        padding: 14,
+        borderRadius: 8,
+        marginBottom: 8,
+    },
+    selectButtonText: {
+        color: '#495057',
+        fontSize: 16,
+    },
+    emptyContainer: {
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyText: {
+        fontSize: 12,
+        textAlign: 'center',
+    },
+
 });

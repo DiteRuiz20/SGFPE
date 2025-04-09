@@ -62,7 +62,20 @@ export default function Profile() {
           text: "Sí",
           onPress: async () => {
             try {
-              await updateUser(userId, { name, phoneNumber, email });
+              // 1. Obtener datos actuales del usuario
+              const currentData = await getUserById(userId);
+
+              // 2. Crear un nuevo objeto con los campos actualizados y los demás intactos
+              const updatedData = {
+                ...currentData,
+                name,
+                phoneNumber
+                // No tocamos: email, accountType, password, emailVerified, etc.
+              };
+
+              // 3. Enviar la actualización
+              await updateUser(userId, updatedData);
+
               Alert.alert('Éxito', 'Perfil actualizado exitosamente');
             } catch (error) {
               Alert.alert('Error', 'Hubo un error al actualizar el perfil');

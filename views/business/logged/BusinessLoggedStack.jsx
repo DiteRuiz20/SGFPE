@@ -1,5 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Icon } from 'react-native-elements';
@@ -8,6 +8,8 @@ import IncomeTracker from './screens/IncomeTracker';
 import ExpenseTracker from './screens/ExpenseTracker';
 import Graphics from './screens/Graphics';
 import Profile from './screens/Profile';
+import { useAuth } from '../../../src/auth/AuthContext';
+import { getUserById } from '../../../src/api/axios';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -22,6 +24,26 @@ const getScreenTitle = (routeName) => {
 };
 
 const BottomTabNavigator = ({ navigation }) => {
+  const { userId } = useAuth();
+  const [userName, setUserName] = useState('USER');
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        if (userId) {
+          const user = await getUserById(userId);
+          if (user && user.name) {
+            setUserName(user.name.toUpperCase());
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user name:', error);
+      }
+    };
+
+    fetchUserName();
+  }, [userId]);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -44,7 +66,7 @@ const BottomTabNavigator = ({ navigation }) => {
 
         headerRight: () => (
           <TouchableOpacity style={styles.headerRight} onPress={() => navigation.navigate("Profile")}>
-            <Text style={{ marginRight: 10, fontWeight: "bold" }}>MOSHIUR</Text>
+            <Text style={{ marginRight: 10, fontWeight: "bold" }}>{userName}</Text>
             <Icon style={{ marginRight: 10 }} name="account-circle" type="material" size={40} color="#888" />
           </TouchableOpacity>
         ),
@@ -61,11 +83,7 @@ const AppStack = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen
-        name="Profile"
-        component={Profile}
-        options={{ headerShown: true }}
-      />
+      <Stack.Screen name="Profile" component={Profile} options={{ headerShown: true }} />
     </Stack.Navigator>
   );
 };

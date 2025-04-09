@@ -1,97 +1,148 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { Divider, Icon } from 'react-native-elements';
+import { Divider } from 'react-native-elements';
 import { useAuth } from '../../../../../src/auth/AuthContext';
+import { getUserById, updateUser } from '../../../../../src/api/axios';
+import { validateField } from '../../../../InputValidator';
 
 export default function RawMaterialProfile() {
-    const { logout } = useAuth();
+    const { userId, logout } = useAuth();
 
-    const handleLogOut = () => {
-        Alert.alert(
-            "Log Out",
-            "Are you sure you want to log out?",
-            [
-                {
-                    text: "Yes",
-                    onPress: async () => {
-                        try {
-                            await logout();
-                        } catch (error) {
-                            Alert.alert('Error', 'Failed to log out. Please try again.');
-                        }
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [address, setAddress] = useState('');
+    const [formErrors, setFormErrors] = useState({ name: '', phoneNumber: '' });
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const user = await getUserById(userId);
+                setName(user.name || '');
+                setEmail(user.email || '');
+                setPhoneNumber(user.phoneNumber || '');
+                setAddress(user.address || '');
+            } catch (error) {
+                Alert.alert('Error', 'No se pudo cargar el perfil');
+            }
+        };
+        fetchUser();
+    }, [userId]);
+
+    const handleNameChange = (text) => {
+        setName(text);
+        const result = validateField('nameOrDescription', text);
+        setFormErrors((prev) => ({ ...prev, name: result.valid ? '' : result.message }));
+    };
+
+    const handlePhoneChange = (text) => {
+        setPhoneNumber(text);
+        const result = validateField('phoneNumber', text);
+        setFormErrors((prev) => ({ ...prev, phoneNumber: result.valid ? '' : result.message }));
+    };
+
+    const validateInputs = () => {
+        const nameValidation = validateField('nameOrDescription', name);
+        const phoneValidation = validateField('phoneNumber', phoneNumber);
+
+        const errors = {};
+        if (!nameValidation.valid) errors.name = nameValidation.message;
+        if (!phoneValidation.valid) errors.phoneNumber = phoneValidation.message;
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleUpdate = async () => {
+        if (!validateInputs()) return;
+
+        Alert.alert('Actualizar Perfil', '¿Deseas guardar los cambios?', [
+            {
+                text: 'Sí',
+                onPress: async () => {
+                    try {
+                        await updateUser(userId, { name, phoneNumber, email, address });
+                        Alert.alert('Éxito', 'Perfil actualizado');
+                    } catch (error) {
+                        Alert.alert('Error', 'No se pudo actualizar el perfil');
                     }
                 },
-                { text: "No", style: "cancel" }
-            ]
-        );
+            },
+            { text: 'No', style: 'cancel' },
+        ]);
     };
 
-    const handleChangePassword = () => {
-        Alert.alert(
-            "Change Password",
-            "Are you sure you want to change your password?",
-            [
-                { text: "Yes", onPress: () => console.log("Changing password") },
-                { text: "No", style: "cancel" }
-            ]
-        );
-    };
-
-    const handleUpdateInfo = () => {
-        Alert.alert(
-            "Update Info",
-            "Are you sure you want to update your info?",
-            [
-                { text: "Yes", onPress: () => console.log("Updating info") },
-                { text: "No", style: "cancel" }
-            ]
-        );
+    const handleLogout = () => {
+        Alert.alert('Cerrar Sesión', '¿Estás seguro de cerrar sesión?', [
+            {
+                text: 'Sí',
+                onPress: async () => {
+                    try {
+                        await logout();
+                    } catch (error) {
+                        Alert.alert('Error', 'No se pudo cerrar sesión');
+                    }
+                },
+            },
+            { text: 'No', style: 'cancel' },
+        ]);
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>PROFILE</Text>
-            <Icon name="account-circle" type="material" size={130} color="#888" style={{ marginBottom: 20 }} />
+            <Text style={styles.title}>PERFIL EMPRESARIAL</Text>
 
-            <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#A9A9A9" />
-            <TextInput style={styles.input} placeholder="Username" placeholderTextColor="#A9A9A9" />
-            <TextInput style={styles.input} placeholder="Phone Number" placeholderTextColor="#A9A9A9" keyboardType="phone-pad" />
-            <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#A9A9A9" keyboardType="email-address" />
+            <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={name}
+                onChangeText={handleNameChange}
+                placeholderTextColor="#A9A9A9"
+            />
+            {formErrors.name && <Text style={styles.errorText}>{formErrors.name}</Text>}
 
-            <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10 }}>
-                <TouchableOpacity style={styles.secondary_button} onPress={handleUpdateInfo}>
-                    <Text style={styles.button_text}>UPDATE INFO</Text>
-                </TouchableOpacity>
+            <TextInput
+                style={[styles.input, { opacity: 0.6 }]}
+                placeholder="Correo"
+                value={email}
+                editable={false}
+                placeholderTextColor="#A9A9A9"
+            />
 
-                <TouchableOpacity style={styles.primary_button} onPress={handleChangePassword}>
-                    <Text style={styles.button_text}>CHANGE PASSWORD</Text>
-                </TouchableOpacity>
-            </View>
+            <TextInput
+                style={styles.input}
+                placeholder="Teléfono"
+                value={phoneNumber}
+                keyboardType="phone-pad"
+                onChangeText={handlePhoneChange}
+                placeholderTextColor="#A9A9A9"
+            />
+            {formErrors.phoneNumber && <Text style={styles.errorText}>{formErrors.phoneNumber}</Text>}
+
+            <TextInput
+                style={styles.input}
+                placeholder="Dirección (opcional)"
+                value={address}
+                onChangeText={setAddress}
+                placeholderTextColor="#A9A9A9"
+            />
+
+            <TouchableOpacity style={styles.secondary_button} onPress={handleUpdate}>
+                <Text style={styles.button_text}>ACTUALIZAR PERFIL</Text>
+            </TouchableOpacity>
 
             <Divider style={styles.divider} />
 
-            <TouchableOpacity style={styles.logOut_button} onPress={handleLogOut}>
-                <Text style={styles.button_text}>LOG OUT</Text>
+            <TouchableOpacity style={styles.logOut_button} onPress={handleLogout}>
+                <Text style={styles.button_text}>CERRAR SESIÓN</Text>
             </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: 'white',
-        marginTop: -45,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#30437A',
-        marginBottom: 20,
-    },
+    container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: 'white' },
+    title: { fontSize: 28, fontWeight: 'bold', color: '#30437A', marginBottom: 40 },
     input: {
         width: '100%',
         backgroundColor: '#EAEAEA',
@@ -103,17 +154,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 2,
     },
-    primary_button: {
-        width: '100%',
-        backgroundColor: '#30437A',
-        padding: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginBottom: 15,
-        shadowColor: '#30387a',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
-        shadowRadius: 2,
+    errorText: {
+        color: 'red',
+        alignSelf: 'flex-start',
+        marginBottom: 10
     },
     secondary_button: {
         width: '100%',
@@ -126,6 +170,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 2,
     },
+    button_text: {
+        color: 'white',
+        fontSize: 16,
+    },
+    divider: {
+        width: '100%',
+        height: 2,
+        backgroundColor: '#EAEAEA',
+        marginVertical: 15,
+    },
     logOut_button: {
         width: '100%',
         backgroundColor: '#dd1e1e',
@@ -137,15 +191,5 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 2,
         marginTop: 15,
-    },
-    button_text: {
-        color: 'white',
-        fontSize: 16,
-    },
-    divider: {
-        width: '100%',
-        height: 2,
-        backgroundColor: '#EAEAEA',
-        marginVertical: 15,
     },
 });

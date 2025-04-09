@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
-    View, Text, TextInput, Modal, FlatList,
+    View, Text, Modal, FlatList,
     TouchableOpacity, Alert, StyleSheet, ScrollView
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MonthSelector from '../../../../MonthSelector';
-import { getAvailableMaterialsByUserId } from '../../../../../src/api/axios';
-import { getOrdersByUserId, createRawMaterialOrder } from '../../../../../src/api/axios';
+import { getAvailableMaterialsByUserId, getOrdersByUserId, createRawMaterialOrder } from '../../../../../src/api/axios';
+import { Input } from '@rneui/base';
+import { validateField } from '../../../../InputValidator';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function RawMaterialOrder() {
     const [orders, setOrders] = useState([]);
@@ -18,6 +20,8 @@ export default function RawMaterialOrder() {
     const [modalVisible, setModalVisible] = useState(false);
     const [description, setDescription] = useState('');
     const [income, setIncome] = useState('');
+    const [formErrors, setFormErrors] = useState({});
+    const isFocused = useIsFocused();
 
     const fetchOrders = async () => {
         const userId = await AsyncStorage.getItem('userId');
@@ -57,6 +61,12 @@ export default function RawMaterialOrder() {
         setNetProfit(total);
     }, [orders, selectedDate]);
 
+    useEffect(() => {
+        if (isFocused) {
+            fetchMaterials();
+        }
+    }, [isFocused]);
+
     const toggleMaterialSelection = (id) => {
         setSelectedMaterialIds(prev =>
             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
@@ -65,10 +75,17 @@ export default function RawMaterialOrder() {
 
     const handleSubmit = async () => {
         const userId = await AsyncStorage.getItem('userId');
-        if (!description || !income || selectedMaterialIds.length === 0) {
-            Alert.alert('Error', 'Por favor completa todos los campos.');
-            return;
-        }
+
+        const descriptionValidation = validateField('nameOrDescription', description);
+        const incomeValidation = validateField('positiveNumber', income);
+        const errors = {};
+
+        if (!descriptionValidation.valid) errors.description = descriptionValidation.message;
+        if (!incomeValidation.valid) errors.income = incomeValidation.message;
+        if (selectedMaterialIds.length === 0) errors.materials = 'Selecciona al menos un insumo';
+
+        setFormErrors(errors);
+        if (Object.keys(errors).length > 0) return;
 
         const orderData = {
             userId,
@@ -123,19 +140,27 @@ export default function RawMaterialOrder() {
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Nuevo Pedido</Text>
 
-                        <TextInput
-                            placeholder="Descripción del pedido"
-                            value={description}
-                            onChangeText={setDescription}
-                            style={styles.input}
+                        <Input
+                            label="Descripción del pedido"
+                            placeholder="Escribe una descripción"
+                            onChange={({ nativeEvent: { text } }) => {
+                                setDescription(text);
+                                const result = validateField('nameOrDescription', text);
+                                setFormErrors(prev => ({ ...prev, description: result.valid ? null : result.message }));
+                            }}
+                            errorMessage={formErrors.description}
                         />
 
-                        <TextInput
-                            placeholder="Ingreso del pedido ($)"
+                        <Input
+                            label="Ingreso del pedido ($)"
+                            placeholder="Ej: 1000"
                             keyboardType="numeric"
-                            value={income}
-                            onChangeText={setIncome}
-                            style={styles.input}
+                            onChange={({ nativeEvent: { text } }) => {
+                                setIncome(text);
+                                const result = validateField('positiveNumber', text);
+                                setFormErrors(prev => ({ ...prev, income: result.valid ? null : result.message }));
+                            }}
+                            errorMessage={formErrors.income}
                         />
 
                         <Text style={styles.label}>Selecciona los insumos:</Text>
@@ -153,6 +178,10 @@ export default function RawMaterialOrder() {
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
+
+                        {formErrors.materials && (
+                            <Text style={{ color: 'red', marginTop: 4 }}>{formErrors.materials}</Text>
+                        )}
 
                         <View style={styles.modalButtons}>
                             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
@@ -224,11 +253,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 15
     },
-    input: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        marginBottom: 15,
-        paddingVertical: 8
+    label: {
+        fontWeight: 'bold',
+        marginTop: 10,
+        marginBottom: 5,
     },
     selectItem: {
         padding: 10,
@@ -237,11 +265,6 @@ const styles = StyleSheet.create({
     },
     selectedItem: {
         backgroundColor: '#d4f7ee',
-    },
-    label: {
-        fontWeight: 'bold',
-        marginTop: 10,
-        marginBottom: 5,
     },
     modalButtons: {
         flexDirection: 'row',
