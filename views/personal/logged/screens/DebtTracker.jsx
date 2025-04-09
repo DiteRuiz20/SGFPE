@@ -129,37 +129,47 @@ export default function DebtTracker() {
 
   if (loading) return <View style={styles.container}><Text>Cargando...</Text></View>;
 
+  filteredDebts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
   return (
     <View style={styles.container}>
       <View>
         <MonthSelector selectedMonth={selectedDate} onSelectMonth={setSelectedDate} />
+      </View>
+      
+      <ScrollView>
 
         <View style={styles.summaryCard}>
           <View>
-            <Text style={styles.summaryLabel}>Total de Deudas</Text>
+            <Text style={styles.summaryLabel}>Deudas</Text>
             <Text style={styles.summaryCantidad}>${totalCantidad.toFixed(2)}</Text>
-            <Text style={styles.summarySubtext}>Este Mes</Text>
+            <Text style={styles.summarySubtext}>Deudas de este mes</Text>
           </View>
           <View style={{ marginRight: 25 }}>
             <Icon name="money-check-alt" size={40} color="#fff" />
           </View>
         </View>
-      </View>
+      
+
+      <TouchableOpacity style={styles.addButton} onPress={openModal}>
+        <Icon name="plus" size={20} color="#B1B1B1" style={{ marginRight: 10 }} />
+        <Text style={styles.addButtonText}>Nueva deuda</Text>
+      </TouchableOpacity>
 
       <View style={styles.tableContainer}>
         <DataTable>
           <DataTable.Header style={styles.tableHeader}>
             <DataTable.Title textStyle={styles.tableHeaderText}>Acreedor</DataTable.Title>
-            <DataTable.Title numeric textStyle={styles.tableHeaderText}>Cantidad</DataTable.Title>
+            <DataTable.Title textStyle={styles.tableHeaderText}>Cantidad</DataTable.Title>
             <DataTable.Title textStyle={styles.tableHeaderText}>Estado</DataTable.Title>
             <DataTable.Title textStyle={styles.tableHeaderText}>Acción</DataTable.Title>
           </DataTable.Header>
 
-          <ScrollView>
+          <View>
             {filteredDebts.map((debt) => (
               <DataTable.Row key={`${debt.id}-${debt.status}`}>
                 <DataTable.Cell>{debt.creditor}</DataTable.Cell>
-                <DataTable.Cell numeric>${debt.amount.toFixed(2)}</DataTable.Cell>
+                <DataTable.Cell>${debt.amount.toFixed(2)}</DataTable.Cell>
                 <DataTable.Cell>
                   <Text style={{ color: debt.status === 'PAID' ? '#34C759' : '#007AFF' }}>
                     {debt.status === 'PAID' ? 'Pagado' : 'Pendiente'}
@@ -174,15 +184,13 @@ export default function DebtTracker() {
                 </DataTable.Cell>
               </DataTable.Row>
             ))}
-          </ScrollView>
+          </View>
         </DataTable>
       </View>
 
-      <Button mode="contained" onPress={openModal} style={styles.addButton}>Nueva Deuda</Button>
-
       <Portal>
         <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
-          <Text style={styles.modalTitle}>Registrar Deuda</Text>
+          <Text style={styles.modalTitle}>Nueva Deuda</Text>
 
           <Input
             label="Acreedor"
@@ -210,11 +218,12 @@ export default function DebtTracker() {
           {!!error && <HelperText type="error">{error}</HelperText>}
 
           <View style={styles.modalButtons}>
-            <Button onPress={closeModal}>Cancelar</Button>
-            <Button mode="contained" onPress={handleCreateDebt}>Guardar</Button>
+            <Button style={styles.primary_button} mode="contained" onPress={closeModal}>Cancelar</Button>
+            <Button style={styles.secondary_button} mode="contained" onPress={handleCreateDebt}>Guardar</Button>
           </View>
         </Modal>
       </Portal>
+      </ScrollView>
     </View>
   );
 }
@@ -222,22 +231,53 @@ export default function DebtTracker() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9', justifyContent: 'flex-start' },
   summaryCard: {
-    backgroundColor: '#41416e', borderRadius: 16, padding: 24, marginBottom: 16,
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
+    backgroundColor: '#B1B1B1', borderRadius: 16, padding: 24, marginBottom: 5,
+    elevation: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    shadowColor: '#888',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
   },
-  summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
-  summaryCantidad: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginBottom: 4 },
-  summarySubtext: { color: '#ddd', fontSize: 14 },
+  summaryLabel: { color: '#fff', fontSize: 20, marginBottom: 8 },
+  summaryCantidad: { color: '#fff', fontSize: 32, fontWeight: 'bold', marginBottom: 4 },
+  summarySubtext: { color: '#eee', fontSize: 16 },
   tableContainer: {
     borderRadius: 12, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 16
   },
   tableHeader: { backgroundColor: '#f1f3f5' },
   tableHeaderText: { fontWeight: 'bold', color: '#41416e' },
-  addButton: {
-    backgroundColor: '#00C897', borderRadius: 12, paddingVertical: 12, marginBottom: 16
-  },
-  modal: { backgroundColor: '#fff', padding: 24, borderRadius: 16, elevation: 5 },
-  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#41416e', marginBottom: 20, textAlign: 'center' },
+  modal: { backgroundColor: '#fff', padding: 24, marginHorizontal: 16, borderRadius: 16, elevation: 5 },
+  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#B1B1B1', marginBottom: 20, textAlign: 'left' },
   modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
+  addButtonText: { color: 'black', fontSize: 16 },
+  primary_button: {
+    width: '40%',
+    backgroundColor: '#30437A',
+    padding: 2,
+    borderRadius: 8,
+    alignItems: 'center',
+    shadowColor: '#30387a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+  },
+  secondary_button: {
+    width: '40%',
+    backgroundColor: '#3DC9A7',
+    padding: 2,
+    borderRadius: 8,
+    alignItems: 'center',
+    shadowColor: '#3dc1ad',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+  },
+  addButton: {
+    marginVertical: 20, backgroundColor: 'white', borderColor: '#B1B1B1', borderWidth: 1,
+    borderRadius: 12, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', height: 50,
+    shadowColor: '#888',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+  },
 });

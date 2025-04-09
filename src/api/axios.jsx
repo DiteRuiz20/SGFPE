@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Instancia de Axios para configurar la base URL
 const api = axios.create({
-    baseURL: 'http://192.168.100.52:8080',  // Asegúrate de que esta es la URL correcta
+    baseURL: 'http://192.168.1.69:8080',  // Asegúrate de que esta es la URL correcta
 });
 
 // Interceptor para agregar el token JWT en los encabezados

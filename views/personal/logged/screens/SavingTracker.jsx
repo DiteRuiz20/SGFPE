@@ -109,7 +109,9 @@ export default function SavingTracker() {
           selectedMonth={selectedDate}
           onSelectMonth={setSelectedDate}
         />
-
+      </View>
+            
+      <ScrollView>
         <View style={styles.summaryCard}>
           <View>
             <Text style={styles.summaryLabel}>Ahorros</Text>
@@ -120,7 +122,6 @@ export default function SavingTracker() {
             <Icon name="hand-holding-usd" size={40} color="#fff" />
           </View>
         </View>
-      </View>
 
       <TouchableOpacity style={styles.addButton} onPress={openModal}>
         <Icon name="plus" size={20} color="#3DC9A7" style={{ marginRight: 10 }} />
@@ -135,7 +136,7 @@ export default function SavingTracker() {
             <DataTable.Title textStyle={styles.tableHeaderText}>Fecha registro</DataTable.Title>
           </DataTable.Header>
 
-          <ScrollView>
+          <View>
             {filteredSavings.map((saving, idx) => (
               <DataTable.Row key={saving.id || idx} style={styles.tableRow}>
                 <DataTable.Cell>{saving.description}</DataTable.Cell>
@@ -143,7 +144,7 @@ export default function SavingTracker() {
                 <DataTable.Cell>{new Date(saving.date).toLocaleDateString()}</DataTable.Cell>
               </DataTable.Row>
             ))}
-          </ScrollView>
+          </View>
         </DataTable>
       </View>
 
@@ -183,6 +184,7 @@ export default function SavingTracker() {
           </View>
         </Modal>
       </Portal>
+      </ScrollView>
     </View>
   );
 }
