@@ -2,15 +2,31 @@ import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Alert } fro
 import React, { useState } from 'react';
 import { Divider } from 'react-native-elements';
 import { useAuth } from '../../../src/auth/AuthContext';
+import { validateField } from '../../InputValidator';
 
 export default function BusinessNewProductExpenseLogin({ navigation }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [formErrors, setFormErrors] = useState({});
     const { login } = useAuth();
 
+    const validateInputs = () => {
+        const errors = {};
+        const emailVal = validateField('email', username);
+        const passwordVal = validateField('password', password);
+
+        if (!emailVal.valid) errors.username = emailVal.message;
+        if (!passwordVal.valid) errors.password = passwordVal.message;
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleLogin = async () => {
+        if (!validateInputs()) return;
+
         try {
-            await login(username, password, 'business-new-product-expense');
+            await login(username.toLowerCase(), password, 'business-new-product-expense');
             Alert.alert('Success', 'Login successful');
         } catch (error) {
             Alert.alert('Error', error.message || 'Invalid email or password');
@@ -27,18 +43,29 @@ export default function BusinessNewProductExpenseLogin({ navigation }) {
                 style={styles.input}
                 placeholder="Email Address"
                 value={username}
-                onChangeText={setUsername}
+                onChangeText={(text) => {
+                    setUsername(text);
+                    const result = validateField('email', text);
+                    setFormErrors(prev => ({ ...prev, username: result.valid ? null : result.message }));
+                }}
                 keyboardType='email-address'
                 placeholderTextColor="#A9A9A9"
             />
+            {formErrors.username && <Text style={styles.errorText}>{formErrors.username}</Text>}
+
             <TextInput
                 style={styles.input}
                 placeholder="Password"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                    setPassword(text);
+                    const result = validateField('password', text);
+                    setFormErrors(prev => ({ ...prev, password: result.valid ? null : result.message }));
+                }}
                 placeholderTextColor="#A9A9A9"
                 secureTextEntry
             />
+            {formErrors.password && <Text style={styles.errorText}>{formErrors.password}</Text>}
 
             <TouchableOpacity style={styles.primary_button} onPress={handleLogin}>
                 <Text style={styles.button_text}>LOGIN</Text>
@@ -139,5 +166,11 @@ const styles = StyleSheet.create({
     button_text: {
         color: 'white',
         fontSize: 16,
+    },
+    errorText: {
+        color: 'red',
+        alignSelf: 'flex-start',
+        marginBottom: 10,
+        marginLeft: 2,
     },
 });

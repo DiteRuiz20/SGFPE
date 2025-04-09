@@ -183,7 +183,7 @@ export default function DebtTracker() {
                 <DataTable.Cell>
                   {debt.status === 'PENDING' && (
                     <TouchableOpacity onPress={() => handleUpdateDebtEstado(debt.id)}>
-                      <Text style={{ color: '#41416e', fontWeight: 'bold' }}>Marcar como Pagado</Text>
+                      <Text style={{ color: '#41416e', fontWeight: 'bold', fontSize: 12 }}>Marcar como Pagado</Text>
                     </TouchableOpacity>
                   )}
                 </DataTable.Cell>

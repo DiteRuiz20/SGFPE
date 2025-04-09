@@ -6,10 +6,10 @@ export default function ChooseAccount ({ navigation }) {
     <View style={styles.container}>
       <Image source={require('../assets/logo.png')} style={styles.image} />
 
-      <Text style={styles.title}>What type of account do you want to create?</Text>
+      <Text style={styles.title}>Selecciona el tipo de cuenta</Text>
 
       <TouchableOpacity  style={styles.primary_button} onPress={() => navigation.navigate('Business Type')}>
-        <Text style={styles.buttonText}>BUSINESS</Text>
+        <Text style={styles.buttonText}>EMPRESARIAL</Text>
       </TouchableOpacity>
 
       <TouchableOpacity  style={styles.secondary_button} onPress={() => navigation.navigate('Personal')}>
