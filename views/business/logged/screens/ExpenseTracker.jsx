@@ -2,17 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { getNewProductExpensesByUser, createNewProductExpense } from '../../../../src/api/axios';
-import { DataTable, Portal, Modal, TextInput, Button, HelperText } from 'react-native-paper';
+import { DataTable, Portal, Modal, Button, HelperText, Menu } from 'react-native-paper';
+import { Input } from '@rneui/base';
 import MonthSelector from '../../../MonthSelector';
+import { validateField } from '../../../InputValidator';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function NewProductTracker() {
   const { userId } = useAuth();
   const monthScrollRef = useRef(null);
+  const isFocused = useIsFocused();
 
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [months, setMonths] = useState([]);
+  // Agrega un estado para el ancla
+  const [anchorPosition, setAnchorPosition] = useState(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState({
@@ -20,10 +26,13 @@ export default function NewProductTracker() {
     quantity: '',
     unitCost: '',
     category: '',
-    paymentMethod: '',
-    notes: ''
+    paymentMethod: ''
   });
-  const [error, setError] = useState('');
+  const [formErrors, setFormErrors] = useState({});
+
+  const [menuVisible, setMenuVisible] = useState(false);
+  const selectButtonRef = useRef();
+  const paymentOptions = ['Transferencia', 'Efectivo', 'Tarjeta'];
 
   const isSameMonth = (date1, date2) =>
     new Date(date1).getMonth() === new Date(date2).getMonth() &&
@@ -42,6 +51,10 @@ export default function NewProductTracker() {
     fetchProducts();
     generateMonths(new Date());
   }, []);
+
+  useEffect(() => {
+    if (isFocused) fetchProducts();
+  }, [isFocused]);
 
   useEffect(() => {
     const filtered = products.filter(p => isSameMonth(p.purchaseDate, selectedDate));
@@ -64,10 +77,20 @@ export default function NewProductTracker() {
   };
 
   const handleCreateProduct = async () => {
-    const { productDescription, quantity, unitCost } = form;
-    if (!productDescription || !quantity || !unitCost) {
-      return setError('Todos los campos obligatorios deben llenarse');
-    }
+    const { productDescription, quantity, unitCost, category, paymentMethod } = form;
+    const errors = {};
+
+    const descriptionValidation = validateField('nameOrDescription', productDescription);
+    const quantityValidation = validateField('positiveInteger', quantity);
+    const unitCostValidation = validateField('positiveNumber', unitCost);
+
+    if (!descriptionValidation.valid) errors.productDescription = descriptionValidation.message;
+    if (!quantityValidation.valid) errors.quantity = quantityValidation.message;
+    if (!unitCostValidation.valid) errors.unitCost = unitCostValidation.message;
+    if (!paymentMethod) errors.paymentMethod = 'Selecciona un método de pago';
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     try {
       await createNewProductExpense({
@@ -76,19 +99,18 @@ export default function NewProductTracker() {
         unitCost: parseFloat(form.unitCost),
         totalCost: parseFloat(form.unitCost) * parseFloat(form.quantity),
         userId,
-        purchaseDate: new Date().toISOString(),
+        purchaseDate: new Date().toISOString()
       });
       closeModal();
       fetchProducts();
     } catch (err) {
       console.error(err);
-      setError('Error al crear el producto.');
     }
   };
 
   const openModal = () => {
     setModalVisible(true);
-    setError('');
+    setFormErrors({});
   };
 
   const closeModal = () => {
@@ -98,23 +120,19 @@ export default function NewProductTracker() {
       quantity: '',
       unitCost: '',
       category: '',
-      paymentMethod: '',
-      notes: ''
+      paymentMethod: ''
     });
-    setError('');
+    setFormErrors({});
   };
 
   return (
     <View style={styles.container}>
-
       <View>
-        {/* Selector de meses */}
         <MonthSelector
           selectedMonth={selectedDate}
           onSelectMonth={(date) => setSelectedDate(date)}
         />
 
-        {/* Resumen simple */}
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>Gasto Total</Text>
           <Text style={styles.summaryAmount}>
@@ -124,21 +142,92 @@ export default function NewProductTracker() {
         </View>
       </View>
 
-
-      {/* Botón agregar */}
       <Button mode="contained" onPress={openModal} style={styles.addButton}>Agregar Producto</Button>
 
-      {/* Modal de registro */}
       <Portal>
         <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
           <Text style={styles.modalTitle}>Nuevo Producto</Text>
-          <TextInput label="Descripción" value={form.productDescription} onChangeText={text => setForm({ ...form, productDescription: text })} style={styles.input} />
-          <TextInput label="Cantidad" value={form.quantity} onChangeText={text => setForm({ ...form, quantity: text })} keyboardType="numeric" style={styles.input} />
-          <TextInput label="Costo unitario" value={form.unitCost} onChangeText={text => setForm({ ...form, unitCost: text })} keyboardType="numeric" style={styles.input} />
-          <TextInput label="Categoría" value={form.category} onChangeText={text => setForm({ ...form, category: text })} style={styles.input} />
-          <TextInput label="Método de pago" value={form.paymentMethod} onChangeText={text => setForm({ ...form, paymentMethod: text })} style={styles.input} />
-          <TextInput label="Notas" value={form.notes} onChangeText={text => setForm({ ...form, notes: text })} style={styles.input} />
-          {error ? <HelperText type="error">{error}</HelperText> : null}
+
+          <Input
+            label="Descripción"
+            placeholder="Ej. Cajas de cartón"
+            onChange={({ nativeEvent: { text } }) => {
+              setForm(prev => ({ ...prev, productDescription: text }));
+              const result = validateField('nameOrDescription', text);
+              setFormErrors(prev => ({ ...prev, productDescription: result.valid ? '' : result.message }));
+            }}
+            errorMessage={formErrors.productDescription}
+          />
+
+          <Input
+            label="Cantidad"
+            placeholder="Ej. 100"
+            keyboardType="numeric"
+            onChange={({ nativeEvent: { text } }) => {
+              setForm(prev => ({ ...prev, quantity: text }));
+              const result = validateField('positiveInteger', text);
+              setFormErrors(prev => ({ ...prev, quantity: result.valid ? '' : result.message }));
+            }}
+            errorMessage={formErrors.quantity}
+          />
+
+          <Input
+            label="Costo unitario"
+            placeholder="Ej. 20.50"
+            keyboardType="numeric"
+            onChange={({ nativeEvent: { text } }) => {
+              setForm(prev => ({ ...prev, unitCost: text }));
+              const result = validateField('positiveNumber', text);
+              setFormErrors(prev => ({ ...prev, unitCost: result.valid ? '' : result.message }));
+            }}
+            errorMessage={formErrors.unitCost}
+          />
+
+          <Input
+            label="Categoría"
+            placeholder="Ej. Empaque"
+            onChange={({ nativeEvent: { text } }) => setForm(prev => ({ ...prev, category: text }))}
+          />
+
+          <Text style={styles.label}>Método de pago</Text>
+          <View
+            onLayout={(event) => {
+              const { x, y, width, height } = event.nativeEvent.layout;
+              setAnchorPosition({ x, y: y + height }); // posición bajo el botón
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => setMenuVisible(true)}
+              style={styles.selectButton}
+            >
+              <Text style={styles.selectButtonText}>
+                {form.paymentMethod || 'Selecciona un método de pago'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <Menu
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            anchor={anchorPosition}
+          >
+
+
+            {paymentOptions.map((option) => (
+              <Menu.Item
+                key={option}
+                title={option}
+                onPress={() => {
+                  setForm(prev => ({ ...prev, paymentMethod: option }));
+                  setMenuVisible(false);
+                  setFormErrors(prev => ({ ...prev, paymentMethod: '' }));
+                }}
+              />
+            ))}
+          </Menu>
+
+          {formErrors.paymentMethod ? <HelperText type="error">{formErrors.paymentMethod}</HelperText> : null}
+
           <View style={styles.modalButtons}>
             <Button onPress={closeModal}>Cancelar</Button>
             <Button mode="contained" onPress={handleCreateProduct}>Guardar</Button>
@@ -146,35 +235,36 @@ export default function NewProductTracker() {
         </Modal>
       </Portal>
 
-      {/* Tabla de productos */}
-      <View style={styles.tableContainer}>
-        <DataTable>
-          <DataTable.Header style={styles.tableHeader}>
-            <DataTable.Title>Descripción</DataTable.Title>
-            <DataTable.Title numeric>Cantidad</DataTable.Title>
-            <DataTable.Title numeric>Total</DataTable.Title>
-          </DataTable.Header>
-          <ScrollView>
-            {filteredProducts.map((p, idx) => (
-              <DataTable.Row key={p.id || idx}>
-                <DataTable.Cell>{p.productDescription}</DataTable.Cell>
-                <DataTable.Cell numeric>{p.quantity}</DataTable.Cell>
-                <DataTable.Cell numeric>${p.totalCost}</DataTable.Cell>
-              </DataTable.Row>
-            ))}
-          </ScrollView>
-        </DataTable>
-      </View>
+      {filteredProducts.length === 0 ? (
+        <View style={styles.noDataContainer}>
+          <Text style={styles.noDataText}>No hay registros este mes.</Text>
+        </View>
+      ) : (
+        <View style={styles.tableContainer}>
+          <DataTable>
+            <DataTable.Header style={styles.tableHeader}>
+              <DataTable.Title>Descripción</DataTable.Title>
+              <DataTable.Title numeric>Cantidad</DataTable.Title>
+              <DataTable.Title numeric>Total</DataTable.Title>
+            </DataTable.Header>
+            <ScrollView>
+              {filteredProducts.map((p, idx) => (
+                <DataTable.Row key={p.id || idx}>
+                  <DataTable.Cell>{p.productDescription}</DataTable.Cell>
+                  <DataTable.Cell numeric>{p.quantity}</DataTable.Cell>
+                  <DataTable.Cell numeric>${p.totalCost}</DataTable.Cell>
+                </DataTable.Row>
+              ))}
+            </ScrollView>
+          </DataTable>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
-  monthTabs: { flexDirection: 'row', marginBottom: 20 },
-  monthItem: { marginHorizontal: 16, fontSize: 16, color: '#666' },
-  activeMonth: { color: '#41416e', fontWeight: 'bold', borderBottomWidth: 2, borderBottomColor: '#00C897' },
-
   summaryCard: {
     backgroundColor: '#41416e',
     borderRadius: 16,
@@ -185,14 +275,12 @@ const styles = StyleSheet.create({
   summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
   summaryAmount: { color: '#fff', fontSize: 36, fontWeight: 'bold' },
   summarySubtext: { color: '#ddd', fontSize: 14 },
-
   addButton: {
     marginVertical: 20,
     backgroundColor: '#00C897',
     borderRadius: 12,
     paddingVertical: 10
   },
-
   modal: {
     backgroundColor: '#fff',
     padding: 24,
@@ -200,9 +288,18 @@ const styles = StyleSheet.create({
     borderRadius: 16
   },
   modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#41416e', marginBottom: 20, textAlign: 'center' },
-  input: { marginBottom: 12, backgroundColor: '#fff' },
+  label: { fontWeight: 'bold', marginBottom: 8, marginTop: 10 },
+  selectButton: {
+    backgroundColor: '#f1f3f5',
+    padding: 14,
+    borderRadius: 8,
+    marginBottom: 8
+  },
+  selectButtonText: {
+    color: '#495057',
+    fontSize: 16
+  },
   modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
-
   tableContainer: {
     borderRadius: 12,
     backgroundColor: '#fff',

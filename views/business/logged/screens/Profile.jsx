@@ -12,14 +12,18 @@ export default function Profile() {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
-  const [formErrors, setFormErrors] = useState({ name: '', phoneNumber: '' });
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    phoneNumber: '',
+    address: ''
+  });
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const user = await getUserById(userId);
         setName(user.name || '');
-        setEmail(user.email || '');
+        setEmail(user.email?.toLowerCase() || '');
         setPhoneNumber(user.phoneNumber || '');
         setAddress(user.address || '');
       } catch (error) {
@@ -41,13 +45,25 @@ export default function Profile() {
     setFormErrors((prev) => ({ ...prev, phoneNumber: result.valid ? '' : result.message }));
   };
 
+  const handleAddressChange = (text) => {
+    setAddress(text);
+    if (text.trim() !== '') {
+      const result = validateField('address', text);
+      setFormErrors((prev) => ({ ...prev, address: result.valid ? '' : result.message }));
+    } else {
+      setFormErrors((prev) => ({ ...prev, address: '' }));
+    }
+  };
+
   const validateInputs = () => {
     const nameValidation = validateField('nameOrDescription', name);
     const phoneValidation = validateField('phoneNumber', phoneNumber);
+    const addressValidation = address.trim() !== '' ? validateField('address', address) : { valid: true };
 
     const errors = {};
     if (!nameValidation.valid) errors.name = nameValidation.message;
     if (!phoneValidation.valid) errors.phoneNumber = phoneValidation.message;
+    if (!addressValidation.valid) errors.address = addressValidation.message;
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -64,16 +80,24 @@ export default function Profile() {
           text: "Sí",
           onPress: async () => {
             try {
-              await updateUser(userId, { name, phoneNumber, email, address });
+              const prevUser = await getUserById(userId); // traemos todos los campos actuales
+
+              const updatedUser = {
+                ...prevUser,
+                name,
+                phoneNumber,
+                address: address || '',
+                email: email.toLowerCase() // aseguramos lowercase
+              };
+
+              await updateUser(userId, updatedUser);
               Alert.alert('Éxito', 'Perfil actualizado exitosamente');
             } catch (error) {
               Alert.alert('Error', 'Hubo un error al actualizar el perfil');
             }
           }
         },
-        {
-          text: "No"
-        }
+        { text: "No" }
       ]
     );
   };
@@ -136,8 +160,9 @@ export default function Profile() {
         placeholder="Dirección (opcional)"
         placeholderTextColor="#A9A9A9"
         value={address}
-        onChangeText={setAddress}
+        onChangeText={handleAddressChange}
       />
+      {formErrors.address ? <Text style={styles.errorText}>{formErrors.address}</Text> : null}
 
       <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10, marginBottom: 10 }}>
         <TouchableOpacity style={styles.secondary_button} onPress={handleUpdateInfo}>

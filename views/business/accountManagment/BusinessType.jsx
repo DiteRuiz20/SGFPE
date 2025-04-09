@@ -6,14 +6,14 @@ export default function BusinessType({ navigation }) {
     <View style={styles.container}>
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
 
-      <Text style={styles.title}>What type of business do you run?</Text>
+      <Text style={styles.title}>¿Qué tipo de empresa eres?</Text>
 
       <TouchableOpacity style={styles.primary_button} onPress={() => navigation.navigate('Business Login', { accountType: 'business-raw-material' })}>
-        <Text style={styles.buttonText}>RAW MATERIAL</Text>
+        <Text style={styles.buttonText}>MATERIA PRIMA</Text>
       </TouchableOpacity>
       
       <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('BusinessNewProductExpenseLogin', { accountType: 'business-new-product-expense' })}>
-        <Text style={styles.buttonText}>NEW PRODUCTS EXPENSES</Text>
+        <Text style={styles.buttonText}>NUEVA MERCANCÍA</Text>
       </TouchableOpacity>
     </View>
   )
