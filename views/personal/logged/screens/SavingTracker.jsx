@@ -137,6 +137,11 @@ export default function SavingTracker() {
           </DataTable.Header>
 
           <View>
+            {filteredSavings.length === 0 && (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text>No hay gastos registrados para este mes.</Text>
+              </View>
+            )}
             {filteredSavings.map((saving, idx) => (
               <DataTable.Row key={saving.id || idx} style={styles.tableRow}>
                 <DataTable.Cell>{saving.description}</DataTable.Cell>

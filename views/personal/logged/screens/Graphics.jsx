@@ -5,6 +5,7 @@ import { PieChart } from 'react-native-chart-kit';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import MonthSelector from '../../../MonthSelector';
+import { Divider } from 'react-native-elements';
 
 export default function Graphics() {
     const { userId } = useAuth();
@@ -95,6 +96,10 @@ export default function Graphics() {
                 />
             </View>
 
+            <Text style={{ fontSize: 24, color: '#30437A', marginBottom: 10, textAlign: 'center', fontWeight: 'bold' }}>
+                GASTOS TOTALES
+            </Text>
+
             <View style={styles.chartContainer}>
                 {hasExpenseData && (
                     <PieChart
@@ -114,6 +119,14 @@ export default function Graphics() {
                     />
                 )}
             </View>
+            {!hasExpenseData && (
+                <Text style={styles.noDataText}>No hay datos disponibles para este mes</Text>
+            )}
+
+            <Divider style={styles.divider} />
+            <Text style={{ fontSize: 24, color: '#30437A', marginBottom: 10, textAlign: 'center', fontWeight: 'bold' }}>
+                AHORROS VS DEUDAS
+            </Text>
 
             <View style={styles.chartContainer}>
                 {hasSavingsDebtsData && (
@@ -122,14 +135,14 @@ export default function Graphics() {
                             {
                                 name: 'Ahorros',
                                 amount: totalSavings,
-                                color: '#4CAF50',
+                                color: '#3DC9A7',
                                 legendFontColor: '#333',
                                 legendFontSize: 14,
                             },
                             {
                                 name: 'Deudas',
                                 amount: totalDebts,
-                                color: '#FF6384',
+                                color: '#B1B1B1',
                                 legendFontColor: '#333',
                                 legendFontSize: 14,
                             },
@@ -179,6 +192,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 50,
         color: '#495057',
-        fontSize: 16
-    }
+        fontSize: 16,
+        marginBottom: 50,
+    },
+    divider: { width: '100%', height: 2, backgroundColor: '#EAEAEA', marginBottom: 15 },
 });

@@ -4,6 +4,7 @@ import { Divider } from 'react-native-elements';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { getUserById, updateUser } from '../../../../src/api/axios';
 import { validateField } from '../../../InputValidator';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function Profile() {
   const { userId, logout } = useAuth();
@@ -112,6 +113,7 @@ export default function Profile() {
   };
 
   return (
+  <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={{ flexGrow: 1 }}>
     <View style={styles.container}>
       <Text style={styles.title}>PERFIL</Text>
 
@@ -154,6 +156,7 @@ export default function Profile() {
         <Text style={styles.button_text}>CERRAR SESION</Text>
       </TouchableOpacity>
     </View>
+    </ScrollView>
   );
 }
 
@@ -164,7 +167,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: 'white',
-    marginTop: -45,
   },
   title: {
     fontSize: 28,

@@ -166,6 +166,11 @@ export default function DebtTracker() {
           </DataTable.Header>
 
           <View>
+            {filteredDebts.length === 0 && (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text>No hay gastos registrados para este mes.</Text>
+              </View>
+            )}
             {filteredDebts.map((debt) => (
               <DataTable.Row key={`${debt.id}-${debt.status}`}>
                 <DataTable.Cell>{debt.creditor}</DataTable.Cell>

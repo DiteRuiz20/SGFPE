@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useAuth } from '../../../src/auth/AuthContext';
 import { validateField } from '../../InputValidator';
 import { Divider } from 'react-native-elements';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function PersonalLogin({ navigation }) {
   const [username, setUsername] = useState('');
@@ -30,7 +31,9 @@ export default function PersonalLogin({ navigation }) {
   };
 
   return (
+    <ScrollView style={{backgroundColor: '#fff'}} contentContainerStyle={{ flexGrow: 1 }}>
     <View style={styles.container}>
+      
       <Text style={styles.title}>SGFPE</Text>
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
       <Text style={styles.subtitle}>Inicio de sesión - Cuenta Personal</Text>
@@ -88,12 +91,14 @@ export default function PersonalLogin({ navigation }) {
       <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
         <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
+      
     </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#fff', marginTop: -45 },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#fff' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#30437A', marginBottom: 10 },
   subtitle: { fontSize: 14, color: '#444', marginBottom: 20, textAlign: 'center' },
   image: { width: 130, height: 130, marginBottom: 30 },

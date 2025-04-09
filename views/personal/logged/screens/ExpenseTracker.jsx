@@ -154,11 +154,11 @@ export default function ExpenseTracker() {
 
             <Portal>
                 <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
-                    <Text style={styles.modalTitle}>New Expense</Text>
+                    <Text style={styles.modalTitle}>Nuevo gasto</Text>
 
                     <Input
-                        label="Description"
-                        placeholder="Enter description"
+                        label="Descripción"
+                        placeholder="Ingresa la descripción"
                         onChange={({ nativeEvent: { text } }) => {
                             setDescription(text);
                             const result = validateField('nameOrDescription', text);
@@ -168,8 +168,8 @@ export default function ExpenseTracker() {
                     />
 
                     <Input
-                        label="Amount"
-                        placeholder="Enter amount"
+                        label="Cantidad"
+                        placeholder="Monto del gasto"
                         onChange={({ nativeEvent: { text } }) => {
                             setAmount(text);
                             const result = validateField('positiveNumber', text);
@@ -181,7 +181,7 @@ export default function ExpenseTracker() {
 
                     <TouchableRipple onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}>
                         <View style={styles.categorySelector}>
-                            <Text>{selectedCategory ? selectedCategory.name : 'Select Category'}</Text>
+                            <Text>{selectedCategory ? selectedCategory.name : 'Selecciona una categoría'}</Text>
                         </View>
                     </TouchableRipple>
                     {formErrors.category && <HelperText type="error">{formErrors.category}</HelperText>}
@@ -207,8 +207,8 @@ export default function ExpenseTracker() {
                     {error ? <HelperText type="error">{error}</HelperText> : null}
 
                     <View style={styles.modalButtons}>
-                        <Button style={styles.primary_button} mode="contained" onPress={closeModal}>Cancel</Button>
-                        <Button style={styles.secondary_button} mode="contained" onPress={handleCreateExpense}>Save</Button>
+                        <Button style={styles.primary_button} mode="contained" onPress={closeModal}>Cancelar</Button>
+                        <Button style={styles.secondary_button} mode="contained" onPress={handleCreateExpense}>Guardar</Button>
                     </View>
                 </Modal>
             </Portal>
@@ -223,6 +223,11 @@ export default function ExpenseTracker() {
                     </DataTable.Header>
 
                     <View>
+                        {filteredExpenses.length === 0 && (
+                            <View style={{ padding: 20, alignItems: 'center' }}>
+                                <Text>No hay gastos registrados para este mes.</Text>
+                            </View>
+                        )}
                         {filteredExpenses.map((exp, idx) => (
                             <DataTable.Row key={exp.id || idx} style={styles.tableRow}>
                                 <DataTable.Cell textStyle={styles.tableCell}>{exp.description}</DataTable.Cell>
