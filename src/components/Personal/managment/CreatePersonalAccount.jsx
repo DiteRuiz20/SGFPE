@@ -11,7 +11,9 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 // Esquema de validación con Yup
 const schema = yup.object().shape({
   name: yup.string().required('El nombre es obligatorio').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
-  email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio').matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Ingresa un correo válido'),
+  email: yup.string()
+    .transform(value => value?.toLowerCase())
+    .email('Ingresa un correo válido').required('El correo es obligatorio').matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Ingresa un correo válido'),
   phoneNumber: yup.string().matches(/^[0-9]+$/, 'Solo se permiten números').min(10, 'El número debe tener 10 dígitos').required('El número es obligatorio').max(10, 'El número debe tener 10 dígitos'),
   password: yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('La contraseña es obligatoria'),
 });

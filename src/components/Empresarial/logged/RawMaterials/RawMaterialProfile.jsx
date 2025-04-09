@@ -11,7 +11,7 @@ import { Box, Modal } from '@mui/material';
 import { Alert, Snackbar } from '@mui/material';
 
 const regexLettersSpaces = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
-const regexLettersNumbers = /^[a-zA-Z0-9\s]+$/;
+const regexLettersNumbers = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s]+$/;
 const regexNumbers = /^[0-9]+$/;
 
 const schema = yup.object().shape({
@@ -35,10 +35,12 @@ const schema = yup.object().shape({
       'No se permiten caracteres especiales',
       value => !value || regexLettersNumbers.test(value)
     ),
-  zip: yup
-    .string()
-    .matches(/^\d{5}$/, 'El código postal debe tener exactamente 5 dígitos')
-    .optional(),
+  zip: yup.string()
+    .nullable()
+    .notRequired()
+    .test('zip-code', 'El código postal debe tener 5 dígitos', value => {
+      return !value || regexZip.test(value);
+    }),
   state: yup
     .string()
     .optional()

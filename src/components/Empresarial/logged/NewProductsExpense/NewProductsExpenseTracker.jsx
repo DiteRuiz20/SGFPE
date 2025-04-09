@@ -31,7 +31,6 @@ const schema = yup.object().shape({
     .required('El precio unitario es obligatorio'),
   category: yup.string().required('La categoría es obligatoria').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
   paymentMethod: yup.string().required('El método de pago es obligatorio'),
-  productObservations: yup.string().required('Las observaciones son obligatorias').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
 });
 
 export default function NewProductExpenseTracker() {
@@ -45,6 +44,12 @@ export default function NewProductExpenseTracker() {
   const [dateWindow, setDateWindow] = useState({ center: new Date(), offset: 3 });
 
   const navigate = useNavigate();
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return date.toLocaleDateString('es-MX', options);
+  };
 
   const fetchProducts = async () => {
     const userId = localStorage.getItem('userId');
@@ -159,6 +164,8 @@ export default function NewProductExpenseTracker() {
     { selector: row => `$${row.unitCost}`, name: 'Costo Unitario', grow: 1 },
     { selector: row => `$${row.totalCost}`, name: 'Costo Total', grow: 1 },
     { selector: row => row.category, name: 'Categoría', grow: 1 },
+    { selector: row => row.paymentMethod, name: 'Método de Pago', grow: 1 },
+    { selector: row => formatDate(row.purchaseDate), name: 'Fecha de compra', grow: 1 },
   ];
 
   filteredProducts.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
@@ -349,8 +356,6 @@ export default function NewProductExpenseTracker() {
             {errors.unitCost && <span style={{ color: 'red' }}>{errors.unitCost.message}</span>}
             <input type="text" placeholder='Categoría' {...register('category')} className='input col-12 mb-2' />
             {errors.category && <span style={{ color: 'red' }}>{errors.category.message}</span>}
-            <textarea placeholder='Notas' {...register('productObservations')} className='input col-12 mb-2' />
-            {errors.productObservations && <span style={{ color: 'red' }}>{errors.productObservations.message}</span>}
 
             <select
               className='input col-12'

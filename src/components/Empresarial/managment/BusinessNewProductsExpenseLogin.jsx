@@ -9,8 +9,10 @@ import { Divider } from '@mui/material';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const schema = yup.object().shape({
-    email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio')
-        .matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,'Ingresa un correo válido'),
+    email: yup.string()
+        .transform(value => value?.toLowerCase())
+        .email('Ingresa un correo válido').required('El correo es obligatorio')
+        .matches(/^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Ingresa un correo válido'),
     password: yup.string().required('La contraseña es obligatoria'),
 });
 
@@ -118,7 +120,7 @@ export default function BusinessNewProductsExpenseLogin() {
                                     {...register('password')}
                                     placeholder="Contraseña"
                                 />
-                                <span 
+                                <span
                                     onClick={() => setShowPassword(!showPassword)}
                                     style={{
                                         alignSelf: 'flex-end',
@@ -130,16 +132,16 @@ export default function BusinessNewProductsExpenseLogin() {
                                 >
                                     {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
                                 </span>
-                                    {errors.password && <p style={{ color: 'red', marginTop: '30px', marginBottom: '-30px' }}>{errors.password.message}</p>}
+                                {errors.password && <p style={{ color: 'red', marginTop: '30px', marginBottom: '-30px' }}>{errors.password.message}</p>}
                             </div>
-            
+
                             <div className="d-flex justify-content-center">
                                 <button className='primary_button col-md-8' type="submit" style={{ marginTop: '53px' }} disabled={isLoading}>
                                     {isLoading ? 'PROCESANDO...' : 'INICIAR SESIÓN'}
                                 </button>
                             </div>
                             <div className="d-flex justify-content-center align-items-center my-2">
-                                <Divider style={styles.divider}/>
+                                <Divider style={styles.divider} />
                             </div>
                         </form>
 

@@ -16,12 +16,22 @@ const regexZip = /^[0-9]{5}$/;
 
 const schema = yup.object().shape({
     name: yup.string().required('El nombre es obligatorio').matches(regexLettersSpaces, 'Solo se permiten letras y espacios'),
-    email: yup.string().email('Ingresa un correo válido').required('El correo es obligatorio').matches(regexEmail, 'Ingresa un correo válido'),
+    email: yup
+        .string()
+        .transform(value => value?.toLowerCase())
+        .email('Ingresa un correo válido')
+        .required('El correo es obligatorio')
+        .matches(regexEmail, 'Ingresa un correo válido'),
     phoneNumber: yup.string().matches(regexPhone, 'El número debe tener 10 dígitos').required('El número es obligatorio'),
     password: yup.string().min(6, 'La contraseña debe tener al menos 6 caracteres').required('La contraseña es obligatoria'),
     city: yup.string().optional().test('valid-city', 'Solo se permiten letras y espacios', value => !value || regexLettersSpaces.test(value)),
     street: yup.string().optional().test('valid-street', 'Solo se permiten letras y números', value => !value || regexLettersNumbers.test(value)),
-    zip: yup.string().optional().matches(regexZip, 'El código postal debe tener exactamente 5 dígitos'),
+    zip: yup.string()
+        .nullable()
+        .notRequired()
+        .test('zip-code', 'El código postal debe tener 5 dígitos', value => {
+            return !value || regexZip.test(value);
+        }),
     state: yup.string().optional().test('valid-state', 'Solo se permiten letras y espacios', value => !value || regexLettersSpaces.test(value)),
 });
 

@@ -31,7 +31,6 @@ const schema = yup.object().shape({
     .required('El precio unitario es obligatorio'),
   supplier: yup.string().required('El proveedor es obligatorio').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
   measurementUnit: yup.string().required('La unidad de medida es obligatoria'),
-  notes: yup.string().required('Las observaciones son obligatorias').matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, 'Solo se permiten letras y espacios'),
 });
 
 const formatDate = (dateString) => {
@@ -56,6 +55,7 @@ export default function RawMaterialsTracker() {
     measurementUnit: '',
     notes: ''
   });
+
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -181,6 +181,7 @@ export default function RawMaterialsTracker() {
 
   const columns = [
     { selector: row => row.materialDescription, name: 'Descripción', grow: 1 },
+    { selector: row => row.supplier, name: 'Proveedor', grow: 1 },
     { selector: row => row.quantity, name: 'Cantidad', grow: 1 },
     { selector: row => `$${row.unitPrice.toFixed(2)}`, name: 'Precio Unitario', grow: 1 },
     { selector: row => row.measurementUnit, name: 'Unidad de Medida', grow: 1 },
@@ -328,9 +329,6 @@ export default function RawMaterialsTracker() {
               ))}
             </select>
             {errors.measurementUnit && <span style={{ color: 'red' }}>{errors.measurementUnit.message}</span>}
-
-            <textarea placeholder='Notas' {...register('notes')} className='input col-12 mb-2' />
-            {errors.notes && <span style={{ color: 'red' }}>{errors.notes.message}</span>}
             <Divider style={styles.divider} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
               <button type="button" className='primary_button' onClick={closeManualForm}>Cancelar</button>

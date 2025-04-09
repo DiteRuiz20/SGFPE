@@ -35,10 +35,13 @@ export default function RawMaterialsGraphics() {
 
   const balance = totalNetProfit - totalMaterialCost;
 
-  const chartData = [
-    { name: 'Ganancia neta', value: totalNetProfit, color: '#4AD8C2' },
-    { name: 'Gasto en materiales', value: totalMaterialCost, color: '#FF8C69' },
-  ];
+  const chartData = () => {
+    if (totalMaterialCost === 0 && totalNetProfit === 0) return [];
+    return [
+      { name: 'Ganancia neta', value: totalNetProfit, color: '#4AD8C2' },
+      { name: 'Gasto en materiales', value: totalMaterialCost, color: '#FF8C69' },
+    ];
+  };
 
   const generatePDF = async () => {
     const input = document.getElementById('chart-container');
@@ -97,7 +100,7 @@ export default function RawMaterialsGraphics() {
       if (ordersTable.length > 0) {
         autoTable(pdf, {
           startY: currentY,
-          head: [["Fecha", "Producto",  "Ganancia"]],
+          head: [["Fecha", "Producto", "Ganancia"]],
           body: ordersTable,
           theme: 'grid',
           styles: { fontSize: 11 },
@@ -189,10 +192,10 @@ export default function RawMaterialsGraphics() {
 
       <div className='row mt-3 d-flex justify-content-center align-items-center' id="chart-container">
         <p style={styles.title}>GANANCIAS NETAS VS GASTOS</p>
-        {chartData.length > 0 ? (
+        {chartData().length > 0 ? (
           <PieChart width={400} height={400}>
             <Pie
-              data={chartData}
+              data={chartData()}
               dataKey="value"
               nameKey="name"
               cx={'50%'}
@@ -200,7 +203,7 @@ export default function RawMaterialsGraphics() {
               innerRadius={80}
               outerRadius={120}
               label>
-              {chartData.map((entry, index) => (
+              {chartData().map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
