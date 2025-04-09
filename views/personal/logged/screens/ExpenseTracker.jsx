@@ -2,9 +2,10 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-nati
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { getPersonalExpensesByUserId, getAllCategories, createPersonalExpense } from '../../../../src/api/axios';
-import { DataTable, Portal, Modal, TextInput, Button, HelperText, List, TouchableRipple } from 'react-native-paper';
+import { DataTable, Portal, Modal, Button, HelperText, List, TouchableRipple } from 'react-native-paper';
 import MonthSelector from '../../../MonthSelector';
 import { validateField } from '../../../InputValidator';
+import { Input } from '@rneui/base';
 
 export default function ExpenseTracker() {
     const { userId } = useAuth();
@@ -18,10 +19,11 @@ export default function ExpenseTracker() {
     const [months, setMonths] = useState([]);
 
     const [modalVisible, setModalVisible] = useState(false);
-    const [newExpense, setNewExpense] = useState({ description: '', amount: '' });
+    const [description, setDescription] = useState('');
+    const [amount, setAmount] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-    const [formErrors, setFormErrors] = useState({});
+    const [formErrors, setFormErrors] = useState({ description: '', amount: '', category: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
 
@@ -76,24 +78,7 @@ export default function ExpenseTracker() {
         }, 50);
     };
 
-    const handleSelectMonth = (date) => {
-        setSelectedDate(date);
-        generateMonths(date);
-    };
-
-    const handleExpenseChange = (field, value) => {
-        setNewExpense(prev => ({ ...prev, [field]: value }));
-
-        const type = field === 'description' ? 'nameOrDescription' : field === 'amount' ? 'positiveNumber' : null;
-        if (type) {
-            const result = validateField(type, value);
-            setFormErrors(prev => ({ ...prev, [field]: result.valid ? null : result.message }));
-        }
-    };
-
     const handleCreateExpense = async () => {
-        const { description, amount } = newExpense;
-
         const descValidation = validateField('nameOrDescription', description);
         const amountValidation = validateField('positiveNumber', amount);
 
@@ -127,9 +112,10 @@ export default function ExpenseTracker() {
 
     const closeModal = () => {
         setModalVisible(false);
-        setNewExpense({ description: '', amount: '' });
+        setDescription('');
+        setAmount('');
         setSelectedCategory(null);
-        setFormErrors({});
+        setFormErrors({ description: '', amount: '', category: '' });
         setError('');
     };
 
@@ -156,11 +142,28 @@ export default function ExpenseTracker() {
                 <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
                     <Text style={styles.modalTitle}>New Expense</Text>
 
-                    <TextInput label="Description" value={newExpense.description} onChangeText={(text) => handleExpenseChange('description', text)} style={styles.input} />
-                    {formErrors.description && <HelperText type="error">{formErrors.description}</HelperText>}
+                    <Input
+                        label="Description"
+                        placeholder="Enter description"
+                        onChange={({ nativeEvent: { text } }) => {
+                            setDescription(text);
+                            const result = validateField('nameOrDescription', text);
+                            setFormErrors(prev => ({ ...prev, description: result.valid ? null : result.message }));
+                        }}
+                        errorMessage={formErrors.description}
+                    />
 
-                    <TextInput label="Amount" value={newExpense.amount} onChangeText={(text) => handleExpenseChange('amount', text)} keyboardType="numeric" style={styles.input} />
-                    {formErrors.amount && <HelperText type="error">{formErrors.amount}</HelperText>}
+                    <Input
+                        label="Amount"
+                        placeholder="Enter amount"
+                        onChange={({ nativeEvent: { text } }) => {
+                            setAmount(text);
+                            const result = validateField('positiveNumber', text);
+                            setFormErrors(prev => ({ ...prev, amount: result.valid ? null : result.message }));
+                        }}
+                        keyboardType="numeric"
+                        errorMessage={formErrors.amount}
+                    />
 
                     <TouchableRipple onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}>
                         <View style={styles.categorySelector}>

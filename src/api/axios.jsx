@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Instancia de Axios para configurar la base URL
 const api = axios.create({
-    baseURL: 'http://192.168.109.46:8080',  // Asegúrate de que esta es la URL correcta
+    baseURL: 'http://192.168.100.52:8080',  // Asegúrate de que esta es la URL correcta
 });
 
 // Interceptor para agregar el token JWT en los encabezados
@@ -358,6 +358,16 @@ export const resetPassword = async (email, code, newPassword) => {
         return response.data;
     } catch (error) {
         console.error('Error resetting password:', error);
+        throw error;
+    }
+};
+
+export const updateUser = async (userId, userData) => {
+    try {
+        const response = await api.put(`/api/personal/users/${userId}`, userData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating user:', error);
         throw error;
     }
 };

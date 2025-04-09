@@ -1,15 +1,18 @@
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
-import { DataTable, Portal, Modal, TextInput, Button, HelperText } from 'react-native-paper';
+import { DataTable, Portal, Modal, Button, HelperText } from 'react-native-paper';
 import { useAuth } from '../../../../src/auth/AuthContext';
 import { getSavingsByUserId, createSaving } from '../../../../src/api/axios';
 import MonthSelector from '../../../MonthSelector';
+import { Input } from '@rneui/base';
 import { validateField } from '../../../InputValidator';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function SavingTracker() {
   const { userId } = useAuth();
-  const monthScrollRef = useRef(null);
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [formErrors, setFormErrors] = useState({ description: '', amount: '' });
 
   const [savings, setSavings] = useState([]);
   const [filteredSavings, setFilteredSavings] = useState([]);
@@ -19,8 +22,6 @@ export default function SavingTracker() {
   const [loading, setLoading] = useState(true);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [newSaving, setNewSaving] = useState({ amount: '', description: '' });
-  const [formErrors, setFormErrors] = useState({});
   const [error, setError] = useState('');
 
   const isSameMonth = (date1, date2) =>
@@ -49,14 +50,6 @@ export default function SavingTracker() {
       };
     });
     setMonths(generated);
-    setTimeout(() => {
-      monthScrollRef.current?.scrollTo({ x: 140, animated: true });
-    }, 50);
-  };
-
-  const handleSelectMonth = (date) => {
-    setSelectedDate(date);
-    generateMonths(date);
   };
 
   useEffect(() => {
@@ -71,19 +64,7 @@ export default function SavingTracker() {
     setTotalSaved(total);
   }, [savings, selectedDate]);
 
-  const handleSavingChange = (field, value) => {
-    setNewSaving(prev => ({ ...prev, [field]: value }));
-
-    const type = field === 'description' ? 'nameOrDescription' : field === 'amount' ? 'positiveNumber' : null;
-    if (type) {
-      const result = validateField(type, value);
-      setFormErrors(prev => ({ ...prev, [field]: result.valid ? null : result.message }));
-    }
-  };
-
   const handleCreateSaving = async () => {
-    const { amount, description } = newSaving;
-
     const descValidation = validateField('nameOrDescription', description);
     const amountValidation = validateField('positiveNumber', amount);
 
@@ -95,7 +76,7 @@ export default function SavingTracker() {
     if (Object.keys(errors).length > 0) return;
 
     try {
-      await createSaving({ userId, amount: parseFloat(amount), description });
+      await createSaving({ userId, amount: parseFloat(amount), description }); // ✅ usa valores correctos
       closeModal();
       fetchSavings();
     } catch (err) {
@@ -108,13 +89,14 @@ export default function SavingTracker() {
     setModalVisible(true);
     setError('');
   };
-
   const closeModal = () => {
     setModalVisible(false);
-    setNewSaving({ amount: '', description: '' });
+    setAmount('');
+    setDescription('');
     setFormErrors({});
     setError('');
   };
+
 
   if (loading) return <View style={styles.container}><Text>Cargando...</Text></View>;
 
@@ -134,24 +116,24 @@ export default function SavingTracker() {
             <Text style={styles.summaryAmount}>${totalSaved.toFixed(2)}</Text>
             <Text style={styles.summarySubtext}>Total de ahorros del mes</Text>
           </View>
-          <View style={{marginRight: 25}}>
+          <View style={{ marginRight: 25 }}>
             <Icon name="hand-holding-usd" size={40} color="#fff" />
           </View>
         </View>
       </View>
 
       <TouchableOpacity style={styles.addButton} onPress={openModal}>
-        <Icon name="plus" size={20} color="#3DC9A7" style={{marginRight: 10}} />
+        <Icon name="plus" size={20} color="#3DC9A7" style={{ marginRight: 10 }} />
         <Text style={styles.addButtonText}>Nuevo ahorro</Text>
       </TouchableOpacity>
 
       <View style={styles.tableContainer}>
         <DataTable>
-        <DataTable.Header style={styles.tableHeader}>
-          <DataTable.Title textStyle={styles.tableHeaderText}>Descripción</DataTable.Title>
-          <DataTable.Title textStyle={styles.tableHeaderText}>Cantidad</DataTable.Title>
-          <DataTable.Title textStyle={styles.tableHeaderText}>Fecha registro</DataTable.Title>
-        </DataTable.Header>
+          <DataTable.Header style={styles.tableHeader}>
+            <DataTable.Title textStyle={styles.tableHeaderText}>Descripción</DataTable.Title>
+            <DataTable.Title textStyle={styles.tableHeaderText}>Cantidad</DataTable.Title>
+            <DataTable.Title textStyle={styles.tableHeaderText}>Fecha registro</DataTable.Title>
+          </DataTable.Header>
 
           <ScrollView>
             {filteredSavings.map((saving, idx) => (
@@ -169,22 +151,29 @@ export default function SavingTracker() {
         <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
           <Text style={styles.modalTitle}>Nuevo ahorro</Text>
 
-          <TextInput
+          <Input
             label="Descripción"
-            value={newSaving.description}
-            onChangeText={text => handleSavingChange('description', text)}
-            style={styles.input}
+            placeholder="Ingresa la descripción"
+            onChange={({ nativeEvent: { text } }) => {
+              setDescription(text);
+              const result = validateField('nameOrDescription', text);
+              setFormErrors(prev => ({ ...prev, description: result.valid ? null : result.message }));
+            }}
+            errorMessage={formErrors.description}
           />
-          {formErrors.description && <HelperText type="error">{formErrors.description}</HelperText>}
 
-          <TextInput
+          <Input
             label="Cantidad"
-            value={newSaving.amount}
-            onChangeText={text => handleSavingChange('amount', text)}
+            placeholder="Ingresa la cantidad"
+            onChange={({ nativeEvent: { text } }) => {
+              setAmount(text);
+              const result = validateField('positiveNumber', text);
+              setFormErrors(prev => ({ ...prev, amount: result.valid ? null : result.message }));
+            }}
             keyboardType="numeric"
-            style={styles.input}
+            errorMessage={formErrors.amount}
           />
-          {formErrors.amount && <HelperText type="error">{formErrors.amount}</HelperText>}
+
 
           {error ? <HelperText type="error">{error}</HelperText> : null}
 
@@ -216,7 +205,7 @@ const styles = StyleSheet.create({
   },
   tableHeader: { backgroundColor: '#f1f3f5', justifyContent: 'space-between' },
   tableHeaderText: { fontWeight: 'bold', color: '#41416e' },
-  tableRow: { borderBottomWidth: 1, borderBottomColor: '#f1f3f5'},
+  tableRow: { borderBottomWidth: 1, borderBottomColor: '#f1f3f5' },
   addButton: {
     marginVertical: 20, backgroundColor: 'white', borderColor: '#3DC9A7', borderWidth: 1,
     borderRadius: 12, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', height: 50,

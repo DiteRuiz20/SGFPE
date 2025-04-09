@@ -3,7 +3,7 @@
 export const regexValidators = {
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // email básico
     password: /^[A-Za-z\d@$!%*#?&]{6,}$/, // 6 o más caracteres válidos
-    positiveNumber: /^(?!0+(?:\.0+)?$)\d+(\.\d+)?$/, // no permite cero ni 0.0
+    positiveNumber: /^(?!0+(?:\.0+)?$)\d+(\.\d{1,2})?$/,
     onlyLetters: /^[A-Za-zÁÉÍÓÚáéíóúñÑ ]+$/, // solo letras con espacios y acentos
     nameOrDescription: /^[A-Za-zÁÉÍÓÚáéíóúñÑ ]+$/, // igual que onlyLetters para campos de texto
     positiveInteger: /^[1-9]\d*$/, // enteros positivos estrictamente > 0

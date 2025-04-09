@@ -41,15 +41,15 @@ export default function BudgetPlanning() {
   const fetchData = async () => {
     if (!userId) return;
     try {
-      const [expData, debtData, saveData] = await Promise.all([
+      const [expData = [], debtData = [], saveData = []] = await Promise.all([
         getPersonalExpensesByUserId(userId),
         getDebtsByUserId(userId),
         getSavingsByUserId(userId)
       ]);
 
-      const filteredExpenses = expData.filter(e => isSameMonth(new Date(e.date), selectedDate));
-      const filteredDebts = debtData.filter(d => isSameMonth(new Date(d.date), selectedDate));
-      const filteredSavings = saveData.filter(s => isSameMonth(new Date(s.date), selectedDate));
+      const filteredExpenses = Array.isArray(expData) ? expData.filter(e => isSameMonth(new Date(e.date), selectedDate)) : [];
+      const filteredDebts = Array.isArray(debtData) ? debtData.filter(d => isSameMonth(new Date(d.date), selectedDate)) : [];
+      const filteredSavings = Array.isArray(saveData) ? saveData.filter(s => isSameMonth(new Date(s.date), selectedDate)) : [];
 
       setExpenses(filteredExpenses);
       setDebts(filteredDebts);
@@ -78,22 +78,27 @@ export default function BudgetPlanning() {
 
   const totalFunds = totalSavings - totalExpenses;
 
-  const pieData = [
-    {
+  const pieData = [];
+
+  if (totalExpenses > 0) {
+    pieData.push({
       name: 'Gastos',
       amount: totalExpenses,
       color: '#30437A',
       legendFontColor: '#333',
       legendFontSize: 14
-    },
-    {
+    });
+  }
+
+  if (totalSavings > 0) {
+    pieData.push({
       name: 'Ahorros',
       amount: totalSavings,
       color: '#3DC9A7',
       legendFontColor: '#333',
       legendFontSize: 14
-    },
-  ].filter(item => item.amount > 0); // Oculta secciones vacías
+    });
+  }
 
   if (loading) return <View style={styles.container}><Text>Cargando...</Text></View>;
 
@@ -138,7 +143,7 @@ export default function BudgetPlanning() {
 
       <Divider style={styles.divider} />
 
-      <Text style={{ fontSize:24, color: '#30437A', marginBottom: 10, textAlign: 'center', fontWeight: 'bold' }}>
+      <Text style={{ fontSize: 24, color: '#30437A', marginBottom: 10, textAlign: 'center', fontWeight: 'bold' }}>
         BALANCE TOTAL
       </Text>
       {/* PieChart comparativo */}
