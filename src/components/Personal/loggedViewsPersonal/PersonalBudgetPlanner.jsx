@@ -127,6 +127,8 @@ export default function PersonalBudgetPlanner() {
         ? '0px 8px 5px rgba(61, 193, 173, 0.2)'
         : color === '#B1B1B1'
         ? '0px 8px 5px rgba(176, 176, 176, 0.2)'
+        : color === '#3DB1A7'
+        ? '0px 8px 5px rgba(61, 177, 173, 0.2)'
         : 'none',
     }),
   };
@@ -166,7 +168,7 @@ export default function PersonalBudgetPlanner() {
 
           <div className="col d-flex justify-content-center">
             <Tooltip title="Fondos restantes" arrow placement="bottom">
-              <div style={styles.card('#3DC9A7')}>
+              <div style={styles.card('#3DB1A7')}>
                 <GiMoneyStack style={{ fontSize: '220%', marginRight: '15px' }} />
                 {totalBalance.toFixed(2)}
               </div>

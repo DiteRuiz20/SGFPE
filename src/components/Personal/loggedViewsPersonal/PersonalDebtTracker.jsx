@@ -163,8 +163,9 @@ export default function PersonalDebtTracker() {
       if (!userId) throw new Error('No hay usuario autenticado');
 
       const debtData = {
-        ...data,
+        ...newDebt,
         userId,
+        creditor: data.creditor,
         amount: parseFloat(data.amount),
         date: new Date().toISOString(),
         status: 'PENDING'
@@ -179,8 +180,11 @@ export default function PersonalDebtTracker() {
       setFilteredDebts(response.filter(debt => isSameMonth(debt.date, selectedMonth)));
 
       // Limpiar el formulario y cerrar el modal
-      setValue('creditor', '');
-      setValue('amount', '');
+      setNewDebt({
+        creditor: '',
+        amount: '',
+        status: 'PENDING'
+      });
       closeForm();
     } catch (error) {
       setErrorMessage(error.message || 'Error al crear la deuda');
