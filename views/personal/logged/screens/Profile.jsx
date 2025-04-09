@@ -113,49 +113,52 @@ export default function Profile() {
   };
 
   return (
-  <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={{ flexGrow: 1 }}>
-    <View style={styles.container}>
-      <Text style={styles.title}>PERFIL</Text>
+    <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={styles.container}>
+        <Text style={styles.title}>PERFIL</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Nombre"
-        placeholderTextColor="#A9A9A9"
-        value={name}
-        onChangeText={handleNameChange}
-      />
-      {formErrors.name ? <Text style={styles.errorText}>{formErrors.name}</Text> : null}
+        <Text style={styles.label}>Nombre</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Nombre"
+          placeholderTextColor="#A9A9A9"
+          value={name}
+          onChangeText={handleNameChange}
+        />
+        {formErrors.name ? <Text style={styles.errorText}>{formErrors.name}</Text> : null}
 
-      <TextInput
-        style={[styles.input, { opacity: 0.6 }]}
-        placeholder="Correo electrónico"
-        placeholderTextColor="#A9A9A9"
-        value={email}
-        editable={false}
-      />
+        <Text style={styles.label}>Correo electrónico</Text>
+        <TextInput
+          style={[styles.input, { opacity: 0.6 }]}
+          placeholder="Correo electrónico"
+          placeholderTextColor="#A9A9A9"
+          value={email}
+          editable={false}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Número telefónico"
-        placeholderTextColor="#A9A9A9"
-        value={phoneNumber}
-        onChangeText={handlePhoneChange}
-        keyboardType='phone-pad'
-      />
-      {formErrors.phoneNumber ? <Text style={styles.errorText}>{formErrors.phoneNumber}</Text> : null}
+        <Text style={styles.label}>Número telefónico</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Número telefónico"
+          placeholderTextColor="#A9A9A9"
+          value={phoneNumber}
+          onChangeText={handlePhoneChange}
+          keyboardType='phone-pad'
+        />
+        {formErrors.phoneNumber ? <Text style={styles.errorText}>{formErrors.phoneNumber}</Text> : null}
 
-      <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10, marginBottom: 10 }}>
-        <TouchableOpacity style={styles.secondary_button} onPress={handleUpdateInfo}>
-          <Text style={styles.button_text}>ACTUALIZAR PERFIL</Text>
+        <View style={{ marginTop: 25, alignItems: 'center', width: '100%', gap: 10, marginBottom: 10 }}>
+          <TouchableOpacity style={styles.secondary_button} onPress={handleUpdateInfo}>
+            <Text style={styles.button_text}>ACTUALIZAR PERFIL</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Divider style={styles.divider} />
+
+        <TouchableOpacity style={styles.logOut_button} onPress={handleLogOut}>
+          <Text style={styles.button_text}>CERRAR SESION</Text>
         </TouchableOpacity>
       </View>
-
-      <Divider style={styles.divider} />
-
-      <TouchableOpacity style={styles.logOut_button} onPress={handleLogOut}>
-        <Text style={styles.button_text}>CERRAR SESION</Text>
-      </TouchableOpacity>
-    </View>
     </ScrollView>
   );
 }
@@ -223,4 +226,13 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     marginTop: 15,
   },
+  label: {
+    fontSize: 14,
+    color: '#41416e',
+    marginBottom: 4,
+    fontWeight: 'bold',
+    textAlign: 'left', // importante
+    width: '100%'
+  }
+
 });

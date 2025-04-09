@@ -7,17 +7,18 @@ import { Input } from '@rneui/base';
 import MonthSelector from '../../../MonthSelector';
 import { validateField } from '../../../InputValidator';
 import { useIsFocused } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function NewProductTracker() {
   const { userId } = useAuth();
   const monthScrollRef = useRef(null);
   const isFocused = useIsFocused();
+  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
 
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [months, setMonths] = useState([]);
-  // Agrega un estado para el ancla
   const [anchorPosition, setAnchorPosition] = useState(null);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -29,9 +30,7 @@ export default function NewProductTracker() {
     paymentMethod: ''
   });
   const [formErrors, setFormErrors] = useState({});
-
   const [menuVisible, setMenuVisible] = useState(false);
-  const selectButtonRef = useRef();
   const paymentOptions = ['Transferencia', 'Efectivo', 'Tarjeta'];
 
   const isSameMonth = (date1, date2) =>
@@ -128,25 +127,28 @@ export default function NewProductTracker() {
   return (
     <View style={styles.container}>
       <View>
-        <MonthSelector
-          selectedMonth={selectedDate}
-          onSelectMonth={(date) => setSelectedDate(date)}
-        />
+        <MonthSelector selectedMonth={selectedDate} onSelectMonth={(date) => setSelectedDate(date)} />
 
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Gasto Total</Text>
-          <Text style={styles.summaryAmount}>
-            ${filteredProducts.reduce((acc, p) => acc + (p.totalCost || 0), 0).toFixed(2)}
-          </Text>
-          <Text style={styles.summarySubtext}>Este mes</Text>
+          <View>
+            <Text style={styles.cardTitle}>Gasto total</Text>
+            <Text style={styles.cardAmount}>${filteredProducts.reduce((acc, p) => acc + (p.totalCost || 0), 0).toFixed(2)}</Text>
+          </View>
+          <View style={{ marginRight: 25 }}>
+            <Icon name="hand-holding-usd" size={40} color="#fff" />
+          </View>
         </View>
       </View>
 
-      <Button mode="contained" onPress={openModal} style={styles.addButton}>Agregar Producto</Button>
+
+      <TouchableOpacity style={styles.addButton} onPress={openModal}>
+        <Icon name="plus" size={20} color="#30437A" style={{ marginRight: 10 }} />
+        <Text style={styles.addButtonText}>Nuevo producto</Text>
+      </TouchableOpacity>
 
       <Portal>
         <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
-          <Text style={styles.modalTitle}>Nuevo Producto</Text>
+          <Text style={styles.modalTitle}>Nuevo producto</Text>
 
           <Input
             label="Descripción"
@@ -190,29 +192,24 @@ export default function NewProductTracker() {
           />
 
           <Text style={styles.label}>Método de pago</Text>
-          <View
+          <TouchableOpacity
+            style={styles.selectButton}
+            onPress={() => setMenuVisible(true)}
             onLayout={(event) => {
-              const { x, y, width, height } = event.nativeEvent.layout;
-              setAnchorPosition({ x, y: y + height }); // posición bajo el botón
+              const { x, y, height } = event.nativeEvent.layout;
+              setMenuAnchor({ x, y: y + height }); // posición debajo del botón
             }}
           >
-            <TouchableOpacity
-              onPress={() => setMenuVisible(true)}
-              style={styles.selectButton}
-            >
-              <Text style={styles.selectButtonText}>
-                {form.paymentMethod || 'Selecciona un método de pago'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+            <Text style={styles.selectButtonText}>
+              {form.paymentMethod || 'Selecciona un método de pago'}
+            </Text>
+          </TouchableOpacity>
 
           <Menu
             visible={menuVisible}
             onDismiss={() => setMenuVisible(false)}
-            anchor={anchorPosition}
+            anchor={menuAnchor}
           >
-
-
             {paymentOptions.map((option) => (
               <Menu.Item
                 key={option}
@@ -226,11 +223,11 @@ export default function NewProductTracker() {
             ))}
           </Menu>
 
-          {formErrors.paymentMethod ? <HelperText type="error">{formErrors.paymentMethod}</HelperText> : null}
+          {formErrors.paymentMethod && <HelperText type="error">{formErrors.paymentMethod}</HelperText>}
 
           <View style={styles.modalButtons}>
-            <Button onPress={closeModal}>Cancelar</Button>
-            <Button mode="contained" onPress={handleCreateProduct}>Guardar</Button>
+            <Button style={styles.primary_button} mode="contained" onPress={closeModal}>Cancelar</Button>
+            <Button style={styles.secondary_button} mode="contained" onPress={handleCreateProduct}>Guardar</Button>
           </View>
         </Modal>
       </Portal>
@@ -244,6 +241,7 @@ export default function NewProductTracker() {
           <DataTable>
             <DataTable.Header style={styles.tableHeader}>
               <DataTable.Title>Descripción</DataTable.Title>
+              <DataTable.Title numeric>Costo unitario</DataTable.Title>
               <DataTable.Title numeric>Cantidad</DataTable.Title>
               <DataTable.Title numeric>Total</DataTable.Title>
             </DataTable.Header>
@@ -251,6 +249,7 @@ export default function NewProductTracker() {
               {filteredProducts.map((p, idx) => (
                 <DataTable.Row key={p.id || idx}>
                   <DataTable.Cell>{p.productDescription}</DataTable.Cell>
+                  <DataTable.Cell numeric>${p.unitCost}</DataTable.Cell>
                   <DataTable.Cell numeric>{p.quantity}</DataTable.Cell>
                   <DataTable.Cell numeric>${p.totalCost}</DataTable.Cell>
                 </DataTable.Row>
@@ -266,28 +265,52 @@ export default function NewProductTracker() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
   summaryCard: {
-    backgroundColor: '#41416e',
+    backgroundColor: '#30437A',
     borderRadius: 16,
     padding: 24,
     marginBottom: 5,
-    elevation: 4
+    elevation: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#30387a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
   },
-  summaryLabel: { color: '#fff', fontSize: 18, marginBottom: 6 },
-  summaryAmount: { color: '#fff', fontSize: 36, fontWeight: 'bold' },
-  summarySubtext: { color: '#ddd', fontSize: 14 },
+  cardTitle: { color: 'white', fontSize: 16 },
+  cardAmount: { color: 'white', fontSize: 24, fontWeight: 'bold', marginTop: 5 },
   addButton: {
     marginVertical: 20,
-    backgroundColor: '#00C897',
+    backgroundColor: 'white',
+    borderColor: '#30437A',
+    borderWidth: 1,
     borderRadius: 12,
-    paddingVertical: 10
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    height: 50,
+    shadowColor: '#30387a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
   },
+  addButtonText: { color: 'black', fontSize: 16 },
   modal: {
     backgroundColor: '#fff',
     padding: 24,
     marginHorizontal: 16,
-    borderRadius: 16
+    borderRadius: 16,
+    elevation: 5
   },
-  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#41416e', marginBottom: 20, textAlign: 'center' },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#30437A',
+    marginBottom: 20,
+    textAlign: 'left'
+  },
   label: { fontWeight: 'bold', marginBottom: 8, marginTop: 10 },
   selectButton: {
     backgroundColor: '#f1f3f5',
@@ -299,7 +322,33 @@ const styles = StyleSheet.create({
     color: '#495057',
     fontSize: 16
   },
-  modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20
+  },
+  primary_button: {
+    width: '40%',
+    backgroundColor: '#30437A',
+    padding: 2,
+    borderRadius: 8,
+    alignItems: 'center',
+    shadowColor: '#30387a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2
+  },
+  secondary_button: {
+    width: '40%',
+    backgroundColor: '#3DC9A7',
+    padding: 2,
+    borderRadius: 8,
+    alignItems: 'center',
+    shadowColor: '#3dc1ad',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2
+  },
   tableContainer: {
     borderRadius: 12,
     backgroundColor: '#fff',
@@ -308,5 +357,14 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     backgroundColor: '#f1f3f5'
+  },
+  noDataContainer: {
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  noDataText: {
+    fontSize: 12,
+    textAlign: 'center'
   }
 });

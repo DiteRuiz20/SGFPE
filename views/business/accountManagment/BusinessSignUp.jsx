@@ -82,37 +82,37 @@ export default function BusinessSignUp() {
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
 
       <View style={{ marginBottom: 20, alignItems: 'center' }}>
-        <Text style={styles.subtitle}>Thanks for joining us!</Text>
-        <Text style={styles.subtitle}>Please fill out the required data about your business.</Text>
+        <Text style={styles.subtitle}>Gracias por unirte a nosotros!</Text>
+        <Text style={styles.subtitle}>Por favor llena el siguiente formulario con la información de tu empresa.</Text>
       </View>
 
-      <TextInput style={styles.input} placeholder="Business Name" placeholderTextColor="#A9A9A9"
+      <TextInput style={styles.input} placeholder="Nombre de la empresa" placeholderTextColor="#A9A9A9"
         onChangeText={(text) => handleChange('name', text)} />
       {formErrors.name && <Text style={styles.errorText}>{formErrors.name}</Text>}
 
-      <TextInput style={styles.input} placeholder="Phone Number" placeholderTextColor="#A9A9A9"
+      <TextInput style={styles.input} placeholder="Numero de Telefono" placeholderTextColor="#A9A9A9"
         keyboardType="phone-pad" onChangeText={(text) => handleChange('phoneNumber', text)} />
       {formErrors.phoneNumber && <Text style={styles.errorText}>{formErrors.phoneNumber}</Text>}
 
-      <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#A9A9A9"
+      <TextInput style={styles.input} placeholder="Correo Electronico" placeholderTextColor="#A9A9A9"
         autoCapitalize="none" keyboardType="email-address" onChangeText={(text) => handleChange('email', text)} />
       {formErrors.email && <Text style={styles.errorText}>{formErrors.email}</Text>}
 
-      <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#A9A9A9"
+      <TextInput style={styles.input} placeholder="Contrasena" placeholderTextColor="#A9A9A9"
         secureTextEntry onChangeText={(text) => handleChange('password', text)} />
       {formErrors.password && <Text style={styles.errorText}>{formErrors.password}</Text>}
 
-      <TextInput style={styles.input} placeholder="Address (Optional)" placeholderTextColor="#A9A9A9"
+      <TextInput style={styles.input} placeholder="Dirección (Opcional)" placeholderTextColor="#A9A9A9"
         onChangeText={(text) => handleChange('address', text)} />
       {formErrors.address && <Text style={styles.errorText}>{formErrors.address}</Text>}
 
       <TouchableOpacity style={styles.secondary_button} onPress={handleRegister} disabled={loading}>
-        <Text style={styles.button_text}>{loading ? 'Registering...' : 'SIGN UP'}</Text>
+        <Text style={styles.button_text}>{loading ? 'REGISTRANDO...' : 'REGISTRARSE'}</Text>
       </TouchableOpacity>
 
       <View style={{ marginTop: 25, alignItems: 'center' }}>
-        <Text style={styles.subtitle}>Note:</Text>
-        <Text style={styles.subtitle}>You will be sent a confirmation code via email to authenticate your account.</Text>
+        <Text style={styles.subtitle}>Nota:</Text>
+        <Text style={styles.subtitle}>Te llegará un correo vía email para verificar la autenticación con tu cuenta.</Text>
       </View>
     </View>
   );

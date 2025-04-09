@@ -128,6 +128,7 @@ export default function Profile() {
     <View style={styles.container}>
       <Text style={styles.title}>PERFIL</Text>
 
+      <Text style={styles.label}>Nombre</Text>
       <TextInput
         style={styles.input}
         placeholder="Nombre"
@@ -137,6 +138,7 @@ export default function Profile() {
       />
       {formErrors.name ? <Text style={styles.errorText}>{formErrors.name}</Text> : null}
 
+      <Text style={styles.label}>Correo Electronico</Text>
       <TextInput
         style={[styles.input, { opacity: 0.6 }]}
         placeholder="Correo electrónico"
@@ -145,6 +147,7 @@ export default function Profile() {
         editable={false}
       />
 
+      <Text style={styles.label}>Numero de Telefono</Text>
       <TextInput
         style={styles.input}
         placeholder="Número telefónico"
@@ -155,6 +158,7 @@ export default function Profile() {
       />
       {formErrors.phoneNumber ? <Text style={styles.errorText}>{formErrors.phoneNumber}</Text> : null}
 
+      <Text style={styles.label}>Dirección (opcional)</Text>
       <TextInput
         style={styles.input}
         placeholder="Dirección (opcional)"
@@ -243,4 +247,12 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     marginTop: 15,
   },
+  label: {
+    fontSize: 14,
+    color: '#41416e',
+    marginBottom: 4,
+    fontWeight: 'bold',
+    textAlign: 'left', // importante
+    width: '100%'
+  }
 });

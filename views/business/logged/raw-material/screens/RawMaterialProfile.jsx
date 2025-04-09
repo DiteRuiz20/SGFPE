@@ -101,55 +101,59 @@ export default function RawMaterialProfile() {
     };
 
     return (
-    <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={styles.container}>
-            <Text style={styles.title}>PERFIL EMPRESARIAL</Text>
+        <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={{ flexGrow: 1 }}>
+            <View style={styles.container}>
+                <Text style={styles.title}>PERFIL EMPRESARIAL</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Nombre"
-                value={name}
-                onChangeText={handleNameChange}
-                placeholderTextColor="#A9A9A9"
-            />
-            {formErrors.name && <Text style={styles.errorText}>{formErrors.name}</Text>}
+                <Text style={styles.label}>Nombre</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Nombre"
+                    value={name}
+                    onChangeText={handleNameChange}
+                    placeholderTextColor="#A9A9A9"
+                />
+                {formErrors.name && <Text style={styles.errorText}>{formErrors.name}</Text>}
 
-            <TextInput
-                style={[styles.input, { opacity: 0.6 }]}
-                placeholder="Correo"
-                value={email}
-                editable={false}
-                placeholderTextColor="#A9A9A9"
-            />
+                <Text style={styles.label}>Correo Electrónico</Text>
+                <TextInput
+                    style={[styles.input, { opacity: 0.6 }]}
+                    placeholder="Correo"
+                    value={email}
+                    editable={false}
+                    placeholderTextColor="#A9A9A9"
+                />
 
-            <TextInput
-                style={styles.input}
-                placeholder="Teléfono"
-                value={phoneNumber}
-                keyboardType="phone-pad"
-                onChangeText={handlePhoneChange}
-                placeholderTextColor="#A9A9A9"
-            />
-            {formErrors.phoneNumber && <Text style={styles.errorText}>{formErrors.phoneNumber}</Text>}
+                <Text style={styles.label}>Numero de Teléfono</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Teléfono"
+                    value={phoneNumber}
+                    keyboardType="phone-pad"
+                    onChangeText={handlePhoneChange}
+                    placeholderTextColor="#A9A9A9"
+                />
+                {formErrors.phoneNumber && <Text style={styles.errorText}>{formErrors.phoneNumber}</Text>}
 
-            <TextInput
-                style={styles.input}
-                placeholder="Dirección (opcional)"
-                value={address}
-                onChangeText={setAddress}
-                placeholderTextColor="#A9A9A9"
-            />
+                <Text style={styles.label}>Dirección (opcional)</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Dirección (opcional)"
+                    value={address}
+                    onChangeText={setAddress}
+                    placeholderTextColor="#A9A9A9"
+                />
 
-            <TouchableOpacity style={styles.secondary_button} onPress={handleUpdate}>
-                <Text style={styles.button_text}>ACTUALIZAR PERFIL</Text>
-            </TouchableOpacity>
+                <TouchableOpacity style={styles.secondary_button} onPress={handleUpdate}>
+                    <Text style={styles.button_text}>ACTUALIZAR PERFIL</Text>
+                </TouchableOpacity>
 
-            <Divider style={styles.divider} />
+                <Divider style={styles.divider} />
 
-            <TouchableOpacity style={styles.logOut_button} onPress={handleLogout}>
-                <Text style={styles.button_text}>CERRAR SESIÓN</Text>
-            </TouchableOpacity>
-        </View>
+                <TouchableOpacity style={styles.logOut_button} onPress={handleLogout}>
+                    <Text style={styles.button_text}>CERRAR SESIÓN</Text>
+                </TouchableOpacity>
+            </View>
         </ScrollView>
     );
 }
@@ -206,4 +210,12 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
         marginTop: 15,
     },
+    label: {
+        fontSize: 14,
+        color: '#41416e',
+        marginBottom: 4,
+        fontWeight: 'bold',
+        textAlign: 'left', // importante
+        width: '100%'
+    }
 });

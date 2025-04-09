@@ -1,11 +1,12 @@
-// Adaptación del componente NewProductOrderTracker para React Native con validación por campo
+// Adaptación del componente NewProductOrderTracker para React Native con validación por campo y diseño igual a RawMaterialOrder
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import MonthSelector from '../../../MonthSelector';
 import { getNewProductExpensesByUser, getNewProductOrdersByUserId, createNewProductOrder } from '../.././../../src/api/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { validateField } from '../../../InputValidator';
 import { useIsFocused } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function NewProductOrderTrackerMobile() {
   const [orders, setOrders] = useState([]);
@@ -112,10 +113,19 @@ export default function NewProductOrderTrackerMobile() {
         ListHeaderComponent={
           <>
             <MonthSelector selectedMonth={selectedMonth} onSelectMonth={setSelectedMonth} />
-            <Text style={styles.subtitle}>Ganancia total: ${totalNetProfit.toFixed(2)}</Text>
+            <View style={styles.summaryCard}>
+              <View>
+                <Text style={styles.cardTitle}>Ingreso mensual</Text>
+                <Text style={styles.cardAmount}>${totalNetProfit.toFixed(2)}</Text>
+              </View>
+              <View style={{ marginRight: 25 }}>
+                <Icon name="hand-holding-usd" size={40} color="#fff" />
+              </View>
+            </View>
 
             <TouchableOpacity style={styles.addButton} onPress={() => setShowForm(true)}>
-              <Text style={styles.addButtonText}>+ NUEVA ORDEN</Text>
+              <Icon name="plus" size={20} color="#3DC9A7" style={{ marginRight: 10 }} />
+              <Text style={styles.addButtonText}>Nueva orden</Text>
             </TouchableOpacity>
 
             {showForm && (
@@ -213,7 +223,7 @@ export default function NewProductOrderTrackerMobile() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.orderCard}>
-            <Text style={styles.cardText}>{item.orderDescription}</Text>
+            <Text style={styles.cardText}>Detalles del pedido</Text>
             <Text>Ingreso: ${item.income}</Text>
             <Text>Costo total: ${item.totalOrderCost}</Text>
             <Text>Ganancia neta: ${item.netProfit}</Text>
@@ -229,13 +239,23 @@ export default function NewProductOrderTrackerMobile() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#30437A', textAlign: 'center', marginBottom: 10 },
   subtitle: { fontSize: 16, color: '#333', textAlign: 'center', marginVertical: 10 },
+  summaryCard: {
+    backgroundColor: '#3DC9A7', borderRadius: 16, padding: 24, marginBottom: 5,
+    elevation: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    shadowColor: '#3dc1ad', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.5, shadowRadius: 2
+  },
+  cardTitle: { color: 'white', fontSize: 16 },
+  cardAmount: { color: 'white', fontSize: 24, fontWeight: 'bold', marginTop: 5 },
+  addButton: {
+    marginVertical: 20, backgroundColor: 'white', borderColor: '#3DC9A7', borderWidth: 1,
+    borderRadius: 12, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', height: 50,
+    shadowColor: '#3dc1ad', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.5, shadowRadius: 2
+  },
+  addButtonText: { color: 'black', fontSize: 16 },
   orderCard: { padding: 15, marginBottom: 10, backgroundColor: '#f0f0f0', borderRadius: 8 },
   cardText: { fontWeight: 'bold', fontSize: 16 },
   noData: { textAlign: 'center', color: 'gray', marginTop: 20 },
-  addButton: { backgroundColor: '#3DC9A7', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 20 },
-  addButtonText: { color: 'white', fontWeight: 'bold' },
   formContainer: { marginTop: 30, backgroundColor: '#f9f9f9', padding: 20, borderRadius: 10 },
   input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginBottom: 10 },
   label: { fontWeight: 'bold', marginTop: 10 },

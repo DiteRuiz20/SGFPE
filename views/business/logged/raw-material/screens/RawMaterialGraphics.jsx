@@ -4,6 +4,7 @@ import { PieChart } from 'react-native-chart-kit';
 import { getMaterialUsagesByUserId, getOrdersByUserId } from '../../../../../src/api/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MonthSelector from '../../../../MonthSelector';
+import { useIsFocused } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -11,6 +12,7 @@ export default function RawMaterialsGraphics() {
     const [materialUsages, setMaterialUsages] = useState([]);
     const [orders, setOrders] = useState([]);
     const [selectedMonth, setSelectedMonth] = useState(new Date());
+    const isFocused = useIsFocused();
 
     const isSameMonth = (date1, date2) => {
         const d1 = new Date(date1);
@@ -18,23 +20,29 @@ export default function RawMaterialsGraphics() {
         return d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
     };
 
+    const fetchData = async () => {
+        const userId = await AsyncStorage.getItem('userId');
+        if (!userId) return;
+
+        try {
+            const [usageRes, orderRes] = await Promise.all([
+                getMaterialUsagesByUserId(userId),
+                getOrdersByUserId(userId)
+            ]);
+            setMaterialUsages(usageRes.data || []);
+            setOrders(orderRes.data || []);
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            const userId = await AsyncStorage.getItem('userId');
-            if (!userId) return;
+        if (isFocused) {
+            fetchData();
+        }
+    }, [isFocused]);
 
-            try {
-                const [usageRes, orderRes] = await Promise.all([
-                    getMaterialUsagesByUserId(userId),
-                    getOrdersByUserId(userId)
-                ]);
-                setMaterialUsages(usageRes.data || []);
-                setOrders(orderRes.data || []);
-            } catch (error) {
-                console.error('Error cargando datos:', error);
-            }
-        };
-
+    useEffect(() => {
         fetchData();
     }, []);
 
@@ -50,14 +58,14 @@ export default function RawMaterialsGraphics() {
 
     const chartData = [
         {
-            name: 'Ganancia neta',
+            name: 'Ganancia',
             population: totalNetProfit,
             color: '#4AD8C2',
             legendFontColor: '#333',
             legendFontSize: 14
         },
         {
-            name: 'Gasto en materiales',
+            name: 'Gasto',
             population: totalMaterialCost,
             color: '#FF8C69',
             legendFontColor: '#333',
@@ -69,7 +77,7 @@ export default function RawMaterialsGraphics() {
         <ScrollView style={styles.container}>
             <MonthSelector selectedMonth={selectedMonth} onSelectMonth={setSelectedMonth} />
             <Text style={styles.title}>Ganancias vs Gastos</Text>
-            
+
             {chartData.length > 0 ? (
                 <PieChart
                     data={chartData}

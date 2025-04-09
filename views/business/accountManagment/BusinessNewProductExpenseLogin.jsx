@@ -37,11 +37,11 @@ export default function BusinessNewProductExpenseLogin({ navigation }) {
         <View style={styles.container}>
             <Text style={styles.title}>SGFPE</Text>
             <Image source={require('../../../assets/logo.png')} style={styles.image} />
-            <Text style={styles.subtitle}>New Products Expenses Business Login</Text>
+            <Text style={styles.subtitle}>Empresarial Nueva Mercancía</Text>
 
             <TextInput
                 style={styles.input}
-                placeholder="Email Address"
+                placeholder="Correo electrónico"
                 value={username}
                 onChangeText={(text) => {
                     setUsername(text);
@@ -55,7 +55,7 @@ export default function BusinessNewProductExpenseLogin({ navigation }) {
 
             <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder="Contraseña"
                 value={password}
                 onChangeText={(text) => {
                     setPassword(text);
@@ -68,19 +68,23 @@ export default function BusinessNewProductExpenseLogin({ navigation }) {
             {formErrors.password && <Text style={styles.errorText}>{formErrors.password}</Text>}
 
             <TouchableOpacity style={styles.primary_button} onPress={handleLogin}>
-                <Text style={styles.button_text}>LOGIN</Text>
+                <Text style={styles.button_text}>INGRESAR</Text>
             </TouchableOpacity>
 
             <Divider style={styles.divider} />
 
             <Text style={styles.orText}>or</Text>
-            <Text style={styles.getStarted}>Sign up to get started</Text>
+            <Text style={styles.getStarted}>¿Aún no tienes una cuenta?</Text>
 
             <TouchableOpacity
                 style={styles.secondary_button}
                 onPress={() => navigation.navigate('BusinessNewProductExpenseSignUp')}
             >
-                <Text style={styles.button_text}>SIGN UP</Text>
+                <Text style={styles.button_text}>REGISTRARSE</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
+                <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
         </View>
     );
@@ -173,4 +177,6 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         marginLeft: 2,
     },
+    forgotPassword: { alignSelf: 'flex-end', color: '#30437A', fontSize: 14, marginTop: 18, fontWeight: '500' }
+
 });

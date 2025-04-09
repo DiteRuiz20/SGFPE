@@ -95,13 +95,13 @@ export default function BusinessNewProductExpenseSignUp() {
         <View style={styles.container}>
             <Image source={require('../../../assets/logo.png')} style={styles.image} />
             <View style={{ marginBottom: 20, alignItems: 'center' }}>
-                <Text style={styles.subtitle}>Thanks for joining us!</Text>
-                <Text style={styles.subtitle}>Please fill out the required data about your business.</Text>
+                <Text style={styles.subtitle}>Gracias por unirte a nosotros!</Text>
+                <Text style={styles.subtitle}>Por favor llena el siguiente formulario con la información de tu empresa.</Text>
             </View>
 
             <TextInput
                 style={styles.input}
-                placeholder="Business Name"
+                placeholder="Nombre de la empresa"
                 placeholderTextColor="#A9A9A9"
                 onChangeText={(text) => handleChange('name', text)}
             />
@@ -109,7 +109,7 @@ export default function BusinessNewProductExpenseSignUp() {
 
             <TextInput
                 style={styles.input}
-                placeholder="Phone Number"
+                placeholder="Numero de telefono"
                 placeholderTextColor="#A9A9A9"
                 keyboardType='phone-pad'
                 onChangeText={(text) => handleChange('phoneNumber', text)}
@@ -118,7 +118,7 @@ export default function BusinessNewProductExpenseSignUp() {
 
             <TextInput
                 style={styles.input}
-                placeholder="Email Address"
+                placeholder="Correo electronico"
                 placeholderTextColor="#A9A9A9"
                 keyboardType='email-address'
                 onChangeText={(text) => handleChange('email', text)}
@@ -127,7 +127,7 @@ export default function BusinessNewProductExpenseSignUp() {
 
             <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder="Contraseña"
                 placeholderTextColor="#A9A9A9"
                 secureTextEntry
                 onChangeText={(text) => handleChange('password', text)}
@@ -136,19 +136,19 @@ export default function BusinessNewProductExpenseSignUp() {
 
             <TextInput
                 style={styles.input}
-                placeholder="Address (Optional)"
+                placeholder="Dirección (Opcional)"
                 placeholderTextColor="#A9A9A9"
                 onChangeText={(text) => handleChange('address', text)}
             />
             {formErrors.address ? <Text style={styles.errorText}>{formErrors.address}</Text> : null}
 
             <TouchableOpacity style={styles.secondary_button} onPress={handleRegister} disabled={loading}>
-                <Text style={styles.button_text}>{loading ? 'Registering...' : 'SIGN UP'}</Text>
+                <Text style={styles.button_text}>{loading ? 'REGISTRANDO...' : 'REGISTRARSE'}</Text>
             </TouchableOpacity>
 
             <View style={{ marginTop: 25, alignItems: 'center' }}>
-                <Text style={styles.subtitle}>Note:</Text>
-                <Text style={styles.subtitle}>You will be sent a confirmation code via email, which will be used to authenticate your account.</Text>
+                <Text style={styles.subtitle}>Nota:</Text>
+                <Text style={styles.subtitle}>Te llegará un correo vía email para verificar la autenticación con tu cuenta.</Text>
             </View>
         </View>
     );

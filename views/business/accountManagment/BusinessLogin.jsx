@@ -35,7 +35,7 @@ export default function BusinessLogin({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>SGFPE</Text>
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
-      <Text style={styles.subtitle}>Inicio de sesión - Materia Prima</Text>
+      <Text style={styles.subtitle}>Empresarial Nueva Mercancía</Text>
 
       <TextInput
         style={[styles.input, errors.username && styles.inputError]}
@@ -78,8 +78,8 @@ export default function BusinessLogin({ navigation }) {
 
       <Divider style={styles.divider} />
 
-      <Text style={styles.orText}>o</Text>
-      <Text style={styles.getStarted}>¿Aún no tienes cuenta?</Text>
+      <Text style={styles.orText}>or</Text>
+      <Text style={styles.getStarted}>¿Aún no tienes una cuenta?</Text>
 
       <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('Business Sign Up')}>
         <Text style={styles.button_text}>REGISTRARSE</Text>
