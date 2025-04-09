@@ -7,6 +7,8 @@ import MonthSelector from '../../../../MonthSelector';
 import { Input } from '@rneui/base';
 import { validateField } from '../../../../InputValidator';
 import { useIsFocused } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { Button } from 'react-native-paper';
 
 export default function MaterialUsageTracker() {
     const [rawMaterials, setRawMaterials] = useState([]);
@@ -128,12 +130,23 @@ export default function MaterialUsageTracker() {
                     selectedMonth={selectedDate}
                     onSelectMonth={(date) => setSelectedDate(date)}
                 />
-                <Text style={styles.title}>Gasto en materiales: ${totalCost.toFixed(2)}</Text>
-
-                <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-                    <Text style={styles.buttonText}>Registrar Insumo</Text>
-                </TouchableOpacity>
             </View>
+
+            <View style={styles.summaryCard}>
+                <View>
+                    <Text style={styles.cardTitle}>Gasto en materiales:</Text>
+                    <Text style={styles.cardAmount}>${totalCost.toFixed(2)}</Text>
+                </View>
+                <View style={{ marginRight: 25 }}>
+                    <Icon name="hand-holding-usd" size={40} color="#fff" />
+                </View>
+            </View>
+            
+            <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+                <Icon name="plus" size={20} color="#30437A" style={{ marginRight: 10 }} />
+                <Text style={styles.addButtonText}>Nuevo insumo</Text>
+            </TouchableOpacity>
+
 
             <FlatList
                 data={usages.filter((u) => {
@@ -223,14 +236,9 @@ export default function MaterialUsageTracker() {
                             errorMessage={formErrors.description}
                         />
 
-
                         <View style={styles.modalButtons}>
-                            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
-                                <Text style={styles.cancelText}>Cancelar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
-                                <Text style={styles.submitText}>Registrar</Text>
-                            </TouchableOpacity>
+                            <Button style={styles.primary_button} mode="contained" onPress={() => setModalVisible(false)}>Cancelar</Button>
+                            <Button style={styles.secondary_button} mode="contained" onPress={handleSubmit}>Guardar</Button>
                         </View>
                     </View>
                 </View>
@@ -283,11 +291,7 @@ const styles = StyleSheet.create({
         width: '85%',
         borderRadius: 10,
     },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 15,
-    },
+    modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#30437A', marginBottom: 20, textAlign: 'left' },
     input: {
         borderBottomWidth: 1,
         borderColor: '#ccc',
@@ -350,5 +354,54 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 10,
         maxHeight: 150,
+    },
+    addButton: {
+        marginVertical: 20, backgroundColor: 'white', borderColor: '#30437A', borderWidth: 1,
+        borderRadius: 12, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', height: 50,
+        shadowColor: '#30387a',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      addButtonText: { color: 'black', fontSize: 16 },
+      primary_button: {
+        width: '40%',
+        backgroundColor: '#30437A',
+        padding: 2,
+        borderRadius: 8,
+        alignItems: 'center',
+        shadowColor: '#30387a',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      secondary_button: {
+        width: '40%',
+        backgroundColor: '#3DC9A7',
+        padding: 2,
+        borderRadius: 8,
+        alignItems: 'center',
+        shadowColor: '#3dc1ad',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      summaryCard: {
+        backgroundColor: '#30437A', borderRadius: 16, padding: 24, marginBottom: 5,
+        elevation: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        shadowColor: '#30387a',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      cardTitle: {
+        color: 'white',
+        fontSize: 16,
+    },
+    cardAmount: {
+        color: 'white',
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginTop: 5,
     },
 });

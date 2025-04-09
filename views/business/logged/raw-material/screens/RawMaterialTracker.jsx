@@ -7,6 +7,7 @@ import { createRawMaterial, getRawMaterialsByUser } from '../../../../../src/api
 import MonthSelector from '../../../../MonthSelector';
 import { validateField } from '../../../../InputValidator';
 import { useIsFocused } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function RawMaterialTracker() {
     const { userId } = useAuth();
@@ -133,17 +134,23 @@ export default function RawMaterialTracker() {
 
             <View>
                 <MonthSelector selectedMonth={selectedDate} onSelectMonth={setSelectedDate} />
-
-                <View style={styles.summaryCard}>
-                    <Text style={styles.summaryLabel}>Total</Text>
-                    <Text style={styles.summaryAmount}>${totalCost.toFixed(2)}</Text>
-                    <Text style={styles.summarySubtext}>Gasto mensual</Text>
-                </View>
             </View>
+            <ScrollView>
 
-            <Button mode="contained" onPress={() => setModalVisible(true)} style={styles.addButton}>
-                Registrar materia
-            </Button>
+            <View style={styles.summaryCard}>
+                <View>
+                    <Text style={styles.cardTitle}>Total:</Text>
+                    <Text style={styles.cardAmount}>${totalCost.toFixed(2)}</Text>
+                </View>
+                <View style={{ marginRight: 25 }}>
+                    <Icon name="hand-holding-usd" size={40} color="#fff" />
+                </View>
+                </View>
+                        
+                <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+                    <Icon name="plus" size={20} color="#30437A" style={{ marginRight: 10 }} />
+                    <Text style={styles.addButtonText}>Nueva materia</Text>
+                </TouchableOpacity>
 
             <Portal>
                 <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modal}>
@@ -237,8 +244,8 @@ export default function RawMaterialTracker() {
                     {!!error && <HelperText type="error">{error}</HelperText>}
 
                     <View style={styles.modalButtons}>
-                        <Button onPress={closeModal}>Cancelar</Button>
-                        <Button mode="contained" onPress={handleCreate}>Guardar</Button>
+                        <Button style={styles.primary_button} mode="contained" onPress={closeModal}>Cancelar</Button>
+                        <Button style={styles.secondary_button} mode="contained" onPress={handleCreate}>Guardar</Button>
                     </View>
                 </Modal>
             </Portal>
@@ -270,6 +277,7 @@ export default function RawMaterialTracker() {
                     </DataTable>
                 </View>
             )}
+            </ScrollView>
         </View>
     );
 }
@@ -329,5 +337,54 @@ const styles = StyleSheet.create({
         fontSize: 12,
         textAlign: 'center',
     },
-
+    modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#30437A', marginBottom: 20, textAlign: 'left' },
+    addButton: {
+        marginVertical: 20, backgroundColor: 'white', borderColor: '#30437A', borderWidth: 1,
+        borderRadius: 12, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', height: 50,
+        shadowColor: '#30387a',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      addButtonText: { color: 'black', fontSize: 16 },
+      primary_button: {
+        width: '40%',
+        backgroundColor: '#30437A',
+        padding: 2,
+        borderRadius: 8,
+        alignItems: 'center',
+        shadowColor: '#30387a',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      secondary_button: {
+        width: '40%',
+        backgroundColor: '#3DC9A7',
+        padding: 2,
+        borderRadius: 8,
+        alignItems: 'center',
+        shadowColor: '#3dc1ad',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      summaryCard: {
+        backgroundColor: '#30437A', borderRadius: 16, padding: 24, marginBottom: 5,
+        elevation: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        shadowColor: '#30387a',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      cardTitle: {
+        color: 'white',
+        fontSize: 16,
+    },
+    cardAmount: {
+        color: 'white',
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginTop: 5,
+    },
 });

@@ -4,6 +4,7 @@ import { Divider } from 'react-native-elements';
 import { useAuth } from '../../../../../src/auth/AuthContext';
 import { getUserById, updateUser } from '../../../../../src/api/axios';
 import { validateField } from '../../../../InputValidator';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function RawMaterialProfile() {
     const { userId, logout } = useAuth();
@@ -100,6 +101,7 @@ export default function RawMaterialProfile() {
     };
 
     return (
+    <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
             <Text style={styles.title}>PERFIL EMPRESARIAL</Text>
 
@@ -148,6 +150,7 @@ export default function RawMaterialProfile() {
                 <Text style={styles.button_text}>CERRAR SESIÓN</Text>
             </TouchableOpacity>
         </View>
+        </ScrollView>
     );
 }
 

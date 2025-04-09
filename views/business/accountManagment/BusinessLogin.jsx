@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { Divider } from 'react-native-elements'
 import { useAuth } from '../../../src/auth/AuthContext'
 import { validateField } from '../../InputValidator'
+import { ScrollView } from 'react-native-gesture-handler'
 
 export default function BusinessLogin({ navigation }) {
   const [username, setUsername] = useState('');
@@ -30,10 +31,11 @@ export default function BusinessLogin({ navigation }) {
   };
 
   return (
+    <ScrollView style={{backgroundColor: '#fff'}} contentContainerStyle={{ flexGrow: 1 }}>
     <View style={styles.container}>
       <Text style={styles.title}>SGFPE</Text>
       <Image source={require('../../../assets/logo.png')} style={styles.image} />
-      <Text style={styles.subtitle}>Raw Material Business Login</Text>
+      <Text style={styles.subtitle}>Inicio de sesión - Materia Prima</Text>
 
       <TextInput
         style={[styles.input, errors.username && styles.inputError]}
@@ -71,18 +73,23 @@ export default function BusinessLogin({ navigation }) {
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
       <TouchableOpacity style={styles.primary_button} onPress={handleLogin}>
-        <Text style={styles.button_text}>LOGIN</Text>
+        <Text style={styles.button_text}>INGRESAR</Text>
       </TouchableOpacity>
 
       <Divider style={styles.divider} />
 
-      <Text style={styles.orText}>or</Text>
-      <Text style={styles.getStarted}>Sign up to get started</Text>
+      <Text style={styles.orText}>o</Text>
+      <Text style={styles.getStarted}>¿Aún no tienes cuenta?</Text>
 
       <TouchableOpacity style={styles.secondary_button} onPress={() => navigation.navigate('Business Sign Up')}>
-        <Text style={styles.button_text}>SIGN UP</Text>
+        <Text style={styles.button_text}>REGISTRARSE</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
+        <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
     </View>
+    </ScrollView>
   )
 }
 
@@ -93,7 +100,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: 'white',
-    marginTop: -45,
   },
   image: {
     width: 130,
@@ -169,4 +175,5 @@ const styles = StyleSheet.create({
   },
   inputError: { borderColor: 'red', borderWidth: 1 },
   errorText: { color: 'red', alignSelf: 'flex-start', marginBottom: 8, marginTop: -6 },
+  forgotPassword: { alignSelf: 'flex-end', color: '#30437A', fontSize: 14, marginTop: 18, fontWeight: '500' }
 });
