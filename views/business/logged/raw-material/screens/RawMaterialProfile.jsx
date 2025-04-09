@@ -56,19 +56,30 @@ export default function RawMaterialProfile() {
     const handleUpdate = async () => {
         if (!validateInputs()) return;
 
-        Alert.alert('Actualizar Perfil', '¿Deseas guardar los cambios?', [
+        Alert.alert("Actualizar Perfil", "¿Deseas guardar los cambios?", [
             {
-                text: 'Sí',
+                text: "Sí",
                 onPress: async () => {
                     try {
-                        await updateUser(userId, { name, phoneNumber, email, address });
-                        Alert.alert('Éxito', 'Perfil actualizado');
+                        const prevUser = await getUserById(userId); // ⚠️ Trae todo el usuario actual
+
+                        const updatedUser = {
+                            ...prevUser, // mantiene todos los campos anteriores
+                            name,
+                            phoneNumber,
+                            address
+                        };
+
+                        console.log("Datos de la petición:", updatedUser);
+
+                        await updateUser(userId, updatedUser);
+                        Alert.alert("Éxito", "Perfil actualizado");
                     } catch (error) {
-                        Alert.alert('Error', 'No se pudo actualizar el perfil');
+                        Alert.alert("Error", "No se pudo actualizar el perfil");
                     }
                 },
             },
-            { text: 'No', style: 'cancel' },
+            { text: "No", style: "cancel" },
         ]);
     };
 
