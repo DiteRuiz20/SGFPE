@@ -15,16 +15,63 @@ api.interceptors.request.use(
         if (!noAuthRoutes.includes(config.url)) {
             try {
                 const token = await AsyncStorage.getItem('token');
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
+                const userId = await AsyncStorage.getItem('userId');
+                
+                console.log('Token recuperado:', token ? 'Presente' : 'No encontrado');
+                console.log('UserId recuperado:', userId ? 'Presente' : 'No encontrado');
+                console.log('URL de la petición:', config.url);
+                
+                if (!token) {
+                    console.error('No se encontró token para la ruta:', config.url);
+                    throw new Error('No hay token de autenticación');
                 }
+
+                // Asegurarse de que el token no tenga espacios extras
+                const cleanToken = token.trim();
+                config.headers = {
+                    ...config.headers,
+                    'Authorization': `Bearer ${cleanToken}`,
+                    'Content-Type': 'application/json',
+                    'User-ID': userId // Agregar el userId en el header
+                };
+                
+                console.log('Headers completos de la petición:', JSON.stringify(config.headers, null, 2));
+                console.log('Datos de la petición:', JSON.stringify(config.data, null, 2));
             } catch (error) {
-                console.error('Error retrieving auth token:', error);
+                console.error('Error en el interceptor:', error);
+                throw error;
             }
         }
         return config;
     },
-    error => Promise.reject(error)
+    error => {
+        console.error('Error en el interceptor de request:', error);
+        return Promise.reject(error);
+    }
+);
+
+// Interceptor para manejar errores de respuesta
+api.interceptors.response.use(
+    response => response,
+    error => {
+        console.error('Error en la respuesta:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            headers: error.response?.headers,
+            config: {
+                url: error.config?.url,
+                method: error.config?.method,
+                headers: error.config?.headers
+            }
+        });
+        
+        if (error.response?.status === 403) {
+            console.error('Error de autorización. Token posiblemente expirado o inválido.');
+            // Intentar refrescar el token si es necesario
+            // Aquí podrías implementar la lógica de refresh token
+        }
+        return Promise.reject(error);
+    }
 );
 
 // Funciones de API
@@ -54,6 +101,16 @@ export const getAllCategories = async () => {
         return response.data;
     } catch (error) {
         console.error('Error fetching categories:', error);
+        throw error;
+    }
+};
+
+export const createPersonalExpense = async (expenseData) => {
+    try {
+        const response = await api.post('/api/personal/expenses', expenseData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating expense:', error);
         throw error;
     }
 };

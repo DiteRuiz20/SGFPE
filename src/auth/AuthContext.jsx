@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../api/axios';
 import { useNavigation } from '@react-navigation/native';
@@ -12,6 +12,32 @@ export const AuthProvider = ({ children }) => {
         userId: null,
         accountType: null
     });
+
+    // Cargar el estado inicial desde AsyncStorage
+    useEffect(() => {
+        const loadStoredAuth = async () => {
+            try {
+                const [token, userId, accountType] = await Promise.all([
+                    AsyncStorage.getItem('token'),
+                    AsyncStorage.getItem('userId'),
+                    AsyncStorage.getItem('accountType')
+                ]);
+
+                if (token && userId) {
+                    setAuthState({
+                        isAuthenticated: true,
+                        token,
+                        userId,
+                        accountType
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading stored auth:', error);
+            }
+        };
+
+        loadStoredAuth();
+    }, []);
 
     const validateAccount = async (email, accountType) => {
         try {
